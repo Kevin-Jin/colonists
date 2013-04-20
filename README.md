@@ -14,6 +14,7 @@ Setting up the workspace
 6. Click the checkbox next to **Developer Tools**. Click **Next >**. Click **Next >**. Click radio button next to **I accept the terms of the license agreement** and click **Finish**.
 7. Restart Eclipse. In the "Welcome to Android Development" window, choose **Use existing SDKs** and browse to where you installed the SDK Tools.
 8. Go to **Window** > **Android SDK Manager**. Check the box next to **Android 4.0 (API 14)** and click **Install # packages...**.
-9. Go to **File** > **Import...**. Expand **General** and double click **Existing Projects into Workspace**. Next to **Select root directory:**, click **Browse...** and select the *Celdroids Common* folder from the workspace you cloned in the GitHub Client.
-10. Repeat step 9 for *Celdroids Client Common*, *Celdroids Client Desktop*, *Celdroids Client Android*, and *Celdroids Server*.
-11. Try the game out by opening the *net.pjtb.celdroids.client.desktop.DesktopGame* class from the *Celdroids Client Desktop* project and clicking the Run button on the Eclipse toolbar.
+9. Go to **Window** > **Preferences**. Expand **Java** and click **Installed JREs**. Click **Add...**, select **Standard VM**, click **Next >**. Next to **JRE home:**, click **Directory...** and navigate to the JDK 6 folder (usually *C:\Program Files\Java\jdk1.6.0_43*). Then click **Finish** and **OK**.
+10. Go to **File** > **Import...**. Expand **General** and double click **Existing Projects into Workspace**. Next to **Select root directory:**, click **Browse...** and select the *Celdroids Common* folder from the workspace you cloned in the GitHub Client.
+11. Repeat step 10 for *Celdroids Client Common*, *Celdroids Client Desktop*, *Celdroids Client Android*, and *Celdroids Server*.
+12. Try the game out by opening the *net.pjtb.celdroids.client.desktop.DesktopGame* class from the *Celdroids Client Desktop* project and clicking the Run button on the Eclipse toolbar.

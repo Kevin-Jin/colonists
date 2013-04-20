@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="libs/gdx-backend-android.jar"/>
 	<classpathentry kind="lib" path="/Celdroids Client Common/libs/gdx.jar" sourcepath="/Celdroids Client Common/libs/gdx-sources.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Celdroids Client Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Celdroids Common"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
