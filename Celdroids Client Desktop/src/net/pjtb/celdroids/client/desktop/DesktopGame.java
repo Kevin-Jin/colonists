@@ -6,6 +6,9 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 
 public class DesktopGame {
 	public static void main(String[] args) {
-		new LwjglApplication(new Game(), "Celdroids", 1280, 720, false);
+		DesktopModel model = new DesktopModel();
+		model.createScenes();
+		new LwjglApplication(new Game(model), "Celdroids", 1280, 720, false);
+		model.loadResources();
 	}
 }

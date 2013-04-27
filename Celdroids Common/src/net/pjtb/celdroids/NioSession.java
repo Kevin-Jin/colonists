@@ -142,7 +142,7 @@ public class NioSession implements Session {
 		}
 
 		/* package-private */ void prepare(short n) {
-			if (fastWriteBuf.remaining() < n + 2 && canUseFastWriteBuf)
+			if (fastWriteBuf.remaining() >= n + 2 && canUseFastWriteBuf)
 				writeBuf = fastWriteBuf;
 			else
 				writeBuf = ByteBuffer.allocate(n + 2);
