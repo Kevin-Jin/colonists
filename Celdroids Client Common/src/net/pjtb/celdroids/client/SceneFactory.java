@@ -10,8 +10,8 @@ import net.pjtb.celdroids.client.scenes.Scene;
 import net.pjtb.celdroids.client.scenes.WorldScene;
 
 public class SceneFactory {
-	public LoadingScene makeLoadingScene() {
-		return new LoadingScene();
+	public LoadingScene makeLoadingScene(Model model) {
+		return new LoadingScene(model);
 	}
 
 	public MainMenuScene makeMainMenuScene() {

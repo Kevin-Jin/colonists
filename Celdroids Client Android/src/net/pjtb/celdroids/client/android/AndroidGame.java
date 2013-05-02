@@ -13,25 +13,6 @@ public class AndroidGame extends AndroidApplication {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		model = new AndroidModel(this);
-		model.createScenes();
 		initialize(new Game(model), false);
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				model.loadResources();
-			}
-		}, "resource-loader").start();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		model.resume();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		model.pause();
 	}
 }

@@ -10,6 +10,8 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 public class AndroidModel extends Model {
 	private final AndroidApplication app;
 
+	public WifiDirectModel wifiDirect;
+
 	public AndroidModel(AndroidApplication app) {
 		this.app = app;
 	}
@@ -26,13 +28,5 @@ public class AndroidModel extends Model {
 
 	public AndroidApplication getApplication() {
 		return app;
-	}
-
-	public void resume() {
-		getScene().resume();
-	}
-
-	public void pause() {
-		getScene().pause();
 	}
 }

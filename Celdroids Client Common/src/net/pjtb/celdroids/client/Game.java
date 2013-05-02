@@ -26,7 +26,8 @@ public class Game implements ApplicationListener {
 
 		Gdx.gl10.glMatrixMode(GL10.GL_MODELVIEW); //we never change back to projection matrix, so switch matrix mode here once
 
-		model.created();
+		model.startLoadingResources(Constants.SPLASH_SCREEN_MIN_TIME);
+		model.onStart();
 	}
 
 	@Override
@@ -37,6 +38,7 @@ public class Game implements ApplicationListener {
 	@Override
 	public void render() {
 		float tDelta = Gdx.graphics.getDeltaTime();
+		model.continueLoadingResources(tDelta);
 		model.getScene().update(tDelta);
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		model.getScene().draw();
@@ -44,16 +46,19 @@ public class Game implements ApplicationListener {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
+		model.releaseAllResources();
+		model.onPause();
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
+		//TODO: don't release nonvolatile assets in pause() and load only volatile assets (e.g. textures) here
+		model.startLoadingResources(0);
+		model.onResume();
 	}
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
+		model.onDispose();
 	}
 }
