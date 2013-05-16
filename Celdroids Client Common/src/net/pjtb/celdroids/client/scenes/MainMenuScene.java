@@ -1,27 +1,40 @@
 package net.pjtb.celdroids.client.scenes;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
+import net.pjtb.celdroids.client.Button;
+import net.pjtb.celdroids.client.Model;
+
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.Input.Keys;
 
 public class MainMenuScene implements Scene {
 	public enum MainMenuSubSceneType { ROOT, DIRECT_IP_CONNECT, P2P_CONNECT }
 
 	protected final Map<MainMenuSubSceneType, Scene> subScenes;
-	private Scene subScene;
+	protected final List<Button> buttons;
+	protected Scene subScene;
 
-	public MainMenuScene() {
+	public MainMenuScene(final Model m) {
 		subScenes = new EnumMap<MainMenuSubSceneType, Scene>(MainMenuSubSceneType.class);
 		subScenes.put(MainMenuSubSceneType.DIRECT_IP_CONNECT, new DirectConnectSelectionScene());
+
+		buttons = new ArrayList<Button>();
+		buttons.add(new Button(m, "Local", new Runnable() {
+			@Override
+			public void run() {
+				m.scene.swappedOut(true);
+				m.scene = m.scenes.get(Model.SceneType.WORLD);
+				m.scene.swappedIn(false);
+			}
+		}, 10, 10, 256, 128));
 	}
 
 	@Override
-	public void swappedIn() {
+	public void swappedIn(boolean transition) {
 		Gdx.gl10.glClearColor(0.5f, 0.5f, 0.5f, 1);
 	}
 
@@ -39,38 +52,43 @@ public class MainMenuScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
-		//update our own scene stuff first, then subscene
-		if (subScene != null)
+		boolean hidden = (subScene != null);
+		for (Button button : buttons) {
+			button.hidden = hidden;
+			button.update(tDelta);
+		}
+		if (subScene == null) {
+			if (Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.BACK)) {
+				//TODO: show a confirmation
+				Gdx.app.exit();
+			} else if (Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU)) {
+				
+			}
+		} else {
 			subScene.update(tDelta);
+		}
 	}
 
 	@Override
 	public void draw() {
-		Mesh m = new Mesh(true, 3, 3, new VertexAttribute(Usage.Position, 3, "a_position"));
-		m.setVertices(new float[] { 0, 10, 0, 1280, 10, 0, 640, 720, 0 });
-		m.setIndices(new short[] { 0, 1, 2 });
-		m.render(GL10.GL_TRIANGLES, 0, 3);
-
-		if (Gdx.input.isTouched())
-			Gdx.gl10.glColor4f(1, 0, 1, 1);
-		else
-			Gdx.gl10.glColor4f(1, 1, 0, 1);
-		m = new Mesh(true, 3, 3, new VertexAttribute(Usage.Position, 3, "b_position"));
-		m.setVertices(new float[] { 1, 1, 0, 1278, 1, 0, 1278, 718, 0 });
-		m.setIndices(new short[] { 0, 1, 2 });
-		m.render(GL10.GL_LINE_STRIP, 0, 3);
-
-		m = new Mesh(true, 3, 3, new VertexAttribute(Usage.Position, 3, "c_position"));
-		m.setVertices(new float[] { 1278, 718, 0, 1, 718, 0, 1, 1, 0 });
-		m.setIndices(new short[] { 0, 1, 2 });
-		m.render(GL10.GL_LINE_STRIP, 0, 3);
-		//draw our own scene stuff first, then overlay with subscene
+		for (Button button : buttons)
+			button.draw();
 		if (subScene != null)
 			subScene.draw();
 	}
 
 	@Override
-	public void swappedOut() {
+	public void swappedOut(boolean transition) {
 		
+	}
+
+	@Override
+	public Scene getSubscene() {
+		return subScene;
+	}
+
+	@Override
+	public void setSubscene(Scene scene) {
+		this.subScene = scene;
 	}
 }

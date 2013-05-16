@@ -26,6 +26,9 @@ public class Game implements ApplicationListener {
 
 		Gdx.gl10.glMatrixMode(GL10.GL_MODELVIEW); //we never change back to projection matrix, so switch matrix mode here once
 
+		Gdx.input.setCatchBackKey(true);
+		Gdx.input.setCatchMenuKey(true);
+
 		model.startLoadingResources(Constants.SPLASH_SCREEN_MIN_TIME);
 		model.onStart();
 	}
@@ -39,9 +42,10 @@ public class Game implements ApplicationListener {
 	public void render() {
 		float tDelta = Gdx.graphics.getDeltaTime();
 		model.continueLoadingResources(tDelta);
-		model.getScene().update(tDelta);
+
+		model.scene.update(tDelta);
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		model.getScene().draw();
+		model.scene.draw();
 	}
 
 	@Override

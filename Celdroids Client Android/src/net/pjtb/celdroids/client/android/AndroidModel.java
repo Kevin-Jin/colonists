@@ -20,8 +20,8 @@ public class AndroidModel extends Model {
 	protected SceneFactory createSceneFactory() {
 		return new SceneFactory() {
 			@Override
-			public MainMenuScene makeMainMenuScene() {
-				return new AndroidMainMenuScene(AndroidModel.this);
+			public MainMenuScene makeMainMenuScene(Model model) {
+				return new AndroidMainMenuScene((AndroidModel) model);
 			}
 		};
 	}

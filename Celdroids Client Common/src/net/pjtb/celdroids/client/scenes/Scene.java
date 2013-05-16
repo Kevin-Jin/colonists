@@ -1,15 +1,17 @@
 package net.pjtb.celdroids.client.scenes;
 
-public interface Scene {
-	public void swappedIn();
+import net.pjtb.celdroids.client.CanvasComponent;
+
+public interface Scene extends CanvasComponent {
+	public void swappedIn(boolean transition);
 
 	public void pause();
 
 	public void resume();
 
-	public void update(float tDelta);
+	public void swappedOut(boolean transition);
 
-	public void draw();
+	public Scene getSubscene();
 
-	public void swappedOut();
+	public void setSubscene(Scene scene);
 }

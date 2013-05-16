@@ -14,12 +14,12 @@ public class SceneFactory {
 		return new LoadingScene(model);
 	}
 
-	public MainMenuScene makeMainMenuScene() {
-		return new MainMenuScene();
+	public MainMenuScene makeMainMenuScene(Model model) {
+		return new MainMenuScene(model);
 	}
 
-	public WorldScene makeWorldScene() {
-		return new WorldScene();
+	public WorldScene makeWorldScene(Model model) {
+		return new WorldScene(model);
 	}
 
 	public BattleScene makeBattleScene() {

@@ -11,6 +11,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -19,8 +20,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 public class Model {
 	public enum SceneType { LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE }
 
-	private final Map<SceneType, Scene> scenes;
-	private Scene scene, pausedScene;
+	public final Map<SceneType, Scene> scenes;
+	public Scene scene;
+	private Scene pausedScene;
 
 	private boolean loading;
 	private float remainingLoadTime;
@@ -44,8 +46,8 @@ public class Model {
 		//initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
 		scenes.put(SceneType.LOAD_SCREEN, sceneFactory.makeLoadingScene(this));
-		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene());
-		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene());
+		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene(this));
+		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(this));
 		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene());
 		scenes.putAll(sceneFactory.additionalScenes());
 		scene = scenes.get(SceneType.LOAD_SCREEN);
@@ -65,9 +67,9 @@ public class Model {
 
 		//asynchronous load all other assets
 		assets.load("images/sprites/sprites.pack", TextureAtlas.class);
+		assets.load("fonts/buttons.fnt", BitmapFont.class);
 		//TODO: load music using assets.load(..., Music.class),
-		//sound effects using assets.load(..., Sound.class), and
-		//fonts using assets.load(..., BitmapFont.class)
+		//and sound effects using assets.load(..., Sound.class)
 	}
 
 	public void continueLoadingResources(float tDelta) {
@@ -89,15 +91,15 @@ public class Model {
 	}
 
 	private void finishedLoadingResources() {
-		scene.swappedOut();
+		scene.swappedOut(true);
 		if (pausedScene != null) {
 			scene = pausedScene;
-			scene.swappedIn();
+			scene.swappedIn(false);
 			scene.resume();
 			pausedScene = null;
 		} else {
 			scene = scenes.get(SceneType.MAIN_MENU);
-			scene.swappedIn();
+			scene.swappedIn(false);
 		}
 	}
 
@@ -108,18 +110,14 @@ public class Model {
 	}
 
 	public void onResume() {
-		scene.swappedOut();
+		scene.swappedOut(false);
 		scene = scenes.get(SceneType.LOAD_SCREEN);
-		scene.swappedIn();
+		scene.swappedIn(false);
 	}
 
 	public void releaseAllResources() {
 		assets.clear();
 		sprites.clear();
-	}
-
-	public Scene getScene() {
-		return scene;
 	}
 
 	public void onDispose() {

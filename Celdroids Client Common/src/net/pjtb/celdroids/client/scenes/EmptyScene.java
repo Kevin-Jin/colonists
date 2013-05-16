@@ -8,7 +8,7 @@ public class EmptyScene implements Scene {
 	}
 
 	@Override
-	public void swappedIn() {
+	public void swappedIn(boolean transition) {
 		
 	}
 
@@ -33,7 +33,17 @@ public class EmptyScene implements Scene {
 	}
 
 	@Override
-	public void swappedOut() {
+	public void swappedOut(boolean transition) {
+		
+	}
+
+	@Override
+	public Scene getSubscene() {
+		return null;
+	}
+
+	@Override
+	public void setSubscene(Scene scene) {
 		
 	}
 }
