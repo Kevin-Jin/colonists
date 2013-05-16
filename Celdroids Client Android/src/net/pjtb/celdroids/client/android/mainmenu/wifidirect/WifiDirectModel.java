@@ -1,9 +1,10 @@
-package net.pjtb.celdroids.client.android;
+package net.pjtb.celdroids.client.android.mainmenu.wifidirect;
 
 import java.net.InetSocketAddress;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.NioSession;
+import net.pjtb.celdroids.client.android.AndroidModel;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 

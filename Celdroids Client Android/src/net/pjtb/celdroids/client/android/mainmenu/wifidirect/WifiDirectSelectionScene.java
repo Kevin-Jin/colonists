@@ -1,38 +1,41 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client.android.mainmenu.wifidirect;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Texture;
 
-import net.pjtb.celdroids.Constants;
-import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.Scene;
 
-public class LoadingScene implements Scene {
-	private final Model model;
+public class WifiDirectSelectionScene implements Scene {
+	private final WifiDirectModel model;
 
-	public LoadingScene(Model model) {
+	private final Scene parentScene;
+
+	public WifiDirectSelectionScene(WifiDirectModel model, Scene mainMenuScene) {
 		this.model = model;
+
+		this.parentScene = mainMenuScene;
 	}
 
 	@Override
 	public void swappedIn(boolean transition) {
-		
+		model.swappedIn();
 	}
 
 	@Override
 	public void pause() {
-		
+		model.pause();
 	}
 
 	@Override
 	public void resume() {
-		
+		model.resume();
 	}
 
 	@Override
 	public void update(float tDelta) {
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.BACK)) {
-			Gdx.app.exit();
+			swappedOut(true);
+			parentScene.setSubscene(null);
 		} else if (Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU)) {
 			
 		}
@@ -40,11 +43,7 @@ public class LoadingScene implements Scene {
 
 	@Override
 	public void draw() {
-		Texture image = model.assets.get("images/backgrounds/splash.png", Texture.class);
-
-		model.batch.begin();
-		model.batch.draw(image, 0, Constants.HEIGHT - image.getHeight());
-		model.batch.end();
+		
 	}
 
 	@Override

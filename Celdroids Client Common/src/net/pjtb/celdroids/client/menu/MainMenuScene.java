@@ -1,4 +1,4 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client.menu;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -7,6 +7,8 @@ import java.util.Map;
 
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.Scene;
+import net.pjtb.celdroids.client.menu.directconnect.DirectConnectSelectionScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;

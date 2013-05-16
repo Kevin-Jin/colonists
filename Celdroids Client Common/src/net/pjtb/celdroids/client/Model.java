@@ -4,8 +4,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.pjtb.celdroids.client.scenes.EmptyScene;
-import net.pjtb.celdroids.client.scenes.Scene;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;

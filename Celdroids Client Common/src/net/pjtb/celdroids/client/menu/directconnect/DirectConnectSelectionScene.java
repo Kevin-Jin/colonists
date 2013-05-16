@@ -1,4 +1,6 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client.menu.directconnect;
+
+import net.pjtb.celdroids.client.Scene;
 
 public class DirectConnectSelectionScene implements Scene {
 	@Override

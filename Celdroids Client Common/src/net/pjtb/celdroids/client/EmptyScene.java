@@ -1,6 +1,13 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client;
 
-public class InGameMenuScene implements Scene {
+
+public class EmptyScene implements Scene {
+	public static final EmptyScene instance = new EmptyScene();
+
+	private EmptyScene() {
+		
+	}
+
 	@Override
 	public void swappedIn(boolean transition) {
 		

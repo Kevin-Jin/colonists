@@ -1,9 +1,11 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client.world;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.Scene;
+import net.pjtb.celdroids.client.world.menu.InGameMenuScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;

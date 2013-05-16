@@ -1,6 +1,5 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client;
 
-import net.pjtb.celdroids.client.CanvasComponent;
 
 public interface Scene extends CanvasComponent {
 	public void swappedIn(boolean transition);

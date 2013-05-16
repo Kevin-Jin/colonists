@@ -3,11 +3,10 @@ package net.pjtb.celdroids.client;
 import java.util.Collections;
 import java.util.Map;
 
-import net.pjtb.celdroids.client.scenes.BattleScene;
-import net.pjtb.celdroids.client.scenes.LoadingScene;
-import net.pjtb.celdroids.client.scenes.MainMenuScene;
-import net.pjtb.celdroids.client.scenes.Scene;
-import net.pjtb.celdroids.client.scenes.WorldScene;
+import net.pjtb.celdroids.client.battle.BattleScene;
+import net.pjtb.celdroids.client.loading.LoadingScene;
+import net.pjtb.celdroids.client.menu.MainMenuScene;
+import net.pjtb.celdroids.client.world.WorldScene;
 
 public class SceneFactory {
 	public LoadingScene makeLoadingScene(Model model) {

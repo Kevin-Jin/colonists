@@ -1,4 +1,6 @@
-package net.pjtb.celdroids.client.scenes;
+package net.pjtb.celdroids.client.battle;
+
+import net.pjtb.celdroids.client.Scene;
 
 public class BattleScene implements Scene {
 	@Override

@@ -2,8 +2,9 @@ package net.pjtb.celdroids.client.android;
 
 import net.pjtb.celdroids.client.SceneFactory;
 import net.pjtb.celdroids.client.Model;
-import net.pjtb.celdroids.client.android.scenes.AndroidMainMenuScene;
-import net.pjtb.celdroids.client.scenes.MainMenuScene;
+import net.pjtb.celdroids.client.android.mainmenu.wifidirect.WifiDirectModel;
+import net.pjtb.celdroids.client.android.menu.AndroidMainMenuScene;
+import net.pjtb.celdroids.client.menu.MainMenuScene;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 
