@@ -46,12 +46,12 @@ public class WorldScene implements Scene {
 	public void update(float tDelta) {
 		//update our own scene stuff first, then subscene (if any)
 		if (subScene == null) {
-			if (Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.BACK)) {
+			if (model.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 				//TODO: show a confirmation
 				model.scene.swappedOut(true);
 				model.scene = model.scenes.get(Model.SceneType.MAIN_MENU);
 				model.scene.swappedIn(false);
-			} else if (Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU)) {
+			} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 				if (subScene != null) {
 					subScene.swappedOut(false);
 					subScene = null;

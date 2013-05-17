@@ -44,6 +44,7 @@ public class Game implements ApplicationListener {
 		model.continueLoadingResources(tDelta);
 
 		model.scene.update(tDelta);
+		model.controller.update(tDelta);
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		model.scene.draw();
 	}

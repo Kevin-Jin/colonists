@@ -1,6 +1,5 @@
 package net.pjtb.celdroids.client;
 
-
 public class EmptyScene implements Scene {
 	public static final EmptyScene instance = new EmptyScene();
 

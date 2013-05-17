@@ -1,16 +1,19 @@
 package net.pjtb.celdroids.client.android.mainmenu.wifidirect;
 
+import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.Scene;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 
-import net.pjtb.celdroids.client.Scene;
-
 public class WifiDirectSelectionScene implements Scene {
+	private final Model parentModel;
 	private final WifiDirectModel model;
 
 	private final Scene parentScene;
 
-	public WifiDirectSelectionScene(WifiDirectModel model, Scene mainMenuScene) {
+	public WifiDirectSelectionScene(Model parentModel, WifiDirectModel model, Scene mainMenuScene) {
+		this.parentModel = parentModel;
 		this.model = model;
 
 		this.parentScene = mainMenuScene;
@@ -33,10 +36,10 @@ public class WifiDirectSelectionScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
-		if (Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.BACK)) {
+		if (parentModel.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 			swappedOut(true);
 			parentScene.setSubscene(null);
-		} else if (Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU)) {
+		} else if (parentModel.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 			
 		}
 	}

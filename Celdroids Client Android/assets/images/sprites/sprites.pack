@@ -17,3 +17,85 @@ buttonRegular
   orig: 256, 128
   offset: 0, 0
   index: -1
+rock_monsterEvol1
+  rotate: false
+  xy: 517, 1
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+rock_monsterEvol2
+  rotate: false
+  xy: 647, 1
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+
+sprites2.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+character/char_walkForward_center
+  rotate: false
+  xy: 1, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkForward_leftUp
+  rotate: false
+  xy: 33, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkForward_rightUp
+  rotate: false
+  xy: 65, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkLeft_center
+  rotate: false
+  xy: 97, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkLeft_leftForward
+  rotate: false
+  xy: 129, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkLeft_rightForward
+  rotate: false
+  xy: 161, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkUp_center
+  rotate: false
+  xy: 193, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkUp_leftForward
+  rotate: false
+  xy: 225, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/char_walkUp_rightForward
+  rotate: false
+  xy: 257, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1

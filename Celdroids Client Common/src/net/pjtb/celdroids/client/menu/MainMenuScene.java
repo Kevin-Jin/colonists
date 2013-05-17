@@ -16,11 +16,15 @@ import com.badlogic.gdx.Input.Keys;
 public class MainMenuScene implements Scene {
 	public enum MainMenuSubSceneType { ROOT, DIRECT_IP_CONNECT, P2P_CONNECT }
 
+	private final Model model;
+
 	protected final Map<MainMenuSubSceneType, Scene> subScenes;
 	protected final List<Button> buttons;
 	protected Scene subScene;
 
-	public MainMenuScene(final Model m) {
+	public MainMenuScene(Model m) {
+		this.model = m;
+
 		subScenes = new EnumMap<MainMenuSubSceneType, Scene>(MainMenuSubSceneType.class);
 		subScenes.put(MainMenuSubSceneType.DIRECT_IP_CONNECT, new DirectConnectSelectionScene());
 
@@ -28,9 +32,9 @@ public class MainMenuScene implements Scene {
 		buttons.add(new Button(m, "Local", new Runnable() {
 			@Override
 			public void run() {
-				m.scene.swappedOut(true);
-				m.scene = m.scenes.get(Model.SceneType.WORLD);
-				m.scene.swappedIn(false);
+				model.scene.swappedOut(true);
+				model.scene = model.scenes.get(Model.SceneType.WORLD);
+				model.scene.swappedIn(false);
 			}
 		}, 10, 10, 256, 128));
 	}
@@ -60,10 +64,10 @@ public class MainMenuScene implements Scene {
 			button.update(tDelta);
 		}
 		if (subScene == null) {
-			if (Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.BACK)) {
+			if (model.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 				//TODO: show a confirmation
 				Gdx.app.exit();
-			} else if (Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU)) {
+			} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 				
 			}
 		} else {

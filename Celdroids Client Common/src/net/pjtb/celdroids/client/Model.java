@@ -4,7 +4,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,6 +17,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 public class Model {
 	public enum SceneType { LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE }
 
+	public final ControllerHelper controller;
+
 	public final Map<SceneType, Scene> scenes;
 	public Scene scene;
 	private Scene pausedScene;
@@ -30,6 +31,8 @@ public class Model {
 	public SpriteBatch batch;
 
 	public Model() {
+		controller = new ControllerHelper();
+
 		scenes = new EnumMap<SceneType, Scene>(SceneType.class);
 		scene = EmptyScene.instance;
 		assets = new AssetManager();

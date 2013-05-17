@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
-public class Button implements CanvasComponent {
+public class Button implements ViewComponent {
 	private final Model model;
 
 	private final String text;

@@ -1,7 +1,6 @@
 package net.pjtb.celdroids.client;
 
-
-public interface Scene extends CanvasComponent {
+public interface Scene extends ViewComponent {
 	public void swappedIn(boolean transition);
 
 	public void pause();
