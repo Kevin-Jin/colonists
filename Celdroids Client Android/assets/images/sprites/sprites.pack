@@ -3,30 +3,44 @@ sprites.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+worldControls
+  rotate: false
+  xy: 1, 254
+  size: 320, 720
+  orig: 320, 720
+  offset: 0, 0
+  index: -1
+arrowKeyHeld
+  rotate: false
+  xy: 1, 131
+  size: 320, 121
+  orig: 320, 121
+  offset: 0, 0
+  index: -1
 buttonPressed
   rotate: false
-  xy: 1, 1
+  xy: 323, 846
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 buttonRegular
   rotate: false
-  xy: 259, 1
+  xy: 1, 1
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 rock_monsterEvol1
   rotate: false
-  xy: 517, 1
+  xy: 323, 716
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 rock_monsterEvol2
   rotate: false
-  xy: 647, 1
+  xy: 581, 846
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
@@ -36,63 +50,63 @@ sprites2.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-character/char_walkForward_center
+character/down0
   rotate: false
   xy: 1, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkForward_leftUp
+character/down1
   rotate: false
   xy: 33, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkForward_rightUp
+character/down2
   rotate: false
   xy: 65, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkLeft_center
+character/left0
   rotate: false
   xy: 97, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkLeft_leftForward
+character/left1
   rotate: false
   xy: 129, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkLeft_rightForward
+character/left2
   rotate: false
   xy: 161, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkUp_center
+character/up0
   rotate: false
   xy: 193, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkUp_leftForward
+character/up1
   rotate: false
   xy: 225, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/char_walkUp_rightForward
+character/up2
   rotate: false
   xy: 257, 1
   size: 30, 30
