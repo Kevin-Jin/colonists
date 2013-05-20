@@ -1,5 +1,7 @@
 package net.pjtb.celdroids.client.menu.directconnect;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 import net.pjtb.celdroids.client.Scene;
 
 public class DirectConnectSelectionScene implements Scene {
@@ -24,7 +26,7 @@ public class DirectConnectSelectionScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(SpriteBatch batch) {
 		
 	}
 

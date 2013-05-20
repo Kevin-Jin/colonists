@@ -12,6 +12,7 @@ import net.pjtb.celdroids.client.menu.directconnect.DirectConnectSelectionScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuScene implements Scene {
 	public enum MainMenuSubSceneType { ROOT, DIRECT_IP_CONNECT, P2P_CONNECT }
@@ -76,11 +77,11 @@ public class MainMenuScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(SpriteBatch batch) {
 		for (Button button : buttons)
-			button.draw();
+			button.draw(batch);
 		if (subScene != null)
-			subScene.draw();
+			subScene.draw(batch);
 	}
 
 	@Override

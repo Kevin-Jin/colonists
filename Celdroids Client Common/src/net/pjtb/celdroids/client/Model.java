@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 
@@ -28,7 +27,6 @@ public class Model {
 
 	public final AssetManager assets;
 	public final Map<String, Sprite> sprites;
-	public SpriteBatch batch;
 
 	public Model() {
 		controller = new ControllerHelper();
@@ -52,8 +50,6 @@ public class Model {
 		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene());
 		scenes.putAll(sceneFactory.additionalScenes());
 		scene = scenes.get(SceneType.LOAD_SCREEN);
-
-		batch = new SpriteBatch();
 	}
 
 	public void startLoadingResources(float minSplashTime) {

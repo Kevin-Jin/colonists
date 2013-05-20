@@ -9,20 +9,22 @@ import net.pjtb.celdroids.client.world.menu.InGameMenuScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class WorldScene implements Scene {
 	public enum WorldSubSceneType { IN_GAME_MENU }
 
-	private final Model model;
+	private final WorldModel model;
 
 	protected final Map<WorldSubSceneType, Scene> subScenes;
 	private Scene subScene;
 
 	public WorldScene(Model model) {
-		this.model = model;
+		this.model = new WorldModel(model);
 
 		subScenes = new EnumMap<WorldSubSceneType, Scene>(WorldSubSceneType.class);
-		subScenes.put(WorldSubSceneType.IN_GAME_MENU, new InGameMenuScene());
+		subScenes.put(WorldSubSceneType.IN_GAME_MENU, new InGameMenuScene(model, this));
 	}
 
 	@Override
@@ -44,14 +46,17 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
-		//update our own scene stuff first, then subscene (if any)
+		model.dpad.hidden = (subScene != null);
+		model.dpad.update(tDelta);
+		model.avatar.update(tDelta);
+
 		if (subScene == null) {
-			if (model.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
+			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 				//TODO: show a confirmation
-				model.scene.swappedOut(true);
-				model.scene = model.scenes.get(Model.SceneType.MAIN_MENU);
-				model.scene.swappedIn(false);
-			} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
+				model.parent.scene.swappedOut(true);
+				model.parent.scene = model.parent.scenes.get(Model.SceneType.MAIN_MENU);
+				model.parent.scene.swappedIn(false);
+			} else if (model.parent.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 				if (subScene != null) {
 					subScene.swappedOut(false);
 					subScene = null;
@@ -66,10 +71,14 @@ public class WorldScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
-		//draw our own scene stuff first, then overlay with subscene
+	public void draw(SpriteBatch batch) {
+		Sprite s = model.parent.sprites.get("worldControls");
+		s.setBounds(960, 0, 320, 720);
+		s.draw(batch);
+		model.dpad.draw(batch);
+		model.avatar.draw(batch);
 		if (subScene != null)
-			subScene.draw();
+			subScene.draw(batch);
 	}
 
 	@Override

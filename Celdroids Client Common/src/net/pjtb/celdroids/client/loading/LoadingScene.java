@@ -3,6 +3,7 @@ package net.pjtb.celdroids.client.loading;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Model;
@@ -40,12 +41,10 @@ public class LoadingScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(SpriteBatch batch) {
 		Texture image = model.assets.get("images/backgrounds/splash.png", Texture.class);
 
-		model.batch.begin();
-		model.batch.draw(image, 0, Constants.HEIGHT - image.getHeight());
-		model.batch.end();
+		batch.draw(image, 0, Constants.HEIGHT - image.getHeight());
 	}
 
 	@Override

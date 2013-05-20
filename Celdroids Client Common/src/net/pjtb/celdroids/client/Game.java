@@ -5,9 +5,11 @@ import net.pjtb.celdroids.Constants;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Game implements ApplicationListener {
 	private Model model;
+	private SpriteBatch batch;
 
 	public Game(Model model) {
 		this.model = model;
@@ -31,6 +33,7 @@ public class Game implements ApplicationListener {
 
 		model.startLoadingResources(Constants.SPLASH_SCREEN_MIN_TIME);
 		model.onStart();
+		batch = new SpriteBatch();
 	}
 
 	@Override
@@ -46,7 +49,9 @@ public class Game implements ApplicationListener {
 		model.scene.update(tDelta);
 		model.controller.update(tDelta);
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		model.scene.draw();
+		batch.begin();
+		model.scene.draw(batch);
+		batch.end();
 	}
 
 	@Override

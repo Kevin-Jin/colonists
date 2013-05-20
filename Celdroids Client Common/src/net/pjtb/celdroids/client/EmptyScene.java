@@ -1,5 +1,7 @@
 package net.pjtb.celdroids.client;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 public class EmptyScene implements Scene {
 	public static final EmptyScene instance = new EmptyScene();
 
@@ -28,7 +30,7 @@ public class EmptyScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(SpriteBatch batch) {
 		
 	}
 

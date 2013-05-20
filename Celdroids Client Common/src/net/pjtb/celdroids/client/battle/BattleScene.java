@@ -1,5 +1,7 @@
 package net.pjtb.celdroids.client.battle;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 import net.pjtb.celdroids.client.Scene;
 
 public class BattleScene implements Scene {
@@ -24,7 +26,7 @@ public class BattleScene implements Scene {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(SpriteBatch batch) {
 		
 	}
 

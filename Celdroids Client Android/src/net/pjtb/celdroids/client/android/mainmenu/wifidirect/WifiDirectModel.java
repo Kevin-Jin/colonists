@@ -21,7 +21,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 
 public class WifiDirectModel {
-	private final AndroidModel model;
+	public final AndroidModel parent;
 
 	private WifiP2pManager wifiDirect;
 	private WifiP2pManager.Channel channel;
@@ -29,11 +29,11 @@ public class WifiDirectModel {
 	private BroadcastReceiver wifiDirectReceiver;
 
 	public WifiDirectModel(AndroidModel model) {
-		this.model = model;
+		this.parent = model;
 	}
 
 	public void swappedIn() {
-		AndroidApplication app = model.getApplication();
+		AndroidApplication app = parent.getApplication();
 		wifiDirect = (WifiP2pManager) app.getSystemService(Context.WIFI_P2P_SERVICE);
 		channel = wifiDirect.initialize(app, app.getMainLooper(), null);
 		wifiDirectFilter = new IntentFilter();
@@ -125,10 +125,10 @@ public class WifiDirectModel {
 	}
 
 	public void pause() {
-		model.getApplication().registerReceiver(wifiDirectReceiver, wifiDirectFilter);
+		parent.getApplication().registerReceiver(wifiDirectReceiver, wifiDirectFilter);
 	}
 
 	public void resume() {
-		model.getApplication().unregisterReceiver(wifiDirectReceiver);
+		parent.getApplication().unregisterReceiver(wifiDirectReceiver);
 	}
 }

@@ -1,12 +1,11 @@
 package net.pjtb.celdroids.client;
 
-import net.pjtb.celdroids.Constants;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Button implements ViewComponent {
 	private final Model model;
@@ -41,8 +40,8 @@ public class Button implements ViewComponent {
 		if (hidden)
 			return;
 
-		int cursorX = Gdx.input.getX();
-		int cursorY = Constants.HEIGHT - Gdx.input.getY();
+		int cursorX = ControllerHelper.getCursorX();
+		int cursorY = ControllerHelper.getCursorY();
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		boolean inBounds = (cursorX > x && cursorX < x + width && cursorY > y && cursorY < y + height);
@@ -59,8 +58,7 @@ public class Button implements ViewComponent {
 	}
 
 	@Override
-	public void draw() {
-		model.batch.begin();
+	public void draw(SpriteBatch batch) {
 		Sprite s;
 		if (pressed)
 			s = model.sprites.get(activeSprite);
@@ -68,9 +66,8 @@ public class Button implements ViewComponent {
 			s = model.sprites.get(inactiveSprite);
 		s.setBounds(x, y, width, height);
 		BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
-		s.draw(model.batch);
+		s.draw(batch);
 		TextBounds bnds = fnt.getBounds(text);
-		fnt.draw(model.batch, text, x + (width - bnds.width) / 2, y + (height + bnds.height) / 2);
-		model.batch.end();
+		fnt.draw(batch, text, x + (width - bnds.width) / 2, y + (height + bnds.height) / 2);
 	}
 }
