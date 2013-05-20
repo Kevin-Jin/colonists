@@ -32,7 +32,7 @@ public class Button implements ViewComponent {
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height) {
-		this(model, text, task, x, y, width, height, "buttonRegular", "buttonPressed");
+		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed");
 	}
 
 	@Override

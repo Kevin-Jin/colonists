@@ -1,4 +1,5 @@
 {
         filterMin: Nearest,
-        filterMag: Nearest
+        filterMag: Nearest,
+        combineSubdirectories: true
 }

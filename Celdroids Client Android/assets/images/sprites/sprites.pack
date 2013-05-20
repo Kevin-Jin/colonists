@@ -3,113 +3,129 @@ sprites.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-worldControls
-  rotate: false
-  xy: 1, 254
-  size: 320, 720
-  orig: 320, 720
-  offset: 0, 0
-  index: -1
-arrowKeyHeld
-  rotate: false
-  xy: 1, 131
-  size: 320, 121
-  orig: 320, 121
-  offset: 0, 0
-  index: -1
-buttonPressed
-  rotate: false
-  xy: 323, 846
-  size: 256, 128
-  orig: 256, 128
-  offset: 0, 0
-  index: -1
-buttonRegular
-  rotate: false
-  xy: 1, 1
-  size: 256, 128
-  orig: 256, 128
-  offset: 0, 0
-  index: -1
-rock_monsterEvol1
-  rotate: false
-  xy: 323, 716
-  size: 128, 128
-  orig: 128, 128
-  offset: 0, 0
-  index: -1
-rock_monsterEvol2
-  rotate: false
-  xy: 581, 846
-  size: 128, 128
-  orig: 128, 128
-  offset: 0, 0
-  index: -1
-
-sprites2.png
-format: RGBA8888
-filter: Nearest,Nearest
-repeat: none
-character/down0
+character/player/down/0
   rotate: false
   xy: 1, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/down1
+character/player/down/2
+  rotate: false
+  xy: 1, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/down/1
+  rotate: false
+  xy: 453, 846
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/down/3
+  rotate: false
+  xy: 259, 99
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/left/0
+  rotate: false
+  xy: 259, 131
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/left/2
+  rotate: false
+  xy: 259, 131
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/left/1
+  rotate: false
+  xy: 711, 976
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/left/3
+  rotate: false
+  xy: 291, 131
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/up/0
+  rotate: false
+  xy: 323, 716
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/up/2
+  rotate: false
+  xy: 323, 716
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/player/up/1
   rotate: false
   xy: 33, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/down2
+character/player/up/3
   rotate: false
-  xy: 65, 1
+  xy: 323, 684
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/left0
+monster/rock/evol1
   rotate: false
-  xy: 97, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 323, 748
+  size: 128, 128
+  orig: 128, 128
   offset: 0, 0
   index: -1
-character/left1
+monster/rock/evol2
   rotate: false
-  xy: 129, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 581, 878
+  size: 128, 128
+  orig: 128, 128
   offset: 0, 0
   index: -1
-character/left2
+ui/button/pressed
   rotate: false
-  xy: 161, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 323, 878
+  size: 256, 128
+  orig: 256, 128
   offset: 0, 0
   index: -1
-character/up0
+ui/button/regular
   rotate: false
-  xy: 193, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 1, 33
+  size: 256, 128
+  orig: 256, 128
   offset: 0, 0
   index: -1
-character/up1
+ui/worldScene/controlBar
   rotate: false
-  xy: 225, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 1, 286
+  size: 320, 720
+  orig: 320, 720
   offset: 0, 0
   index: -1
-character/up2
+ui/worldScene/heldArrow
   rotate: false
-  xy: 257, 1
-  size: 30, 30
-  orig: 30, 30
+  xy: 1, 163
+  size: 320, 121
+  orig: 320, 121
   offset: 0, 0
   index: -1

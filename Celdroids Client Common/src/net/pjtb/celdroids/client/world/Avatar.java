@@ -23,7 +23,7 @@ public class Avatar implements ViewComponent {
 		this.model = model;
 
 		dirInProgress = DirectionalPad.State.NONE;
-		sprite = "character/down0";
+		sprite = "character/player/down/0";
 	}
 
 	@Override
@@ -35,8 +35,8 @@ public class Avatar implements ViewComponent {
 
 		switch (dirInProgress) {
 			case UP: {
-				boolean changedDirection = (sprite.length() != "character/up".length() + 1 || !sprite.substring(0, "character/up".length()).equals("character/up") || flip);
-				sprite = "character/up";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/up/") || flip);
+				sprite = "character/player/up/";
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -49,7 +49,7 @@ public class Avatar implements ViewComponent {
 					double unclipped = posY + VELOCITY * tDelta, endAt;
 					if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posY + 1))) {
 						posY = unclipped;
-						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 2 + 1;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
 						posY = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
@@ -60,8 +60,8 @@ public class Avatar implements ViewComponent {
 				break;
 			}
 			case RIGHT: {
-				boolean changedDirection = (sprite.length() != "character/left".length() + 1 || !sprite.substring(0, "character/left".length()).equals("character/left") || !flip);
-				sprite = "character/left";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/left/") || !flip);
+				sprite = "character/player/left/";
 				flip = true;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -74,7 +74,7 @@ public class Avatar implements ViewComponent {
 					double unclipped = posX + VELOCITY * tDelta, endAt;
 					if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posX + 1))) {
 						posX = unclipped;
-						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 2 + 1;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
 						posX = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
@@ -85,8 +85,8 @@ public class Avatar implements ViewComponent {
 				break;
 			}
 			case DOWN: {
-				boolean changedDirection = (sprite.length() != "character/down".length() + 1 || !sprite.substring(0, "character/down".length()).equals("character/down") || flip);
-				sprite = "character/down";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/down/") || flip);
+				sprite = "character/player/down/";
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -99,7 +99,7 @@ public class Avatar implements ViewComponent {
 					double unclipped = posY - VELOCITY * tDelta, endAt;
 					if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posY - 1))) {
 						posY = unclipped;
-						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 2 + 1;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
 						posY = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
@@ -110,8 +110,8 @@ public class Avatar implements ViewComponent {
 				break;
 			}
 			case LEFT: {
-				boolean changedDirection = (sprite.length() != "character/left".length() + 1 || !sprite.substring(0, "character/left".length()).equals("character/left") || flip);
-				sprite = "character/left";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/left/") || flip);
+				sprite = "character/player/left/";
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -124,7 +124,7 @@ public class Avatar implements ViewComponent {
 					double unclipped = posX - VELOCITY * tDelta, endAt;
 					if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posX - 1))) {
 						posX = unclipped;
-						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 2 + 1;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
 						posX = endAt;
 						dirInProgress = DirectionalPad.State.NONE;

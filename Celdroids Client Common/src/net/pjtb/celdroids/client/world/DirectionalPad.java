@@ -38,11 +38,11 @@ public class DirectionalPad implements ViewComponent {
 		} else {
 			int dpadX = ControllerHelper.getCursorX() - 960;
 			int dpadY = ControllerHelper.getCursorY() - 200;
-			boolean inBounds = (dpadX >= 0 && dpadY >= 0 && dpadX < 320 && dpadY < 320 && (dpadX < 121 || dpadX > 199 || dpadY < 121 || dpadY > 199));
+			boolean inBounds = (dpadX >= 0 && dpadY >= 0 && dpadX < 320 && dpadY < 320);
 			if (!wasDown)
 				target = inBounds;
 
-			if (inBounds && target) {
+			if (target && inBounds && (dpadX < 121 || dpadX > 199 || dpadY < 121 || dpadY > 199)) {
 				if (dpadX > dpadY) {
 					if (320 - dpadX > dpadY)
 						state = State.DOWN;
@@ -65,19 +65,19 @@ public class DirectionalPad implements ViewComponent {
 		Sprite s;
 		switch (state) {
 			case UP:
-				s = model.sprites.get("arrowKeyHeld");
+				s = model.sprites.get("ui/worldScene/heldArrow");
 				s.setBounds(960, 399, 320, 121);
 				s.draw(batch);
 				break;
 			case RIGHT:
-				s = model.sprites.get("arrowKeyHeld");
+				s = model.sprites.get("ui/worldScene/heldArrow");
 				s.setBounds(1159, 200, 121, 320);
 				s.rotate90(true);
 				s.draw(batch);
 				s.rotate90(false);
 				break;
 			case DOWN:
-				s = model.sprites.get("arrowKeyHeld");
+				s = model.sprites.get("ui/worldScene/heldArrow");
 				s.setBounds(960, 200, 320, 121);
 				s.rotate90(true);
 				s.rotate90(true);
@@ -86,7 +86,7 @@ public class DirectionalPad implements ViewComponent {
 				s.rotate90(true);
 				break;
 			case LEFT:
-				s = model.sprites.get("arrowKeyHeld");
+				s = model.sprites.get("ui/worldScene/heldArrow");
 				s.setBounds(960, 200, 121, 320);
 				s.rotate90(true);
 				s.rotate90(true);

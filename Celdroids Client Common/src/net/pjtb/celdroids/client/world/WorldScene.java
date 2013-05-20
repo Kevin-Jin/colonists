@@ -72,11 +72,12 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		Sprite s = model.parent.sprites.get("worldControls");
+		//draw map
+		model.avatar.draw(batch);
+		Sprite s = model.parent.sprites.get("ui/worldScene/controlBar");
 		s.setBounds(960, 0, 320, 720);
 		s.draw(batch);
 		model.dpad.draw(batch);
-		model.avatar.draw(batch);
 		if (subScene != null)
 			subScene.draw(batch);
 	}
