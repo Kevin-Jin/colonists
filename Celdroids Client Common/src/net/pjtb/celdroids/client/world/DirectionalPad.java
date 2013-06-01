@@ -65,19 +65,19 @@ public class DirectionalPad implements ViewComponent {
 		Sprite s;
 		switch (state) {
 			case UP:
-				s = model.sprites.get("ui/worldScene/heldArrow");
+				s = model.sprites.get("ui/worldScene/selectedArrow");
 				s.setBounds(960, 399, 320, 121);
 				s.draw(batch);
 				break;
 			case RIGHT:
-				s = model.sprites.get("ui/worldScene/heldArrow");
+				s = model.sprites.get("ui/worldScene/selectedArrow");
 				s.setBounds(1159, 200, 121, 320);
 				s.rotate90(true);
 				s.draw(batch);
 				s.rotate90(false);
 				break;
 			case DOWN:
-				s = model.sprites.get("ui/worldScene/heldArrow");
+				s = model.sprites.get("ui/worldScene/selectedArrow");
 				s.setBounds(960, 200, 320, 121);
 				s.rotate90(true);
 				s.rotate90(true);
@@ -86,7 +86,7 @@ public class DirectionalPad implements ViewComponent {
 				s.rotate90(true);
 				break;
 			case LEFT:
-				s = model.sprites.get("ui/worldScene/heldArrow");
+				s = model.sprites.get("ui/worldScene/selectedArrow");
 				s.setBounds(960, 200, 121, 320);
 				s.rotate90(true);
 				s.rotate90(true);

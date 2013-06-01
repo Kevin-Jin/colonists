@@ -6,8 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import net.pjtb.celdroids.client.ViewComponent;
 
 public class Avatar implements ViewComponent {
-	private static final float VELOCITY = 5; //tiles per second
-	private static final float ANIMATION_FREQUENCY = 6; //walking animation, in frames per second
+	private static final float VELOCITY = 3; //tiles per second
+	private static final float ANIMATION_FREQUENCY = 7; //walking animation, in frames per second
 	private static final float CHANGE_DIRECTION_DELAY = 0.25f; //in seconds
 
 	private final WorldModel model;
@@ -142,13 +142,9 @@ public class Avatar implements ViewComponent {
 	@Override
 	public void draw(SpriteBatch batch) {
 		Sprite s = model.parent.sprites.get(sprite);
-		for (int i = 0; i < 16; i++) {
-			for (int j = 0; j < 12; j++) {
-				s.setBounds(i * 60 + (int) (posX * 60), j * 60 + (int) (posY * 60), 60, 60);
-				if (s.isFlipX() != flip)
-					s.flip(true, false);
-				s.draw(batch);
-			}
-		}
+		s.setBounds((int) (posX * 60), (int) (posY * 60), 60, 60);
+		if (s.isFlipX() != flip)
+			s.flip(true, false);
+		s.draw(batch);
 	}
 }

@@ -1,4 +1,4 @@
-package net.pjtb.celdroids.client.android.mainmenu.wifidirect;
+package net.pjtb.celdroids.client.android.menu.wifidirect;
 
 import java.net.InetSocketAddress;
 

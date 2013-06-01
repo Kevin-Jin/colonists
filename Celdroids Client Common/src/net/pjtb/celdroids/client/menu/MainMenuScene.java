@@ -20,8 +20,9 @@ public class MainMenuScene implements Scene {
 	private final Model model;
 
 	protected final Map<MainMenuSubSceneType, Scene> subScenes;
-	protected final List<Button> buttons;
 	protected Scene subScene;
+
+	protected final List<Button> buttons;
 
 	public MainMenuScene(Model m) {
 		this.model = m;

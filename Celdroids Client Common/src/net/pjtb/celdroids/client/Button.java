@@ -6,19 +6,21 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.NumberUtils;
 
 public class Button implements ViewComponent {
 	private final Model model;
 
-	private final String text;
-	private final Runnable callback;
+	public String text;
+	public Runnable callback;
 	private final int x, y, width, height;
 	private final String inactiveSprite, activeSprite;
+	private final float tint;
 	private boolean down, pressed, target;
 
 	public boolean hidden;
 
-	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite) {
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA) {
 		this.model = model;
 
 		this.text = text;
@@ -29,10 +31,12 @@ public class Button implements ViewComponent {
 		this.height = height;
 		this.inactiveSprite = inactiveSprite;
 		this.activeSprite = activeSprite;
+
+		tint = NumberUtils.intToFloatColor(tintA << 24 | tintB << 16 | tintG << 8 | tintR);
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height) {
-		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed");
+		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255);
 	}
 
 	@Override
@@ -65,9 +69,12 @@ public class Button implements ViewComponent {
 		else
 			s = model.sprites.get(inactiveSprite);
 		s.setBounds(x, y, width, height);
-		BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
+		s.setColor(tint);
 		s.draw(batch);
-		TextBounds bnds = fnt.getBounds(text);
-		fnt.draw(batch, text, x + (width - bnds.width) / 2, y + (height + bnds.height) / 2);
+		if (text != null) {
+			BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
+			TextBounds bnds = fnt.getBounds(text);
+			fnt.draw(batch, text, x + (width - bnds.width) / 2, y + (height + bnds.height) / 2);
+		}
 	}
 }

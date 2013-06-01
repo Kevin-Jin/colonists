@@ -19,14 +19,14 @@ character/player/down/2
   index: -1
 character/player/down/1
   rotate: false
-  xy: 453, 846
+  xy: 711, 976
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/down/3
   rotate: false
-  xy: 259, 99
+  xy: 291, 131
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -47,42 +47,49 @@ character/player/left/2
   index: -1
 character/player/left/1
   rotate: false
-  xy: 711, 976
+  xy: 33, 1
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/left/3
   rotate: false
-  xy: 291, 131
+  xy: 323, 132
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/up/0
   rotate: false
-  xy: 323, 716
+  xy: 453, 846
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/up/2
   rotate: false
-  xy: 323, 716
+  xy: 453, 846
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/up/1
   rotate: false
-  xy: 33, 1
+  xy: 259, 99
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/player/up/3
   rotate: false
-  xy: 323, 684
+  xy: 453, 814
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+environment/grass1
+  rotate: false
+  xy: 485, 846
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -115,6 +122,13 @@ ui/button/regular
   orig: 256, 128
   offset: 0, 0
   index: -1
+ui/worldScene/back
+  rotate: false
+  xy: 323, 602
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
 ui/worldScene/controlBar
   rotate: false
   xy: 1, 286
@@ -122,10 +136,31 @@ ui/worldScene/controlBar
   orig: 320, 720
   offset: 0, 0
   index: -1
-ui/worldScene/heldArrow
+ui/worldScene/more
+  rotate: false
+  xy: 323, 456
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedArrow
   rotate: false
   xy: 1, 163
   size: 320, 121
   orig: 320, 121
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedBack
+  rotate: false
+  xy: 323, 310
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedMore
+  rotate: false
+  xy: 323, 164
+  size: 108, 144
+  orig: 108, 144
   offset: 0, 0
   index: -1

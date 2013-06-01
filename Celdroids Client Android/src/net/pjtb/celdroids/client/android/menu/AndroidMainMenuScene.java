@@ -2,8 +2,8 @@ package net.pjtb.celdroids.client.android.menu;
 
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.android.AndroidModel;
-import net.pjtb.celdroids.client.android.mainmenu.wifidirect.WifiDirectModel;
-import net.pjtb.celdroids.client.android.mainmenu.wifidirect.WifiDirectSelectionScene;
+import net.pjtb.celdroids.client.android.menu.wifidirect.WifiDirectModel;
+import net.pjtb.celdroids.client.android.menu.wifidirect.WifiDirectSelectionScene;
 import net.pjtb.celdroids.client.menu.MainMenuScene;
 
 public class AndroidMainMenuScene extends MainMenuScene {
