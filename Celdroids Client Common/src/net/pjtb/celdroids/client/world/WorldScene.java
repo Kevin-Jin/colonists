@@ -3,6 +3,7 @@ package net.pjtb.celdroids.client.world;
 import java.util.EnumMap;
 import java.util.Map;
 
+import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.SpriteCache;
 
 public class WorldScene implements Scene {
 	public enum WorldSubSceneType { IN_GAME_MENU }
@@ -22,6 +24,9 @@ public class WorldScene implements Scene {
 	private Scene subScene;
 
 	private final Button backButton, menuButton;
+
+	private SpriteCache staticTiles;
+	private int staticTilesCacheId;
 
 	public WorldScene(Model m) {
 		this.model = new WorldModel(m);
@@ -34,18 +39,29 @@ public class WorldScene implements Scene {
 			public void run() {
 				confirmBack();
 			}
-		}, 1172, 576, 108, 144, "ui/worldScene/back", "ui/worldScene/selectedBack", 255, 255, 255, 255);
+		}, 1172, 576, 108, 144, "ui/worldScene/back", "ui/worldScene/selectedBack", 255, 255, 255, 255, -1, -1, -1, -1);
 		menuButton = new Button(m, null, new Runnable() {
 			@Override
 			public void run() {
 				openPopupMenu();
 			}
-		}, 1172, 0, 108, 144, "ui/worldScene/more", "ui/worldScene/selectedMore", 255, 255, 255, 255);
+		}, 1172, 0, 108, 144, "ui/worldScene/more", "ui/worldScene/selectedMore", 255, 255, 255, 255, -1, -1, -1, -1);
 	}
 
 	@Override
 	public void swappedIn(boolean transition) {
 		Gdx.gl10.glClearColor(1f, 1f, 1f, 1);
+
+		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
+		staticTiles.beginCache();
+		Sprite s = model.parent.sprites.get("environment/grass1");
+		for (int i = 0; i < model.mapBoundsColumns; i++) {
+			for (int j = 0; j < model.mapBoundsRows; j++) {
+				s.setBounds(i * WorldModel.TILE_SIZE, j * WorldModel.TILE_SIZE, WorldModel.TILE_SIZE, WorldModel.TILE_SIZE);
+				staticTiles.add(s);
+			}
+		}
+		staticTilesCacheId = staticTiles.endCache();
 	}
 
 	@Override
@@ -89,6 +105,8 @@ public class WorldScene implements Scene {
 		model.updateActionButtonBehavior();
 		if (model.actionButton.text != null)
 			model.actionButton.update(tDelta);
+		model.cam.position.set(model.avatar.getScreenX(), model.avatar.getScreenY(), 1);
+		model.cam.update();
 
 		if (subScene == null) {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
@@ -103,23 +121,27 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		Sprite s = model.parent.sprites.get("environment/grass1");
-		for (int i = 0; i < 16; i++) {
-			for (int j = 0; j < 12; j++) {
-				s.setBounds(i * 60, j * 60, 60, 60);
-				s.draw(batch);
-			}
-		}
-		//draw map
+		batch.end();
+		staticTiles.begin();
+		model.cam.apply(Gdx.gl10);
+		staticTiles.draw(staticTilesCacheId);
+		staticTiles.end();
+		batch.begin();
+		model.cam.apply(Gdx.gl10);
+		//TODO: draw NPCs, animated tiles
 		model.avatar.draw(batch);
+		batch.end();
+		batch.begin();
+
 		if (model.actionButton.text != null)
 			model.actionButton.draw(batch);
-		s = model.parent.sprites.get("ui/worldScene/controlBar");
-		s.setBounds(960, 0, 320, 720);
+		Sprite s = model.parent.sprites.get("ui/worldScene/controlBar");
+		s.setBounds(960, 0, WorldModel.CONTROL_VIEW_WIDTH, Constants.HEIGHT);
 		s.draw(batch);
 		model.dpad.draw(batch);
 		menuButton.draw(batch);
 		backButton.draw(batch);
+
 		if (subScene != null)
 			subScene.draw(batch);
 	}

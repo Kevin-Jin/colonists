@@ -20,8 +20,10 @@ public class Avatar implements Entity {
 
 	private boolean collided;
 
-	public Avatar(WorldModel model) {
+	public Avatar(WorldModel model, int posX, int posY) {
 		this.model = model;
+		this.posX = posX;
+		this.posY = posY;
 
 		dirInProgress = DirectionalPad.State.NONE;
 		sprite = "character/player/down/0";
@@ -214,7 +216,7 @@ public class Avatar implements Entity {
 
 	private boolean collision(double posXfinal, double posYfinal) {
 		Coordinate loc = getNextLocation(posXfinal, posYfinal);
-		if (loc.row < 0 || loc.col < 0 || loc.row >= WorldModel.HEIGHT || loc.col >= WorldModel.WIDTH)
+		if (loc.row < 0 || loc.col < 0 || loc.row >= model.mapBoundsRows || loc.col >= model.mapBoundsColumns)
 			return true;
 		Entity ent = model.grid[loc.row][loc.col];
 		return (ent != null && ent != this);
@@ -240,10 +242,18 @@ public class Avatar implements Entity {
 		}
 	}
 
+	public float getScreenX() {
+		return (float) (posX * WorldModel.TILE_SIZE) + (WorldModel.CONTROL_VIEW_WIDTH + WorldModel.TILE_SIZE) / 2;
+	}
+
+	public float getScreenY() {
+		return (float) (posY * WorldModel.TILE_SIZE) + WorldModel.TILE_SIZE / 2;
+	}
+
 	@Override
 	public void draw(SpriteBatch batch) {
 		Sprite s = model.parent.sprites.get(sprite);
-		s.setBounds((int) (posX * 60), (int) (posY * 60), 60, 60);
+		s.setBounds((float) (posX * WorldModel.TILE_SIZE), (float) (posY * WorldModel.TILE_SIZE), WorldModel.TILE_SIZE, WorldModel.TILE_SIZE);
 		if (s.isFlipX() != flip)
 			s.flip(true, false);
 		s.draw(batch);

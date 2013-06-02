@@ -1,28 +1,36 @@
 package net.pjtb.celdroids.client.world;
 
+import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
+
 public class WorldModel {
-	public static final int WIDTH = 16, HEIGHT = 12;
+	public static final int MAP_VIEW_COLUMNS = 16, MAP_VIEW_ROWS = 12, TILE_SIZE = 60, MAP_VIEW_WIDTH = MAP_VIEW_COLUMNS * TILE_SIZE, CONTROL_VIEW_WIDTH = Constants.WIDTH - MAP_VIEW_WIDTH;
 
 	public final Model parent;
 	public final DirectionalPad dpad;
 	public final Avatar avatar;
 
+	public int mapBoundsColumns, mapBoundsRows;
 	public final Entity[][] grid;
 
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
 
+	public final OrthographicCamera cam;
+
 	public WorldModel(Model model) {
 		this.parent = model;
 		dpad = new DirectionalPad(model);
-		avatar = new Avatar(this);
+		avatar = new Avatar(this, 7, 6);
 
-		grid = new Entity[HEIGHT][WIDTH];
-		grid[0][0] = avatar;
-		grid[0][1] = new NonplayableCharacter();
+		mapBoundsColumns = MAP_VIEW_COLUMNS;
+		mapBoundsRows = MAP_VIEW_ROWS;
+		grid = new Entity[mapBoundsRows][mapBoundsColumns];
+		grid[6][7] = avatar;
+		grid[5][7] = new NonplayableCharacter();
 
 		BATTLE_BUTTON = new Runnable() {
 			@Override
@@ -32,11 +40,13 @@ public class WorldModel {
 				parent.scene.swappedIn(false);
 			}
 		};
-		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127);
+		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);
+
+		cam = new OrthographicCamera(Constants.WIDTH, Constants.HEIGHT);
 	}
 
 	public Entity getEntity(Coordinate loc) {
-		if (loc.row < 0 || loc.col < 0 || loc.row >= HEIGHT || loc.col >= WIDTH)
+		if (loc.row < 0 || loc.col < 0 || loc.row >= mapBoundsRows || loc.col >= mapBoundsColumns)
 			return null;
 		return grid[loc.row][loc.col];
 	}

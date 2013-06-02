@@ -15,12 +15,12 @@ public class Button implements ViewComponent {
 	public Runnable callback;
 	private final int x, y, width, height;
 	private final String inactiveSprite, activeSprite;
-	private final float tint;
+	private final float tint, fontTint;
 	private boolean down, pressed, target;
 
 	public boolean hidden;
 
-	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA) {
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA) {
 		this.model = model;
 
 		this.text = text;
@@ -33,10 +33,11 @@ public class Button implements ViewComponent {
 		this.activeSprite = activeSprite;
 
 		tint = NumberUtils.intToFloatColor(tintA << 24 | tintB << 16 | tintG << 8 | tintR);
+		fontTint = NumberUtils.intToFloatColor(fontA << 24 | fontB << 16 | fontG << 8 | fontR);
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height) {
-		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255);
+		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255, 191, 191, 191, 255);
 	}
 
 	@Override
@@ -74,6 +75,7 @@ public class Button implements ViewComponent {
 		if (text != null) {
 			BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
 			TextBounds bnds = fnt.getBounds(text);
+			fnt.setColor(fontTint);
 			fnt.draw(batch, text, x + (width - bnds.width) / 2, y + (height + bnds.height) / 2);
 		}
 	}
