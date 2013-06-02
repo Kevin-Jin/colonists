@@ -1,11 +1,10 @@
+
 package net.pjtb.celdroids.client.world;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import net.pjtb.celdroids.client.ViewComponent;
-
-public class Avatar implements ViewComponent {
+public class Avatar implements Entity {
 	private static final float VELOCITY = 3; //tiles per second
 	private static final float ANIMATION_FREQUENCY = 7; //walking animation, in frames per second
 	private static final float CHANGE_DIRECTION_DELAY = 0.25f; //in seconds
@@ -18,6 +17,8 @@ public class Avatar implements ViewComponent {
 	private boolean flip;
 	private double timeSinceStart;
 	private long stillTimeEnd;
+
+	private boolean collided;
 
 	public Avatar(WorldModel model) {
 		this.model = model;
@@ -33,6 +34,24 @@ public class Avatar implements ViewComponent {
 		else
 			timeSinceStart += tDelta;
 
+		if (collided) {
+			if (dirInProgress == DirectionalPad.State.NONE) {
+				timeSinceStart = 0;
+				sprite = sprite.substring(0, sprite.lastIndexOf('/') + 1) + "0";
+			} else {
+				//make sure stillTimeEnd will not get messed when changing direction after a collision
+				String direction = sprite.substring("character/player/".length(), sprite.lastIndexOf('/'));
+				if (direction.equals("left") && !flip && dirInProgress == DirectionalPad.State.LEFT
+						|| direction.equals("left") && flip && dirInProgress == DirectionalPad.State.RIGHT
+						|| direction.equals("up") && dirInProgress == DirectionalPad.State.UP
+						|| direction.equals("down") && dirInProgress == DirectionalPad.State.DOWN)
+					timeSinceStart += tDelta;
+				else
+					timeSinceStart = 0;
+			}
+			collided = false;
+		}
+
 		switch (dirInProgress) {
 			case UP: {
 				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/up/") || flip);
@@ -47,10 +66,19 @@ public class Avatar implements ViewComponent {
 					sprite += "0";
 				} else {
 					double unclipped = posY + VELOCITY * tDelta, endAt;
-					if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posY + 1))) {
+					collided = collision(posX, unclipped);
+					if (collided) {
+						endAt = Math.ceil(posY);
+						updateAvatarInGrid(posX, endAt);
+						posY = endAt;
+						dirInProgress = DirectionalPad.State.NONE;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
+					} else if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posY + 1))) {
+						updateAvatarInGrid(posX, unclipped);
 						posY = unclipped;
 						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
+						updateAvatarInGrid(posX, endAt);
 						posY = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
 						timeSinceStart = 0;
@@ -72,10 +100,19 @@ public class Avatar implements ViewComponent {
 					sprite += "0";
 				} else {
 					double unclipped = posX + VELOCITY * tDelta, endAt;
-					if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posX + 1))) {
+					collided = collision(unclipped, posY);
+					if (collided) {
+						endAt = Math.ceil(posX);
+						updateAvatarInGrid(endAt, posY);
+						posX = endAt;
+						dirInProgress = DirectionalPad.State.NONE;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
+					} else if (dirInProgress == model.dpad.state || unclipped < (endAt = Math.floor(posX + 1))) {
+						updateAvatarInGrid(unclipped, posY);
 						posX = unclipped;
 						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
+						updateAvatarInGrid(endAt, posY);
 						posX = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
 						timeSinceStart = 0;
@@ -97,10 +134,19 @@ public class Avatar implements ViewComponent {
 					sprite += "0";
 				} else {
 					double unclipped = posY - VELOCITY * tDelta, endAt;
-					if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posY - 1))) {
+					collided = collision(posX, unclipped);
+					if (collided) {
+						endAt = Math.floor(posY);
+						updateAvatarInGrid(posX, endAt);
+						posY = endAt;
+						dirInProgress = DirectionalPad.State.NONE;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
+					} else if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posY - 1))) {
+						updateAvatarInGrid(posX, unclipped);
 						posY = unclipped;
 						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
+						updateAvatarInGrid(posX, endAt);
 						posY = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
 						timeSinceStart = 0;
@@ -122,10 +168,19 @@ public class Avatar implements ViewComponent {
 					sprite += "0";
 				} else {
 					double unclipped = posX - VELOCITY * tDelta, endAt;
-					if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posX - 1))) {
+					collided = collision(unclipped, posY);
+					if (collided) {
+						endAt = Math.floor(posX);
+						updateAvatarInGrid(endAt, posY);
+						posX = endAt;
+						dirInProgress = DirectionalPad.State.NONE;
+						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
+					} else if (dirInProgress == model.dpad.state || unclipped > (endAt = Math.ceil(posX - 1))) {
+						updateAvatarInGrid(unclipped, posY);
 						posX = unclipped;
 						sprite += (int) (timeSinceStart * ANIMATION_FREQUENCY) % 4;
 					} else {
+						updateAvatarInGrid(endAt, posY);
 						posX = endAt;
 						dirInProgress = DirectionalPad.State.NONE;
 						timeSinceStart = 0;
@@ -136,6 +191,52 @@ public class Avatar implements ViewComponent {
 			}
 			case NONE:
 				break;
+		}
+	}
+
+	public boolean isStationary() {
+		return dirInProgress == DirectionalPad.State.NONE;
+	}
+
+	private Coordinate getNextLocation(double posX, double posY) {
+		String direction = sprite.substring("character/player/".length(), sprite.lastIndexOf('/'));
+		if (direction.equals("left"))
+			if (flip)
+				return new Coordinate((int) Math.floor(posX + 1), (int) posY);
+			else
+				return new Coordinate((int) Math.ceil(posX - 1), (int) posY);
+		if (direction.equals("up"))
+			return new Coordinate((int) posX, (int) Math.floor(posY + 1));
+		if (direction.equals("down"))
+			return new Coordinate((int) posX, (int) Math.ceil(posY - 1));
+		return null;
+	}
+
+	private boolean collision(double posXfinal, double posYfinal) {
+		Coordinate loc = getNextLocation(posXfinal, posYfinal);
+		if (loc.row < 0 || loc.col < 0 || loc.row >= WorldModel.HEIGHT || loc.col >= WorldModel.WIDTH)
+			return true;
+		Entity ent = model.grid[loc.row][loc.col];
+		return (ent != null && ent != this);
+	}
+
+	public Coordinate getNextLocation() {
+		return getNextLocation(posX, posY);
+	}
+
+	private void updateAvatarInGrid(double posXfinal, double posYfinal) {
+		if (posX == posXfinal) {
+			int indexX = (int) posX;
+			model.grid[(int) Math.ceil(posY)][indexX] = null;
+			model.grid[(int) Math.floor(posY)][indexX] = null;
+			model.grid[(int) Math.ceil(posYfinal)][indexX] = this;
+			model.grid[(int) Math.floor(posYfinal)][indexX] = this;
+		} else if (posY == posYfinal) {
+			int indexY = (int) posY;
+			model.grid[indexY][(int) Math.ceil(posX)] = null;
+			model.grid[indexY][(int) Math.floor(posX)] = null;
+			model.grid[indexY][(int) Math.ceil(posXfinal)] = this;
+			model.grid[indexY][(int) Math.floor(posXfinal)] = this;
 		}
 	}
 
