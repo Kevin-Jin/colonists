@@ -1,5 +1,8 @@
 package net.pjtb.celdroids.client.world;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
@@ -15,6 +18,7 @@ public class WorldModel {
 
 	public int mapBoundsColumns, mapBoundsRows;
 	public final Entity[][] grid;
+	public final List<Entity> animatedEntities;
 
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
@@ -30,7 +34,10 @@ public class WorldModel {
 		mapBoundsRows = MAP_VIEW_ROWS;
 		grid = new Entity[mapBoundsRows][mapBoundsColumns];
 		grid[6][7] = avatar;
-		grid[5][7] = new NonplayableCharacter();
+		grid[5][7] = new NonplayableCharacter(this, 7, 5);
+		animatedEntities = new ArrayList<Entity>();
+		animatedEntities.add(avatar);
+		animatedEntities.add(grid[5][7]);
 
 		BATTLE_BUTTON = new Runnable() {
 			@Override

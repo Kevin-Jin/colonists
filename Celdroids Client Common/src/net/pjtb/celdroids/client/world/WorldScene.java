@@ -96,7 +96,8 @@ public class WorldScene implements Scene {
 		menuButton.update(tDelta);
 		model.dpad.hidden = (subScene != null);
 		model.dpad.update(tDelta);
-		model.avatar.update(tDelta);
+		for (Entity ent : model.animatedEntities)
+			ent.update(tDelta);
 		model.updateActionButtonBehavior();
 		if (model.actionButton.text != null)
 			model.actionButton.update(tDelta);
@@ -123,8 +124,8 @@ public class WorldScene implements Scene {
 		staticTiles.end();
 		batch.begin();
 		model.cam.apply(Gdx.gl10);
-		//TODO: draw NPCs, animated tiles
-		model.avatar.draw(batch);
+		for (Entity ent : model.animatedEntities)
+			ent.draw(batch);
 		batch.end();
 		batch.begin();
 

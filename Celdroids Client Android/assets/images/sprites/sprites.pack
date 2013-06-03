@@ -26,14 +26,14 @@ character/human1/down/2
   index: -1
 character/human1/down/1
   rotate: false
-  xy: 973, 961
+  xy: 417, 48
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/down/3
   rotate: false
-  xy: 417, 48
+  xy: 563, 88
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -54,14 +54,14 @@ character/human1/left/2
   index: -1
 character/human1/left/1
   rotate: false
-  xy: 563, 152
+  xy: 973, 929
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/left/3
   rotate: false
-  xy: 973, 929
+  xy: 595, 120
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -82,14 +82,98 @@ character/human1/up/2
   index: -1
 character/human1/up/1
   rotate: false
-  xy: 595, 184
+  xy: 563, 120
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/up/3
   rotate: false
-  xy: 563, 120
+  xy: 627, 152
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/down/0
+  rotate: false
+  xy: 973, 961
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/down/2
+  rotate: false
+  xy: 973, 961
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/down/1
+  rotate: false
+  xy: 595, 152
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/down/3
+  rotate: false
+  xy: 973, 865
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/left/0
+  rotate: false
+  xy: 563, 152
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/left/2
+  rotate: false
+  xy: 563, 152
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/left/1
+  rotate: false
+  xy: 627, 184
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/left/3
+  rotate: false
+  xy: 563, 56
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/up/0
+  rotate: false
+  xy: 595, 184
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/up/2
+  rotate: false
+  xy: 595, 184
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/up/1
+  rotate: false
+  xy: 973, 897
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+character/human2/up/3
+  rotate: false
+  xy: 595, 88
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -103,14 +187,14 @@ environment/building/greenRoof
   index: -1
 environment/grass1
   rotate: false
-  xy: 595, 152
+  xy: 627, 120
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 environment/redBricks
   rotate: false
-  xy: 627, 184
+  xy: 973, 833
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
