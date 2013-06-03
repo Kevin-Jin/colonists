@@ -21,8 +21,8 @@ public class SceneFactory {
 		return new WorldScene(model);
 	}
 
-	public BattleScene makeBattleScene() {
-		return new BattleScene();
+	public BattleScene makeBattleScene(Model model) {
+		return new BattleScene(model);
 	}
 
 	public Map<Model.SceneType, Scene> additionalScenes() {

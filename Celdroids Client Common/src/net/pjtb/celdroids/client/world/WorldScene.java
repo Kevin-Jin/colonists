@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
+import net.pjtb.celdroids.client.ConfirmPopupScene;
 import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
 import net.pjtb.celdroids.client.world.menu.InGameMenuScene;
@@ -16,7 +17,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
 
 public class WorldScene implements Scene {
-	public enum WorldSubSceneType { IN_GAME_MENU }
+	public enum WorldSubSceneType { IN_GAME_MENU, CONFIRM_FLEE_POPUP }
 
 	private final WorldModel model;
 
@@ -33,6 +34,7 @@ public class WorldScene implements Scene {
 
 		subScenes = new EnumMap<WorldSubSceneType, Scene>(WorldSubSceneType.class);
 		subScenes.put(WorldSubSceneType.IN_GAME_MENU, new InGameMenuScene(m, this));
+		subScenes.put(WorldSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m, "Are you sure you want to return to the menu?", Model.SceneType.MAIN_MENU));
 
 		backButton = new Button(m, null, new Runnable() {
 			@Override
@@ -77,20 +79,13 @@ public class WorldScene implements Scene {
 	}
 
 	private void confirmBack() {
-		//TODO: show a confirmation
-		model.parent.scene.swappedOut(true);
-		model.parent.scene = model.parent.scenes.get(Model.SceneType.MAIN_MENU);
-		model.parent.scene.swappedIn(false);
+		subScene = subScenes.get(WorldSubSceneType.CONFIRM_FLEE_POPUP);
+		subScene.swappedIn(true);
 	}
 
 	private void openPopupMenu() {
-		if (subScene != null) {
-			subScene.swappedOut(false);
-			subScene = null;
-		} else {
-			subScene = subScenes.get(WorldSubSceneType.IN_GAME_MENU);
-			subScene.swappedIn(false);
-		}
+		subScene = subScenes.get(WorldSubSceneType.IN_GAME_MENU);
+		subScene.swappedIn(true);
 	}
 
 	@Override

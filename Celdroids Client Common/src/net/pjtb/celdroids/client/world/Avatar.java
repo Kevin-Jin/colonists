@@ -11,6 +11,8 @@ public class Avatar implements Entity {
 
 	private final WorldModel model;
 
+	private final String spritePathPrefix;
+
 	private DirectionalPad.State dirInProgress;
 	private double posX, posY;
 	private String sprite;
@@ -25,8 +27,9 @@ public class Avatar implements Entity {
 		this.posX = posX;
 		this.posY = posY;
 
+		spritePathPrefix = "character/human1/";
 		dirInProgress = DirectionalPad.State.NONE;
-		sprite = "character/player/down/0";
+		sprite = spritePathPrefix + "down/0";
 	}
 
 	@Override
@@ -42,7 +45,7 @@ public class Avatar implements Entity {
 				sprite = sprite.substring(0, sprite.lastIndexOf('/') + 1) + "0";
 			} else {
 				//make sure stillTimeEnd will not get messed when changing direction after a collision
-				String direction = sprite.substring("character/player/".length(), sprite.lastIndexOf('/'));
+				String direction = sprite.substring(spritePathPrefix.length(), sprite.lastIndexOf('/'));
 				if (direction.equals("left") && !flip && dirInProgress == DirectionalPad.State.LEFT
 						|| direction.equals("left") && flip && dirInProgress == DirectionalPad.State.RIGHT
 						|| direction.equals("up") && dirInProgress == DirectionalPad.State.UP
@@ -56,8 +59,9 @@ public class Avatar implements Entity {
 
 		switch (dirInProgress) {
 			case UP: {
-				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/up/") || flip);
-				sprite = "character/player/up/";
+				String spritePath = spritePathPrefix + "up/";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals(spritePath) || flip);
+				sprite = spritePath;
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -90,8 +94,9 @@ public class Avatar implements Entity {
 				break;
 			}
 			case RIGHT: {
-				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/left/") || !flip);
-				sprite = "character/player/left/";
+				String spritePath = spritePathPrefix + "left/";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals(spritePath) || !flip);
+				sprite = spritePath;
 				flip = true;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -124,8 +129,9 @@ public class Avatar implements Entity {
 				break;
 			}
 			case DOWN: {
-				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/down/") || flip);
-				sprite = "character/player/down/";
+				String spritePath = spritePathPrefix + "down/";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals(spritePath) || flip);
+				sprite = spritePath;
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -158,8 +164,9 @@ public class Avatar implements Entity {
 				break;
 			}
 			case LEFT: {
-				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals("character/player/left/") || flip);
-				sprite = "character/player/left/";
+				String spritePath = spritePathPrefix + "left/";
+				boolean changedDirection = (!sprite.substring(0, sprite.lastIndexOf('/') + 1).equals(spritePath) || flip);
+				sprite = spritePath;
 				flip = false;
 				long now = System.currentTimeMillis();
 				if (changedDirection)
@@ -201,7 +208,7 @@ public class Avatar implements Entity {
 	}
 
 	private Coordinate getNextLocation(double posX, double posY) {
-		String direction = sprite.substring("character/player/".length(), sprite.lastIndexOf('/'));
+		String direction = sprite.substring(spritePathPrefix.length(), sprite.lastIndexOf('/'));
 		if (direction.equals("left"))
 			if (flip)
 				return new Coordinate((int) Math.floor(posX + 1), (int) posY);

@@ -3,163 +3,212 @@ sprites.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-character/player/down/0
+attack/bubble
   rotate: false
-  xy: 1, 1
+  xy: 645, 601
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+character/human1/down/0
+  rotate: false
+  xy: 973, 993
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/down/2
+character/human1/down/2
   rotate: false
-  xy: 1, 1
+  xy: 973, 993
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/down/1
+character/human1/down/1
   rotate: false
-  xy: 711, 976
+  xy: 973, 961
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/down/3
+character/human1/down/3
   rotate: false
-  xy: 291, 131
+  xy: 417, 48
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/left/0
+character/human1/left/0
   rotate: false
-  xy: 259, 131
+  xy: 563, 184
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/left/2
+character/human1/left/2
   rotate: false
-  xy: 259, 131
+  xy: 563, 184
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/left/1
+character/human1/left/1
   rotate: false
-  xy: 33, 1
+  xy: 563, 152
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/left/3
+character/human1/left/3
   rotate: false
-  xy: 323, 132
+  xy: 973, 929
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/up/0
+character/human1/up/0
   rotate: false
-  xy: 453, 846
+  xy: 385, 48
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/up/2
+character/human1/up/2
   rotate: false
-  xy: 453, 846
+  xy: 385, 48
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/up/1
+character/human1/up/1
   rotate: false
-  xy: 259, 99
+  xy: 595, 184
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
-character/player/up/3
+character/human1/up/3
   rotate: false
-  xy: 453, 814
+  xy: 563, 120
   size: 30, 30
   orig: 30, 30
+  offset: 0, 0
+  index: -1
+environment/building/greenRoof
+  rotate: false
+  xy: 563, 216
+  size: 120, 90
+  orig: 120, 90
   offset: 0, 0
   index: -1
 environment/grass1
   rotate: false
-  xy: 485, 846
+  xy: 595, 152
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+environment/redBricks
+  rotate: false
+  xy: 627, 184
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 monster/rock/evol1
   rotate: false
-  xy: 323, 748
+  xy: 323, 210
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 monster/rock/evol2
   rotate: false
-  xy: 581, 878
+  xy: 323, 80
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
+monster/water/evol1
+  rotate: false
+  xy: 323, 18
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+ui/battleScene/run
+  rotate: false
+  xy: 877, 577
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/battleScene/selectedRun
+  rotate: false
+  xy: 581, 308
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
 ui/button/pressed
   rotate: false
-  xy: 323, 878
+  xy: 323, 470
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 ui/button/regular
   rotate: false
-  xy: 1, 33
+  xy: 323, 340
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
+ui/popup/confirmBackground
+  rotate: false
+  xy: 1, 723
+  size: 970, 300
+  orig: 970, 300
+  offset: 0, 0
+  index: -1
 ui/worldScene/back
   rotate: false
-  xy: 323, 602
+  xy: 453, 194
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/controlBar
   rotate: false
-  xy: 1, 286
+  xy: 1, 1
   size: 320, 720
   orig: 320, 720
   offset: 0, 0
   index: -1
 ui/worldScene/more
   rotate: false
-  xy: 323, 456
+  xy: 767, 577
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/selectedArrow
   rotate: false
-  xy: 1, 163
+  xy: 323, 600
   size: 320, 121
   orig: 320, 121
   offset: 0, 0
   index: -1
 ui/worldScene/selectedBack
   rotate: false
-  xy: 323, 310
+  xy: 453, 48
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/selectedMore
   rotate: false
-  xy: 323, 164
+  xy: 581, 454
   size: 108, 144
   orig: 108, 144
   offset: 0, 0

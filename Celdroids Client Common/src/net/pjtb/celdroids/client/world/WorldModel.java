@@ -37,7 +37,7 @@ public class WorldModel {
 			public void run() {
 				parent.scene.swappedOut(true);
 				parent.scene = parent.scenes.get(Model.SceneType.BATTLE);
-				parent.scene.swappedIn(false);
+				parent.scene.swappedIn(true);
 			}
 		};
 		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);

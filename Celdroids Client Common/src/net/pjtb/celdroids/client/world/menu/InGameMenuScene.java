@@ -39,7 +39,8 @@ public class InGameMenuScene implements Scene {
 			swappedOut(true);
 			parentScene.setSubscene(null);
 		} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
-			
+			swappedOut(true);
+			parentScene.setSubscene(null);
 		}
 	}
 

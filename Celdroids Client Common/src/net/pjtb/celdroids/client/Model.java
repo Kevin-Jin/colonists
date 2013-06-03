@@ -47,7 +47,7 @@ public class Model {
 		scenes.put(SceneType.LOAD_SCREEN, sceneFactory.makeLoadingScene(this));
 		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene(this));
 		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(this));
-		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene());
+		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene(this));
 		scenes.putAll(sceneFactory.additionalScenes());
 		scene = scenes.get(SceneType.LOAD_SCREEN);
 	}
@@ -91,12 +91,12 @@ public class Model {
 		scene.swappedOut(true);
 		if (pausedScene != null) {
 			scene = pausedScene;
-			scene.swappedIn(false);
+			scene.swappedIn(true);
 			scene.resume();
 			pausedScene = null;
 		} else {
 			scene = scenes.get(SceneType.MAIN_MENU);
-			scene.swappedIn(false);
+			scene.swappedIn(true);
 		}
 	}
 

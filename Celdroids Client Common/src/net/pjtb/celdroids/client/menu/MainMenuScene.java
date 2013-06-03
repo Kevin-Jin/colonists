@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.pjtb.celdroids.client.Button;
+import net.pjtb.celdroids.client.ConfirmPopupScene;
 import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
 import net.pjtb.celdroids.client.menu.directconnect.DirectConnectSelectionScene;
@@ -15,7 +16,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuScene implements Scene {
-	public enum MainMenuSubSceneType { ROOT, DIRECT_IP_CONNECT, P2P_CONNECT }
+	public enum MainMenuSubSceneType { DIRECT_IP_CONNECT, P2P_CONNECT, CONFIRM_FLEE_POPUP }
 
 	private final Model model;
 
@@ -29,6 +30,7 @@ public class MainMenuScene implements Scene {
 
 		subScenes = new EnumMap<MainMenuSubSceneType, Scene>(MainMenuSubSceneType.class);
 		subScenes.put(MainMenuSubSceneType.DIRECT_IP_CONNECT, new DirectConnectSelectionScene());
+		subScenes.put(MainMenuSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m, "Are you sure you want to quit?", null));
 
 		buttons = new ArrayList<Button>();
 		buttons.add(new Button(m, "Local", new Runnable() {
@@ -36,7 +38,7 @@ public class MainMenuScene implements Scene {
 			public void run() {
 				model.scene.swappedOut(true);
 				model.scene = model.scenes.get(Model.SceneType.WORLD);
-				model.scene.swappedIn(false);
+				model.scene.swappedIn(true);
 			}
 		}, 10, 10, 256, 128));
 	}
@@ -67,8 +69,8 @@ public class MainMenuScene implements Scene {
 		}
 		if (subScene == null) {
 			if (model.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
-				//TODO: show a confirmation
-				Gdx.app.exit();
+				subScene = subScenes.get(MainMenuSubSceneType.CONFIRM_FLEE_POPUP);
+				subScene.swappedIn(true);
 			} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 				
 			}
