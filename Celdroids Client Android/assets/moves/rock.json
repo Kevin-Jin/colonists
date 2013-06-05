@@ -1,0 +1,9 @@
+{
+	name: "Rock",
+	spriteDirectory: "attack/rock",
+	frameCount: 5,
+	element: ["EARTH"],
+	damage: 20,
+	inflicts: ["WEAK"],
+	selfOrigin: false
+}

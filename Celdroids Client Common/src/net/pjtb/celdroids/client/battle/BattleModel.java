@@ -16,8 +16,13 @@ public class BattleModel {
 		this.parent = model;
 
 		this.party = new ArrayList<CeldroidMonster>();
-		party.add(new CeldroidMonster(new CeldroidProperties("Water", "monster/water/evol1"), null));
-		party.add(new CeldroidMonster(new CeldroidProperties("Rock", "monster/rock/evol1"), null));
+	}
+
+	public void updateParty() {
+		party.clear();
+		party.add(new CeldroidMonster(parent.assets.get("monsters/fire1.json", CeldroidProperties.class), null));
+		party.add(new CeldroidMonster(parent.assets.get("monsters/water1.json", CeldroidProperties.class), null));
+		party.add(new CeldroidMonster(parent.assets.get("monsters/rock1.json", CeldroidProperties.class), null));
 	}
 
 	public void swapPartyLead(int i) {

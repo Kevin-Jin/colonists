@@ -4,14 +4,21 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.badlogic.gdx.assets.AssetDescriptor;
+import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.SynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializer;
 
 public class Model {
 	public enum SceneType { LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE }
@@ -35,6 +42,54 @@ public class Model {
 		scene = EmptyScene.instance;
 		assets = new AssetManager();
 		sprites = new HashMap<String, Sprite>();
+
+		assets.setLoader(CeldroidBattleMove.class, new SynchronousAssetLoader<CeldroidBattleMove, AssetLoaderParameters<CeldroidBattleMove>>(new InternalFileHandleResolver()) {
+			private final Json json = new Json();
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public Array<AssetDescriptor> getDependencies(String fileName, AssetLoaderParameters<CeldroidBattleMove> parameter) {
+				return null;
+			}
+
+			@Override
+			public CeldroidBattleMove load(AssetManager assetManager, String fileName, AssetLoaderParameters<CeldroidBattleMove> parameter) {
+				return json.fromJson(CeldroidBattleMove.class, resolve(fileName));
+			}
+		});
+		assets.setLoader(CeldroidProperties.class, new SynchronousAssetLoader<CeldroidProperties, AssetLoaderParameters<CeldroidProperties>>(new InternalFileHandleResolver()) {
+			private final Json json = new Json();
+
+			{
+				json.setSerializer(CeldroidBattleMove.class, new Serializer<CeldroidBattleMove>() {
+					@SuppressWarnings("rawtypes")
+					@Override
+					public void write(Json json, CeldroidBattleMove object, Class knownType) {
+						throw new UnsupportedOperationException();
+					}
+
+					@SuppressWarnings("rawtypes")
+					@Override
+					public CeldroidBattleMove read(Json json, Object jsonData, Class type) {
+						CeldroidBattleMove move = assets.get(jsonData.toString());
+						if (move == null)
+							throw new NullPointerException();
+						return move;
+					}
+				});
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public Array<AssetDescriptor> getDependencies(String fileName, AssetLoaderParameters<CeldroidProperties> parameter) {
+				return null;
+			}
+
+			@Override
+			public CeldroidProperties load(AssetManager assetManager, String fileName, AssetLoaderParameters<CeldroidProperties> parameter) {
+				return json.fromJson(CeldroidProperties.class, resolve(fileName));
+			}
+		});
 	}
 
 	protected SceneFactory createSceneFactory() {
@@ -66,6 +121,12 @@ public class Model {
 		assets.load("images/sprites/sprites.pack", TextureAtlas.class);
 		assets.load("fonts/buttons.fnt", BitmapFont.class);
 		assets.load("images/backgrounds/titleScreen.png", Texture.class, param);
+		assets.load("moves/bubble.json", CeldroidBattleMove.class);
+		assets.load("moves/fire.json", CeldroidBattleMove.class);
+		assets.load("moves/rock.json", CeldroidBattleMove.class);
+		assets.load("monsters/fire1.json", CeldroidProperties.class);
+		assets.load("monsters/rock1.json", CeldroidProperties.class);
+		assets.load("monsters/water1.json", CeldroidProperties.class);
 		//TODO: load music using assets.load(..., Music.class),
 		//and sound effects using assets.load(..., Sound.class)
 	}

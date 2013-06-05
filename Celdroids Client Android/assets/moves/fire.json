@@ -1,0 +1,9 @@
+{
+	name: "Fire",
+	spriteDirectory: "attack/fire",
+	frameCount: 3,
+	element: ["FIRE"],
+	damage: 10,
+	inflicts: ["BURN"],
+	selfOrigin: true
+}

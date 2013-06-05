@@ -1,10 +1,12 @@
 package net.pjtb.celdroids.client.battle;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
+import net.pjtb.celdroids.client.CeldroidBattleMove;
 import net.pjtb.celdroids.client.CeldroidMonster;
 import net.pjtb.celdroids.client.ConfirmPopupScene;
 import net.pjtb.celdroids.client.Model;
@@ -13,9 +15,9 @@ import net.pjtb.celdroids.client.Scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class BattleScene implements Scene {
@@ -49,33 +51,6 @@ public class BattleScene implements Scene {
 		partySwitcher = new FanSelect(model.parent, 1 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Party");
 		attackList = new FanSelect(model.parent, Constants.WIDTH - 200 - 120 / 2, Constants.HEIGHT / 2, 2 * Math.PI / 3, 4 * Math.PI / 3, 60, 200, "Attack");
 
-		final CeldroidMonster[] restOfParty = model.party.subList(1, model.party.size()).toArray(new CeldroidMonster[model.party.size() - 1]);
-		final String[] selectablePartyNames = new String[restOfParty.length];
-		for (int i = 0; i < restOfParty.length; i++)
-			selectablePartyNames[i] = restOfParty[i].getName();
-		final FanSelect.SelectTask[] partySwitchTask = new FanSelect.SelectTask[1];
-		partySwitchTask[0] = new FanSelect.SelectTask() {
-			@Override
-			public void selected(int index) {
-				model.swapPartyLead(index + 1);
-				restOfParty[index] = model.party.get(index + 1);
-				for (int i = 0; i < restOfParty.length; i++)
-					selectablePartyNames[i] = restOfParty[i].getName();
-				partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
-				text = "Go, " + model.party.get(0).getName() + "!";
-				remainingTextTime = 2;
-			}
-		};
-		partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
-
-		attackList.setSelections(new FanSelect.SelectTask() {
-			@Override
-			public void selected(int index) {
-				text = model.party.get(0).getName() + " used Move " + (index + 1) + "!";
-				remainingTextTime = 2;
-			}
-		}, "Move 1", "Move 2", "Move 3", "Move 4", "Move 5", "Move 6");
-
 		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
 	}
 
@@ -84,9 +59,48 @@ public class BattleScene implements Scene {
 		subScene.swappedIn(true);
 	}
 
+	private void calledMonster() {
+		final List<CeldroidBattleMove> moves = model.party.get(0).monsterType.moves;
+		final String[] moveNames = new String[moves.size()];
+		for (int i = 0; i < moveNames.length; i++)
+			moveNames[i] = moves.get(i).name;
+
+		attackList.setSelections(new FanSelect.SelectTask() {
+			@Override
+			public void selected(int index) {
+				text = model.party.get(0).getName() + " used " + moveNames[index] + "!";
+				remainingTextTime = 2;
+			}
+		}, moveNames);
+
+		text = "Go, " + model.party.get(0).getName() + "!";
+		remainingTextTime = 2;
+	}
+
 	@Override
 	public void swappedIn(boolean transition) {
-		
+		if (transition) {
+			model.updateParty();
+
+			final CeldroidMonster[] restOfParty = model.party.subList(1, model.party.size()).toArray(new CeldroidMonster[model.party.size() - 1]);
+			final String[] selectablePartyNames = new String[restOfParty.length];
+			for (int i = 0; i < restOfParty.length; i++)
+				selectablePartyNames[i] = restOfParty[i].getName();
+			final FanSelect.SelectTask[] partySwitchTask = new FanSelect.SelectTask[1];
+			partySwitchTask[0] = new FanSelect.SelectTask() {
+				@Override
+				public void selected(int index) {
+					model.swapPartyLead(index + 1);
+					restOfParty[index] = model.party.get(index + 1);
+					for (int i = 0; i < restOfParty.length; i++)
+						selectablePartyNames[i] = restOfParty[i].getName();
+					partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
+					calledMonster();
+				}
+			};
+			partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
+			calledMonster();
+		}
 	}
 
 	@Override

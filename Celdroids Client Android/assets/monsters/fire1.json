@@ -1,0 +1,5 @@
+{
+	name: "Fire1",
+	sprite: "monster/fire/evol1",
+	moves: ["moves/fire.json"]
+}

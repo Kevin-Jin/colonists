@@ -65,8 +65,9 @@ public class FanSelect implements ViewComponent {
 
 		if (selectionXs.length == 1) {
 			angleInterval = Double.POSITIVE_INFINITY;
-			selectionXs[0] = Math.cos(0) * selectionRadius + centerX;
-			selectionYs[0] = Math.sin(0) * selectionRadius + centerY;
+			double angle = (angleMax + angleMin) / 2;
+			selectionXs[0] = Math.cos(angle) * selectionRadius + centerX;
+			selectionYs[0] = Math.sin(angle) * selectionRadius + centerY;
 		} else {
 			angleInterval = (angleMax - angleMin) / (selectionXs.length - 1);
 			for (int i = 0; i < selectionXs.length; i++) {
