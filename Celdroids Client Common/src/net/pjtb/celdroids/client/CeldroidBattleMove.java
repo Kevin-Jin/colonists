@@ -10,6 +10,7 @@ public class CeldroidBattleMove {
 	public final int damage;
 	public final ArrayList<CeldroidDebuff> inflicts;
 	public final boolean selfOrigin;
+	public final boolean loop;
 
 	public CeldroidBattleMove() {
 		name = null;
@@ -19,5 +20,6 @@ public class CeldroidBattleMove {
 		damage = 0;
 		inflicts = null;
 		selfOrigin = false;
+		loop = false;
 	}
 }

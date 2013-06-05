@@ -1,9 +1,10 @@
 {
-	name: "Rock",
-	spriteDirectory: "attack/rock",
+	name: "Rock Hail",
+	spriteDirectory: "attack/rock/",
 	frameCount: 5,
 	element: ["EARTH"],
 	damage: 20,
 	inflicts: ["WEAK"],
-	selfOrigin: false
+	selfOrigin: false,
+	loop: false
 }

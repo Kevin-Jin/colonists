@@ -1,9 +1,10 @@
 {
 	name: "Bubble",
-	spriteDirectory: "attack/bubble",
+	spriteDirectory: "attack/bubble/",
 	frameCount: 1,
 	element: ["WATER"],
 	damage: 5,
 	inflicts: ["DROWN"],
-	selfOrigin: true
+	selfOrigin: true,
+	loop: true
 }

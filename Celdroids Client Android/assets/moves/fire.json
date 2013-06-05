@@ -1,9 +1,10 @@
 {
-	name: "Fire",
-	spriteDirectory: "attack/fire",
+	name: "Flame Lick",
+	spriteDirectory: "attack/fire/",
 	frameCount: 3,
 	element: ["FIRE"],
 	damage: 10,
 	inflicts: ["BURN"],
-	selfOrigin: true
+	selfOrigin: true,
+	loop: true
 }
