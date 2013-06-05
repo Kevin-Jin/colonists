@@ -3,9 +3,65 @@ sprites.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-attack/bubble
+attack/bubble/0
   rotate: false
   xy: 645, 601
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/fire/0
+  rotate: false
+  xy: 767, 601
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/fire/1
+  rotate: false
+  xy: 889, 601
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/fire/2
+  rotate: false
+  xy: 703, 333
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/rock/0
+  rotate: false
+  xy: 453, 72
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/rock/1
+  rotate: false
+  xy: 581, 332
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/rock/2
+  rotate: false
+  xy: 825, 333
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/rock/3
+  rotate: false
+  xy: 563, 210
+  size: 120, 120
+  orig: 120, 120
+  offset: 0, 0
+  index: -1
+attack/rock/4
+  rotate: false
+  xy: 685, 64
   size: 120, 120
   orig: 120, 120
   offset: 0, 0
@@ -33,21 +89,21 @@ character/human1/down/1
   index: -1
 character/human1/down/3
   rotate: false
-  xy: 563, 88
+  xy: 973, 833
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/left/0
   rotate: false
-  xy: 563, 184
+  xy: 905, 301
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/left/2
   rotate: false
-  xy: 563, 184
+  xy: 905, 301
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -61,7 +117,7 @@ character/human1/left/1
   index: -1
 character/human1/left/3
   rotate: false
-  xy: 595, 120
+  xy: 973, 801
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
@@ -82,121 +138,142 @@ character/human1/up/2
   index: -1
 character/human1/up/1
   rotate: false
-  xy: 563, 120
+  xy: 905, 237
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human1/up/3
   rotate: false
-  xy: 627, 152
+  xy: 973, 769
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/down/0
   rotate: false
-  xy: 973, 961
+  xy: 947, 361
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/down/2
   rotate: false
-  xy: 973, 961
+  xy: 947, 361
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/down/1
   rotate: false
-  xy: 595, 152
+  xy: 973, 897
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/down/3
   rotate: false
-  xy: 973, 865
+  xy: 973, 737
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/left/0
   rotate: false
-  xy: 563, 152
+  xy: 973, 961
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/left/2
   rotate: false
-  xy: 563, 152
+  xy: 973, 961
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/left/1
   rotate: false
-  xy: 627, 184
+  xy: 905, 205
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/left/3
   rotate: false
-  xy: 563, 56
+  xy: 807, 63
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/up/0
   rotate: false
-  xy: 595, 184
+  xy: 905, 269
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/up/2
   rotate: false
-  xy: 595, 184
+  xy: 905, 269
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/up/1
   rotate: false
-  xy: 973, 897
+  xy: 973, 865
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 character/human2/up/3
   rotate: false
-  xy: 595, 88
+  xy: 839, 63
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 environment/building/greenRoof
   rotate: false
-  xy: 563, 216
+  xy: 807, 95
   size: 120, 90
   orig: 120, 90
   offset: 0, 0
   index: -1
 environment/grass1
   rotate: false
-  xy: 627, 120
+  xy: 871, 63
   size: 30, 30
   orig: 30, 30
   offset: 0, 0
   index: -1
 environment/redBricks
   rotate: false
-  xy: 973, 833
+  xy: 385, 16
   size: 30, 30
   orig: 30, 30
+  offset: 0, 0
+  index: -1
+environment/street_center
+  rotate: false
+  xy: 417, 16
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+environment/street_left
+  rotate: false
+  xy: 979, 361
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+monster/fire/evol1
+  rotate: false
+  xy: 323, 18
+  size: 60, 60
+  orig: 60, 60
   offset: 0, 0
   index: -1
 monster/rock/evol1
@@ -215,21 +292,21 @@ monster/rock/evol2
   index: -1
 monster/water/evol1
   rotate: false
-  xy: 323, 18
+  xy: 947, 393
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 ui/battleScene/run
   rotate: false
-  xy: 877, 577
+  xy: 801, 455
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/battleScene/selectedRun
   rotate: false
-  xy: 581, 308
+  xy: 795, 187
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
@@ -246,6 +323,20 @@ ui/button/regular
   xy: 323, 340
   size: 256, 128
   orig: 256, 128
+  offset: 0, 0
+  index: -1
+ui/menuScene/close
+  rotate: false
+  xy: 581, 454
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/menuScene/selectedClose
+  rotate: false
+  xy: 575, 64
+  size: 108, 144
+  orig: 108, 144
   offset: 0, 0
   index: -1
 ui/popup/confirmBackground
@@ -271,7 +362,7 @@ ui/worldScene/controlBar
   index: -1
 ui/worldScene/more
   rotate: false
-  xy: 767, 577
+  xy: 691, 455
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
@@ -285,14 +376,14 @@ ui/worldScene/selectedArrow
   index: -1
 ui/worldScene/selectedBack
   rotate: false
-  xy: 453, 48
+  xy: 911, 455
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/selectedMore
   rotate: false
-  xy: 581, 454
+  xy: 685, 186
   size: 108, 144
   orig: 108, 144
   offset: 0, 0

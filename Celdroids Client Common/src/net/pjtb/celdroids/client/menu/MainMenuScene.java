@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.ConfirmPopupScene;
 import net.pjtb.celdroids.client.Model;
@@ -13,6 +14,7 @@ import net.pjtb.celdroids.client.menu.directconnect.DirectConnectSelectionScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuScene implements Scene {
@@ -41,6 +43,17 @@ public class MainMenuScene implements Scene {
 				model.scene.swappedIn(true);
 			}
 		}, 10, 10, 256, 128));
+		buttons.add(new Button(m, null, new Runnable() {
+			@Override
+			public void run() {
+				close();
+			}
+		}, 1172, 576, 108, 144, "ui/menuScene/close", "ui/menuScene/selectedClose", 255, 255, 255, 255, -1, -1, -1, -1));
+	}
+
+	private void close() {
+		subScene = subScenes.get(MainMenuSubSceneType.CONFIRM_FLEE_POPUP);
+		subScene.swappedIn(true);
 	}
 
 	@Override
@@ -69,8 +82,7 @@ public class MainMenuScene implements Scene {
 		}
 		if (subScene == null) {
 			if (model.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
-				subScene = subScenes.get(MainMenuSubSceneType.CONFIRM_FLEE_POPUP);
-				subScene.swappedIn(true);
+				close();
 			} else if (model.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
 				
 			}
@@ -81,6 +93,9 @@ public class MainMenuScene implements Scene {
 
 	@Override
 	public void draw(SpriteBatch batch) {
+		Texture image = model.assets.get("images/backgrounds/titleScreen.png", Texture.class);
+		batch.draw(image, 0, Constants.HEIGHT - image.getHeight());
+
 		for (Button button : buttons)
 			button.draw(batch);
 		if (subScene != null)

@@ -65,6 +65,7 @@ public class Model {
 		//asynchronous load all other assets
 		assets.load("images/sprites/sprites.pack", TextureAtlas.class);
 		assets.load("fonts/buttons.fnt", BitmapFont.class);
+		assets.load("images/backgrounds/titleScreen.png", Texture.class, param);
 		//TODO: load music using assets.load(..., Music.class),
 		//and sound effects using assets.load(..., Sound.class)
 	}

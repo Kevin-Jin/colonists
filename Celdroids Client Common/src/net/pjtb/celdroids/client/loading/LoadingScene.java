@@ -43,7 +43,6 @@ public class LoadingScene implements Scene {
 	@Override
 	public void draw(SpriteBatch batch) {
 		Texture image = model.assets.get("images/backgrounds/splash.png", Texture.class);
-
 		batch.draw(image, 0, Constants.HEIGHT - image.getHeight());
 	}
 
