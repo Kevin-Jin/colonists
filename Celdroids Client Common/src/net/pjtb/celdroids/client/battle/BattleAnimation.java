@@ -10,20 +10,21 @@ public abstract class BattleAnimation implements ViewComponent {
 	protected float moveElapsedTime;
 	protected float moveEndTime;
 
+	public boolean useTurn;
+
 	public BattleAnimation(BattleModel model) {
 		this.model = model;
 	}
 
+	@Override
 	public void update(float tDelta) {
 		moveElapsedTime += tDelta;
 		if (moveElapsedTime > moveEndTime) {
+			//animation over
 			model.currentAnimation = null;
-			if (model.selfTurn) {
-				model.canAct = false;
-				model.selfTurn = false;
-			} else {
-				model.canAct = true;
-				model.selfTurn = true;
+			if (useTurn) {
+				model.selfTurn = !model.selfTurn;
+				model.canAct = model.selfTurn;
 			}
 		}
 	}

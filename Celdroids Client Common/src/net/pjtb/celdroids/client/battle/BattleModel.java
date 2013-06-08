@@ -14,14 +14,12 @@ public class BattleModel {
 	public BattleAnimation currentAnimation;
 
 	public boolean selfTurn, canAct;
+	public boolean showSelfCeldroid, showOpponentCeldroid;
 
 	public BattleModel(Model model) {
 		this.parent = model;
 
 		this.party = new ArrayList<CeldroidMonster>();
-
-		selfTurn = true;
-		canAct = true;
 	}
 
 	public void updateParty() {

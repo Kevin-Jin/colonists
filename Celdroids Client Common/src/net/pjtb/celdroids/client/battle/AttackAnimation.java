@@ -15,8 +15,10 @@ public class AttackAnimation extends BattleAnimation {
 
 	public AttackAnimation(BattleModel model) {
 		super(model);
+		useTurn = true;
 	}
 
+	@Override
 	public void draw(SpriteBatch batch) {
 		Sprite s = model.parent.sprites.get(move.spriteDirectory + (int) (moveElapsedTime * ANIMATION_FREQUENCY) % move.frameCount);
 		int destX, destY;
@@ -52,7 +54,7 @@ public class AttackAnimation extends BattleAnimation {
 		s.draw(batch);
 	}
 
-	public void setMove(CeldroidBattleMove move) {
+	public void reset(CeldroidBattleMove move) {
 		this.move = move;
 		moveElapsedTime = 0;
 		moveEndTime = move.loop ? ANIMATION_TIME : (move.frameCount / ANIMATION_FREQUENCY);
