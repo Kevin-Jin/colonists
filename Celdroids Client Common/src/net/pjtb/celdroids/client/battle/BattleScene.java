@@ -21,9 +21,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class BattleScene implements Scene {
-	private static final float MOVE_ANIMATION_TIME = 1.5f, MOVE_FREEZE_TIME = 0.5f;
-	private static final float ANIMATION_FREQUENCY = 7; //move animation, in frames per second
-
 	private enum BattleSubSceneType { CONFIRM_FLEE_POPUP }
 
 	private final BattleModel model;
@@ -34,15 +31,11 @@ public class BattleScene implements Scene {
 	private final FanSelect partySwitcher, attackList;
 	private final Button runButton;
 
+	private final AttackAnimation atkAnimation;
+
 	private float fontTint;
 	private String text;
 	private float remainingTextTime;
-
-	private CeldroidBattleMove currentMove;
-	private float moveElapsedTime;
-	private float moveEndTime;
-
-	private boolean selfTurn, canAct;
 
 	public BattleScene(Model m) {
 		this.model = new BattleModel(m);
@@ -57,17 +50,16 @@ public class BattleScene implements Scene {
 			}
 		}, 1172, 576, 108, 144, "ui/battleScene/run", "ui/battleScene/selectedRun", 255, 255, 255, 255, 255, 0, 0, 63);
 
-		partySwitcher = new FanSelect(model.parent, 1 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Party");
-		attackList = new FanSelect(model.parent, Constants.WIDTH - 200 - 120 / 2, Constants.HEIGHT / 2, 2 * Math.PI / 3, 4 * Math.PI / 3, 60, 200, "Attack");
+		partySwitcher = new FanSelect(model.parent, 10 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Party");
+		attackList = new FanSelect(model.parent, 500 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Attack");
 
-		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
+		atkAnimation = new AttackAnimation(model);
 
-		selfTurn = true;
-		canAct = true;
+		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0xFF << 16 | 0x00 << 8 | 0x00);
 	}
 
 	private void flee() {
-		if (canAct) {
+		if (model.canAct) {
 			subScene = subScenes.get(BattleSubSceneType.CONFIRM_FLEE_POPUP);
 			subScene.swappedIn(true);
 		}
@@ -82,12 +74,11 @@ public class BattleScene implements Scene {
 		attackList.setSelections(new FanSelect.SelectTask() {
 			@Override
 			public void selected(int index) {
-				currentMove = moves.get(index);
-				text = model.party.get(0).getName() + " used " + currentMove.name + "!";
+				atkAnimation.setMove(moves.get(index));
+				model.currentAnimation = atkAnimation;
+				text = model.party.get(0).getName() + " used " + atkAnimation.move.name + "!";
 				remainingTextTime = 2;
-				moveElapsedTime = 0;
-				moveEndTime = currentMove.loop ? MOVE_ANIMATION_TIME : (currentMove.frameCount / ANIMATION_FREQUENCY);
-				canAct = false;
+				model.canAct = false;
 			}
 		}, moveNames);
 
@@ -115,8 +106,8 @@ public class BattleScene implements Scene {
 					partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
 					calledMonster();
 
-					canAct = false;
-					selfTurn = false;
+					model.canAct = false;
+					model.selfTurn = false;
 				}
 			};
 			partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
@@ -138,20 +129,19 @@ public class BattleScene implements Scene {
 
 	private void checkForOpponentMove() {
 		//TODO: check for network or AI response
-		currentMove = model.parent.assets.get("moves/rock.json", CeldroidBattleMove.class);
-		text = "Enemy " + "Rock2" + " used " + currentMove.name + "!";
+		atkAnimation.setMove(model.parent.assets.get("moves/rock.json", CeldroidBattleMove.class));
+		model.currentAnimation = atkAnimation;
+		text = "Enemy " + "Rock2" + " used " + atkAnimation.move.name + "!";
 		remainingTextTime = 2;
-		moveElapsedTime = 0;
-		moveEndTime = currentMove.loop ? MOVE_ANIMATION_TIME : (currentMove.frameCount / ANIMATION_FREQUENCY);
 	}
 
 	@Override
 	public void update(float tDelta) {
-		runButton.hidden = (subScene != null);
+		runButton.hidden = (subScene != null || !model.canAct);
 		runButton.update(tDelta);
-		partySwitcher.hidden = (subScene != null);
+		partySwitcher.hidden = (subScene != null || !model.canAct);
 		partySwitcher.update(tDelta);
-		attackList.hidden = (subScene != null);
+		attackList.hidden = (subScene != null || !model.canAct);
 		attackList.update(tDelta);
 		if (remainingTextTime > 0) {
 			remainingTextTime -= tDelta;
@@ -160,21 +150,10 @@ public class BattleScene implements Scene {
 				text = null;
 			}
 		}
-		if (currentMove == null && !selfTurn)
+		if (model.currentAnimation == null && !model.selfTurn)
 			checkForOpponentMove();
-		if (currentMove != null) {
-			moveElapsedTime += tDelta;
-			if (moveElapsedTime > moveEndTime) {
-				currentMove = null;
-				if (selfTurn) {
-					canAct = false;
-					selfTurn = false;
-				} else {
-					canAct = true;
-					selfTurn = true;
-				}
-			}
-		}
+		if (model.currentAnimation != null)
+			model.currentAnimation.update(tDelta);
 
 		if (subScene == null) {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
@@ -211,40 +190,8 @@ public class BattleScene implements Scene {
 			s.flip(true, false);
 		s.draw(batch);
 
-		if (currentMove != null) {
-			s = model.parent.sprites.get(currentMove.spriteDirectory + (int) (moveElapsedTime * ANIMATION_FREQUENCY) % currentMove.frameCount);
-			int destX, destY;
-			if (currentMove.selfOrigin && moveElapsedTime < (moveEndTime - MOVE_FREEZE_TIME)) {
-				int originX;
-				int originY;
-				if (selfTurn) {
-					originX = 500;
-					originY = (Constants.HEIGHT - 120) / 2;
-					destX = Constants.WIDTH - 200 - 120;
-					destY = (Constants.HEIGHT - 120) / 2;
-				} else {
-					originX = Constants.WIDTH - 200 - 120;
-					originY = (Constants.HEIGHT - 120) / 2;
-					destX = 500;
-					destY = (Constants.HEIGHT - 120) / 2;
-				}
-				double xVel = (destX - originX) / (moveEndTime - MOVE_FREEZE_TIME);
-				double yVel = (destY - originY) / (moveEndTime - MOVE_FREEZE_TIME);
-				s.setX((float) (originX + xVel * moveElapsedTime));
-				s.setY((float) (originY + yVel * moveElapsedTime));
-			} else {
-				if (selfTurn) {
-					destX = Constants.WIDTH - 200 - 120;
-					destY = (Constants.HEIGHT - 120) / 2;
-				} else {
-					destX = 500;
-					destY = (Constants.HEIGHT - 120) / 2;
-				}
-				s.setX(destX);
-				s.setY(destY);
-			}
-			s.draw(batch);
-		}
+		if (model.currentAnimation != null)
+			model.currentAnimation.draw(batch);
 
 		if (text != null) {
 			BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
@@ -253,7 +200,7 @@ public class BattleScene implements Scene {
 			fnt.draw(batch, text, (float) ((Constants.WIDTH - bnds.width) / 2), (float) (50 + bnds.height));
 		}
 
-		if (canAct) {
+		if (model.canAct) {
 			runButton.draw(batch);
 			partySwitcher.draw(batch);
 			attackList.draw(batch);

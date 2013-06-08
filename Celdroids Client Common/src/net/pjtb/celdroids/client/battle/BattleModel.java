@@ -11,11 +11,17 @@ public class BattleModel {
 	public final Model parent;
 
 	public final List<CeldroidMonster> party;
+	public BattleAnimation currentAnimation;
+
+	public boolean selfTurn, canAct;
 
 	public BattleModel(Model model) {
 		this.parent = model;
 
 		this.party = new ArrayList<CeldroidMonster>();
+
+		selfTurn = true;
+		canAct = true;
 	}
 
 	public void updateParty() {
