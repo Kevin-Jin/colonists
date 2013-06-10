@@ -13,12 +13,9 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 public class DesktopGame {
 	public static void main(String[] args) {
 		Set<String> remainingArgs = new HashSet<String>(Arrays.asList(args));
-		boolean fullscreen = remainingArgs.contains("fullscreen");
-		if (fullscreen)
-			remainingArgs.remove("fullscreen");
-		boolean unlimitedFps = remainingArgs.contains("novsync");
-		if (unlimitedFps)
-			remainingArgs.remove("novsync");
+		boolean fullscreen = remainingArgs.remove("fullscreen");
+		boolean unlimitedFps = remainingArgs.remove("novsync");
+		boolean useFrame = remainingArgs.remove("frame");
 
 		DesktopModel model = new DesktopModel();
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
@@ -30,7 +27,8 @@ public class DesktopGame {
 		cfg.vSyncEnabled = !unlimitedFps;
 		cfg.resizable = false;
 		cfg.fullscreen = fullscreen;
-		System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
+		if (!useFrame)
+			System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
 		System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
 		new LwjglApplication(new Game(model), cfg);
 	}

@@ -25,7 +25,7 @@ public class ConfirmPopupScene implements Scene {
 	public ConfirmPopupScene(Model m, String text, Model.SceneType nextScene) {
 		this.model = m;
 
-		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
+		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0xFF << 16 | 0x00 << 8 | 0x00);
 		this.text = text;
 		this.nextScene = nextScene;
 		this.yes = new Button(model, "Yes", new Runnable() {

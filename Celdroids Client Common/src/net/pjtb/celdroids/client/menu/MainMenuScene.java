@@ -11,6 +11,7 @@ import net.pjtb.celdroids.client.ConfirmPopupScene;
 import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
 import net.pjtb.celdroids.client.menu.directconnect.DirectConnectSelectionScene;
+import net.pjtb.celdroids.client.menu.lobby.AwaitingClientScene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -18,7 +19,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuScene implements Scene {
-	public enum MainMenuSubSceneType { DIRECT_IP_CONNECT, P2P_CONNECT, CONFIRM_FLEE_POPUP }
+	public enum MainMenuSubSceneType { HOST, DIRECT_IP_CONNECT, P2P_CONNECT, CONFIRM_FLEE_POPUP }
 
 	private final Model model;
 
@@ -31,7 +32,8 @@ public class MainMenuScene implements Scene {
 		this.model = m;
 
 		subScenes = new EnumMap<MainMenuSubSceneType, Scene>(MainMenuSubSceneType.class);
-		subScenes.put(MainMenuSubSceneType.DIRECT_IP_CONNECT, new DirectConnectSelectionScene());
+		subScenes.put(MainMenuSubSceneType.HOST, new AwaitingClientScene(m, this));
+		subScenes.put(MainMenuSubSceneType.DIRECT_IP_CONNECT, new DirectConnectSelectionScene(m, this));
 		subScenes.put(MainMenuSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m, "Are you sure you want to quit?", null));
 
 		buttons = new ArrayList<Button>();
@@ -43,6 +45,20 @@ public class MainMenuScene implements Scene {
 				model.scene.swappedIn(true);
 			}
 		}, 10, 10, 256, 128));
+		buttons.add(new Button(m, "Host", new Runnable() {
+			@Override
+			public void run() {
+				subScene = subScenes.get(MainMenuSubSceneType.HOST);
+				subScene.swappedIn(true);
+			}
+		}, 310, 10, 256, 128));
+		buttons.add(new Button(m, "Connect", new Runnable() {
+			@Override
+			public void run() {
+				subScene = subScenes.get(MainMenuSubSceneType.DIRECT_IP_CONNECT);
+				subScene.swappedIn(true);
+			}
+		}, 610, 10, 256, 128));
 		buttons.add(new Button(m, null, new Runnable() {
 			@Override
 			public void run() {

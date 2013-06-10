@@ -83,10 +83,10 @@ public class WifiDirectModel {
 		                wifiDirect.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
 							@Override
 							public void onConnectionInfoAvailable(WifiP2pInfo info) {
-								if (info.groupFormed && info.isGroupOwner)
-									NioSession.createServer(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
-								else
-									NioSession.createClient(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
+								//if (info.groupFormed && info.isGroupOwner)
+									//NioSession.beginCreateClient(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
+								//else
+									//NioSession.beginCreateServer(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
 							}
 						});
 					} else {

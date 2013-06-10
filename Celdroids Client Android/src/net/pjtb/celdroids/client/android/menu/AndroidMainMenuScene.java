@@ -19,6 +19,6 @@ public class AndroidMainMenuScene extends MainMenuScene {
 				subScene = subScenes.get(MainMenuSubSceneType.P2P_CONNECT);
 				subScene.swappedIn(true);
 			}
-		}, 300, 10, 256, 128));
+		}, 910, 10, 256, 128));
 	}
 }

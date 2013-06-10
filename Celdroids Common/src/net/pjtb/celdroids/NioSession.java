@@ -487,53 +487,85 @@ public class NioSession implements Session {
 		
 	}
 
-	public static NioSession createClient(SocketAddress addr, int timeout) {
-		SocketChannel channel = null;
-		Selector selector = null;
-		try {
-			channel = SocketChannel.open();
-			channel.configureBlocking(false);
-			channel.connect(addr);
+	public static class IncompleteNioSession {
+		private final int timeout;
+		private float elapsedTime;
 
-			selector = Selector.open();
-			SelectionKey key = channel.register(selector, SelectionKey.OP_CONNECT);
-			int actions = selector.select(timeout);
-			if (actions == 0) {
-				//connect timed out
-				channel.close();
+		private Selector selector;
+		private SocketChannel channel;
+		private SelectionKey key;
+		public String error;
+
+		/* package-private */ IncompleteNioSession(int timeout) {
+			this.timeout = timeout;
+		}
+
+		/* package-private */ IncompleteNioSession initialize(SocketAddress addr) {
+			try {
+				channel = SocketChannel.open();
+				channel.configureBlocking(false);
+				channel.connect(addr);
+
+				selector = Selector.open();
+				key = channel.register(selector, SelectionKey.OP_CONNECT);
+			} catch (IOException e) {
+				if (channel != null) {
+					try {
+						channel.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				if (selector != null) {
+					try {
+						selector.close();
+					} catch (IOException ex) {
+						
+					}
+				}
 				channel = null;
-				selector.close();
 				selector = null;
+				error = e.getMessage();
+			}
+			return this;
+		}
+
+		public NioSession updateConnectStatus(float tDelta) {
+			elapsedTime += tDelta * 1000;
+			try {
+				int actions = selector.selectNow();
+				if (actions == 0) {
+					if (elapsedTime >= timeout) {
+						//connect timed out
+						channel.close();
+						selector.close();
+						channel = null;
+						selector = null;
+						error = "Timed out after " + timeout + " milliseconds";
+					}
+					return null;
+				}
+				Set<SelectionKey> keys = selector.selectedKeys();
+				for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext(); ) {
+					SelectionKey selected = iter.next();
+					iter.remove();
+					if (selected == key && selected.isValid() && selected.isConnectable())
+						if (channel.isConnectionPending())
+							channel.finishConnect();
+				}
+				key.interestOps(SelectionKey.OP_READ);
+				return new NioSession(selector, channel);
+			} catch (IOException e) {
+				channel = null;
+				selector = null;
+				error = e.getMessage();
 				return null;
 			}
-			Set<SelectionKey> keys = selector.selectedKeys();
-			for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext(); ) {
-				SelectionKey selected = iter.next();
-				iter.remove();
-				if (selected == key && selected.isValid() && selected.isConnectable())
-					if (channel.isConnectionPending())
-						channel.finishConnect();
-			}
-			key.interestOps(SelectionKey.OP_READ);
-			return new NioSession(selector, channel);
-		} catch (IOException e) {
-			if (channel != null) {
-				try {
-					channel.close();
-				} catch (IOException ex) {
-					
-				}
-			}
-			if (selector != null) {
-				try {
-					selector.close();
-				} catch (IOException ex) {
-					
-				}
-			}
-			e.printStackTrace();
-			return null;
 		}
+	}
+
+	public static IncompleteNioSession beginCreateClient(SocketAddress addr, int timeout) {
+		return new IncompleteNioSession(timeout).initialize(addr);
 	}
 
 	public static NioSession createServer(SocketAddress addr, int timeout) {
