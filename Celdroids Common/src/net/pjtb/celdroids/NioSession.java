@@ -487,20 +487,27 @@ public class NioSession implements Session {
 		
 	}
 
-	public static class IncompleteNioSession {
+	public static abstract class IncompleteNioSession {
+		public String error;
+
+		public abstract NioSession update(float tDelta);
+
+		public abstract void cancel();
+	}
+
+	public static class IncompleteNioClientSession extends IncompleteNioSession {
 		private final int timeout;
 		private float elapsedTime;
 
 		private Selector selector;
 		private SocketChannel channel;
 		private SelectionKey key;
-		public String error;
 
-		/* package-private */ IncompleteNioSession(int timeout) {
+		/* package-private */ IncompleteNioClientSession(int timeout) {
 			this.timeout = timeout;
 		}
 
-		/* package-private */ IncompleteNioSession initialize(SocketAddress addr) {
+		/* package-private */ IncompleteNioClientSession initialize(SocketAddress addr) {
 			try {
 				channel = SocketChannel.open();
 				channel.configureBlocking(false);
@@ -530,12 +537,16 @@ public class NioSession implements Session {
 			return this;
 		}
 
-		public NioSession updateConnectStatus(float tDelta) {
+		@Override
+		public NioSession update(float tDelta) {
+			if (channel == null || selector == null)
+				return null;
+
 			elapsedTime += tDelta * 1000;
 			try {
 				int actions = selector.selectNow();
 				if (actions == 0) {
-					if (elapsedTime >= timeout) {
+					if (elapsedTime >= timeout && timeout != 0) {
 						//connect timed out
 						channel.close();
 						selector.close();
@@ -556,49 +567,158 @@ public class NioSession implements Session {
 				key.interestOps(SelectionKey.OP_READ);
 				return new NioSession(selector, channel);
 			} catch (IOException e) {
+				if (channel != null) {
+					try {
+						channel.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				if (selector != null) {
+					try {
+						selector.close();
+					} catch (IOException ex) {
+						
+					}
+				}
 				channel = null;
 				selector = null;
 				error = e.getMessage();
 				return null;
 			}
 		}
+
+		@Override
+		public void cancel() {
+			if (channel != null) {
+				try {
+					channel.close();
+				} catch (IOException ex) {
+					
+				}
+			}
+			if (selector != null) {
+				try {
+					selector.close();
+				} catch (IOException ex) {
+					
+				}
+			}
+			channel = null;
+			selector = null;
+			error = "Canceled by user";
+		}
 	}
 
-	public static IncompleteNioSession beginCreateClient(SocketAddress addr, int timeout) {
-		return new IncompleteNioSession(timeout).initialize(addr);
+	public static IncompleteNioClientSession beginCreateClient(SocketAddress addr, int timeout) {
+		return new IncompleteNioClientSession(timeout).initialize(addr);
 	}
 
-	public static NioSession createServer(SocketAddress addr, int timeout) {
-		ServerSocketChannel channel = null;
-		Selector selector = null;
-		SocketChannel clientChannel = null;
-		try {
-			channel = ServerSocketChannel.open();
-			channel.configureBlocking(false);
-			channel.socket().bind(addr);
+	public static class IncompleteNioServerSession extends IncompleteNioSession {
+		private final int timeout;
+		private float elapsedTime;
 
-			selector = Selector.open();
-			SelectionKey key = channel.register(selector, SelectionKey.OP_ACCEPT);
-			int actions = selector.select(timeout);
-			if (actions == 0) {
-				//accept timed out
-				channel.close();
+		private Selector selector;
+		private ServerSocketChannel channel;
+		private SocketChannel clientChannel;
+		private SelectionKey key;
+
+		/* package-private */ IncompleteNioServerSession(int timeout) {
+			this.timeout = timeout;
+		}
+
+		/* package-private */ IncompleteNioServerSession initialize(SocketAddress addr) {
+			try {
+				channel = ServerSocketChannel.open();
+				channel.configureBlocking(false);
+				channel.socket().bind(addr);
+
+				selector = Selector.open();
+				key = channel.register(selector, SelectionKey.OP_ACCEPT);
+			} catch (IOException e) {
+				if (channel != null) {
+					try {
+						channel.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				if (selector != null) {
+					try {
+						selector.close();
+					} catch (IOException ex) {
+						
+					}
+				}
 				channel = null;
-				selector.close();
 				selector = null;
+				error = e.getMessage();
+			}
+			return this;
+		}
+
+		@Override
+		public NioSession update(float tDelta) {
+			if (channel == null || selector == null)
+				return null;
+
+			elapsedTime += tDelta * 1000;
+			try {
+				int actions = selector.selectNow();
+				if (actions == 0) {
+					if (elapsedTime >= timeout && timeout != 0) {
+						//accept timed out
+						channel.close();
+						selector.close();
+						channel = null;
+						selector = null;
+						error = "Timed out after " + timeout + " milliseconds";
+					}
+					return null;
+				}
+				Set<SelectionKey> keys = selector.selectedKeys();
+				for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext(); ) {
+					SelectionKey selected = iter.next();
+					iter.remove();
+					if (selected == key && selected.isValid() && selected.isAcceptable())
+						clientChannel = channel.accept();
+				}
+				key.cancel();
+				clientChannel.configureBlocking(false);
+				clientChannel.register(selector, SelectionKey.OP_READ);
+				return new NioSession(selector, clientChannel);
+			} catch (IOException e) {
+				if (clientChannel != null) {
+					try {
+						clientChannel.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				if (channel != null) {
+					try {
+						channel.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				if (selector != null) {
+					try {
+						selector.close();
+					} catch (IOException ex) {
+						
+					}
+				}
+				clientChannel = null;
+				channel = null;
+				selector = null;
+				error = e.getMessage();
 				return null;
 			}
-			Set<SelectionKey> keys = selector.selectedKeys();
-			for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext(); ) {
-				SelectionKey selected = iter.next();
-				iter.remove();
-				if (selected == key && selected.isValid() && selected.isAcceptable())
-					clientChannel = channel.accept();
-			}
-			key.cancel();
-			clientChannel.register(selector, SelectionKey.OP_READ);
-			return new NioSession(selector, clientChannel);
-		} catch (IOException e) {
+		}
+
+		@Override
+		public void cancel() {
 			if (clientChannel != null) {
 				try {
 					clientChannel.close();
@@ -620,8 +740,14 @@ public class NioSession implements Session {
 					
 				}
 			}
-			e.printStackTrace();
-			return null;
+			clientChannel = null;
+			channel = null;
+			selector = null;
+			error = "Canceled by user";
 		}
+	}
+
+	public static IncompleteNioServerSession beginCreateServer(SocketAddress addr, int timeout) {
+		return new IncompleteNioServerSession(timeout).initialize(addr);
 	}
 }

@@ -6,23 +6,19 @@ import java.net.UnknownHostException;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.NioSession;
-import net.pjtb.celdroids.NioSession.IncompleteNioSession;
+import net.pjtb.celdroids.client.ConnectStatusPopupModel;
 import net.pjtb.celdroids.client.ControllerHelper;
 import net.pjtb.celdroids.client.Model;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.InputProcessor;
 
-public class DirectConnectModel implements InputProcessor {
+public class DirectConnectModel extends ConnectStatusPopupModel implements InputProcessor {
 	public final Model parent;
 
 	public String entered;
-	public InetAddress address;
-	public String message;
-	public boolean error, inactive;
-
-	private IncompleteNioSession connectState;
+	public boolean inactive;
 
 	public DirectConnectModel(Model model) {
 		this.parent = model;
@@ -40,7 +36,15 @@ public class DirectConnectModel implements InputProcessor {
 		return false;
 	}
 
-	public void update(float tDelta) {
+	@Override
+	protected void failed(String message) {
+		super.failed(message);
+		inactive = false;
+		Gdx.input.setOnscreenKeyboardVisible(true);
+	}
+
+	@Override
+	public NioSession update(float tDelta) {
 		int cursorX = ControllerHelper.getCursorX();
 		int cursorY = ControllerHelper.getCursorY();
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;
@@ -48,27 +52,11 @@ public class DirectConnectModel implements InputProcessor {
 		if (Gdx.input.isButtonPressed(Buttons.LEFT) && (cursorX >= leftX && cursorY >= bottomY && cursorX < leftX + 970 && cursorY < bottomY + 300))
 			Gdx.input.setOnscreenKeyboardVisible(true);
 
-		if (connectState == null)
-			return;
-
-		NioSession ses = connectState.updateConnectStatus(tDelta);
-		if (connectState.error != null) {
-			message = connectState.error;
-			error = true;
-			inactive = false;
-			Gdx.input.setOnscreenKeyboardVisible(true);
-			connectState = null;
-		} else if (ses != null) {
-			message = "Success!";
-			error = false;
-			connectState = null;
-			//TODO: go to BattleScene
-		}
+		return super.update(tDelta);
 	}
 
 	private void connect(final String dnsOrIp, final int port) {
-		message = "Resolving...";
-		error = false;
+		progress("Resolving...");
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -77,20 +65,15 @@ public class DirectConnectModel implements InputProcessor {
 					Gdx.app.postRunnable(new Runnable() {
 						@Override
 						public void run() {
-							address = addr;
-							message = "Attempting connection...";
-							error = false;
-							connectState = NioSession.beginCreateClient(new InetSocketAddress(addr, port), Constants.SOCKET_TIMEOUT);
+							progress("Attempting connection...");
+							state = NioSession.beginCreateClient(new InetSocketAddress(addr, port), Constants.SOCKET_TIMEOUT);
 						}
 					});
 				} catch (UnknownHostException e) {
 					Gdx.app.postRunnable(new Runnable() {
 						@Override
 						public void run() {
-							message = "Unreachable address. Try again.";
-							error = true;
-							inactive = false;
-							Gdx.input.setOnscreenKeyboardVisible(true);
+							failed("Unreachable address. Try again.");
 						}
 					});
 				}
@@ -113,10 +96,7 @@ public class DirectConnectModel implements InputProcessor {
 					try {
 						connect(entered.substring(0, portSplit), Integer.parseInt(entered.substring(portSplit + 1)));
 					} catch (NumberFormatException e) {
-						message = "Unreachable address. Try again.";
-						error = true;
-						inactive = false;
-						Gdx.input.setOnscreenKeyboardVisible(true);
+						failed("Unreachable address. Try again.");
 					}
 				} else {
 					connect(entered, Constants.PORT);

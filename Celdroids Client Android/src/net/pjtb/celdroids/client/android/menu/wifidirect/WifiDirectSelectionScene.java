@@ -1,5 +1,7 @@
 package net.pjtb.celdroids.client.android.menu.wifidirect;
 
+import net.pjtb.celdroids.NioSession;
+import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
 
 import com.badlogic.gdx.Gdx;
@@ -34,6 +36,16 @@ public class WifiDirectSelectionScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
+		NioSession ses = model.update(tDelta);
+		if (ses != null) {
+			swappedOut(true);
+			model.parent.scene.setSubscene(null);
+			model.parent.scene.swappedOut(true);
+			model.parent.scene = model.parent.scenes.get(Model.SceneType.BATTLE);
+			model.parent.scene.swappedIn(true);
+			return;
+		}
+
 		if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 			swappedOut(true);
 			parentScene.setSubscene(null);
@@ -49,7 +61,8 @@ public class WifiDirectSelectionScene implements Scene {
 
 	@Override
 	public void swappedOut(boolean transition) {
-		
+		if (transition)
+			model.swappedOut();
 	}
 
 	@Override

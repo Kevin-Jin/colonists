@@ -4,10 +4,8 @@ import java.net.InetSocketAddress;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.NioSession;
+import net.pjtb.celdroids.client.ConnectStatusPopupModel;
 import net.pjtb.celdroids.client.android.AndroidModel;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +18,10 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 
-public class WifiDirectModel {
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.android.AndroidApplication;
+
+public class WifiDirectModel extends ConnectStatusPopupModel {
 	public final AndroidModel parent;
 
 	private WifiP2pManager wifiDirect;
@@ -57,6 +58,7 @@ public class WifiDirectModel {
 					wifiDirect.requestPeers(channel, new WifiP2pManager.PeerListListener() {
 						@Override
 						public void onPeersAvailable(WifiP2pDeviceList peers) {
+							//TODO: pre-association service discovery
 							//TODO: let user choose
 							WifiP2pDevice device = peers.getDeviceList().iterator().next();
 
@@ -82,11 +84,17 @@ public class WifiDirectModel {
 		            	//connected
 		                wifiDirect.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
 							@Override
-							public void onConnectionInfoAvailable(WifiP2pInfo info) {
-								//if (info.groupFormed && info.isGroupOwner)
-									//NioSession.beginCreateClient(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
-								//else
-									//NioSession.beginCreateServer(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
+							public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+								Gdx.app.postRunnable(new Runnable() {
+									@Override
+									public void run() {
+										progress("Attempting connection...");
+										if (info.groupFormed && info.isGroupOwner)
+											state = NioSession.beginCreateServer(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
+										else
+											state = NioSession.beginCreateClient(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
+									}
+								});
 							}
 						});
 					} else {
