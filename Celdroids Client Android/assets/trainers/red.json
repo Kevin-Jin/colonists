@@ -1,0 +1,4 @@
+{
+	trainerName: "Red",
+	monsters: ["monsters/rock2.json"]
+}

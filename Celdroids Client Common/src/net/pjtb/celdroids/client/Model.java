@@ -4,6 +4,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.pjtb.celdroids.client.battle.BattleModel;
+
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
@@ -28,6 +30,7 @@ public class Model {
 	public final Map<SceneType, Scene> scenes;
 	public Scene scene;
 	private Scene pausedScene;
+	public BattleModel battleModel;
 
 	private boolean loading;
 	private float remainingLoadTime;
@@ -54,7 +57,9 @@ public class Model {
 
 			@Override
 			public CeldroidBattleMove load(AssetManager assetManager, String fileName, AssetLoaderParameters<CeldroidBattleMove> parameter) {
-				return json.fromJson(CeldroidBattleMove.class, resolve(fileName));
+				CeldroidBattleMove move = json.fromJson(CeldroidBattleMove.class, resolve(fileName));
+				move.file = fileName;
+				return move;
 			}
 		});
 		assets.setLoader(CeldroidProperties.class, new SynchronousAssetLoader<CeldroidProperties, AssetLoaderParameters<CeldroidProperties>>(new InternalFileHandleResolver()) {
@@ -90,6 +95,39 @@ public class Model {
 				return json.fromJson(CeldroidProperties.class, resolve(fileName));
 			}
 		});
+		assets.setLoader(TrainerProperties.class, new SynchronousAssetLoader<TrainerProperties, AssetLoaderParameters<TrainerProperties>>(new InternalFileHandleResolver()) {
+			private final Json json = new Json();
+
+			{
+				json.setSerializer(CeldroidProperties.class, new Serializer<CeldroidProperties>() {
+					@SuppressWarnings("rawtypes")
+					@Override
+					public void write(Json json, CeldroidProperties object, Class knownType) {
+						throw new UnsupportedOperationException();
+					}
+
+					@SuppressWarnings("rawtypes")
+					@Override
+					public CeldroidProperties read(Json json, Object jsonData, Class type) {
+						CeldroidProperties celdroid = assets.get(jsonData.toString());
+						if (celdroid == null)
+							throw new NullPointerException();
+						return celdroid;
+					}
+				});
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public Array<AssetDescriptor> getDependencies(String fileName, AssetLoaderParameters<TrainerProperties> parameter) {
+				return null;
+			}
+
+			@Override
+			public TrainerProperties load(AssetManager assetManager, String fileName, AssetLoaderParameters<TrainerProperties> parameter) {
+				return json.fromJson(TrainerProperties.class, resolve(fileName));
+			}
+		});
 	}
 
 	protected SceneFactory createSceneFactory() {
@@ -97,12 +135,14 @@ public class Model {
 	}
 
 	public void onStart() {
+		battleModel = new BattleModel(this);
+
 		//initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
 		scenes.put(SceneType.LOAD_SCREEN, sceneFactory.makeLoadingScene(this));
 		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene(this));
 		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(this));
-		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene(this));
+		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene(battleModel));
 		scenes.putAll(sceneFactory.additionalScenes());
 		scene = scenes.get(SceneType.LOAD_SCREEN);
 	}
@@ -126,7 +166,9 @@ public class Model {
 		assets.load("moves/rock.json", CeldroidBattleMove.class);
 		assets.load("monsters/fire1.json", CeldroidProperties.class);
 		assets.load("monsters/rock1.json", CeldroidProperties.class);
+		assets.load("monsters/rock2.json", CeldroidProperties.class);
 		assets.load("monsters/water1.json", CeldroidProperties.class);
+		assets.load("trainers/red.json", TrainerProperties.class);
 		//TODO: load music using assets.load(..., Music.class),
 		//and sound effects using assets.load(..., Sound.class)
 	}

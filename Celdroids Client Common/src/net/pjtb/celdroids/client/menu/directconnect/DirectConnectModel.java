@@ -9,19 +9,18 @@ import net.pjtb.celdroids.NioSession;
 import net.pjtb.celdroids.client.ConnectStatusPopupModel;
 import net.pjtb.celdroids.client.ControllerHelper;
 import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.PlayerBattleOpponent;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputProcessor;
 
 public class DirectConnectModel extends ConnectStatusPopupModel implements InputProcessor {
-	public final Model parent;
-
 	public String entered;
 	public boolean inactive;
 
 	public DirectConnectModel(Model model) {
-		this.parent = model;
+		super(model);
 
 		entered = "";
 	}
@@ -44,7 +43,7 @@ public class DirectConnectModel extends ConnectStatusPopupModel implements Input
 	}
 
 	@Override
-	public NioSession update(float tDelta) {
+	public PlayerBattleOpponent update(float tDelta) {
 		int cursorX = ControllerHelper.getCursorX();
 		int cursorY = ControllerHelper.getCursorY();
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;

@@ -9,10 +9,8 @@ import net.pjtb.celdroids.client.ConnectStatusPopupModel;
 import net.pjtb.celdroids.client.Model;
 
 public class AwaitingClientModel extends ConnectStatusPopupModel {
-	public final Model parent;
-
 	public AwaitingClientModel(Model model) {
-		this.parent = model;
+		super(model);
 	}
 
 	public void swappedIn() {

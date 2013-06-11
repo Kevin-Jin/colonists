@@ -1,8 +1,9 @@
 package net.pjtb.celdroids.client.menu.lobby;
 
 import net.pjtb.celdroids.Constants;
-import net.pjtb.celdroids.NioSession;
+import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.PlayerBattleOpponent;
 import net.pjtb.celdroids.client.Scene;
 
 import com.badlogic.gdx.Gdx;
@@ -23,6 +24,8 @@ public class AwaitingClientScene implements Scene {
 	private final float successTint, errorTint;
 	private final ShapeRenderer shapeRenderer;
 
+	private final Button close;
+
 	public AwaitingClientScene(Model m, Scene mainMenuScene) {
 		this.model = new AwaitingClientModel(m);
 
@@ -31,19 +34,31 @@ public class AwaitingClientScene implements Scene {
 		successTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0xFF << 8 | 0xFF);
 		errorTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
 		shapeRenderer = new ShapeRenderer();
+
+		this.close = new Button(m, "Okay", new Runnable() {
+			@Override
+			public void run() {
+				swappedOut(true);
+				parentScene.setSubscene(null);
+			}
+		}, (Constants.WIDTH - 256) / 2, Constants.HEIGHT - 192, 256, 128);
 	}
 
 	@Override
 	public void update(float tDelta) {
-		NioSession ses = model.update(tDelta);
-		if (ses != null) {
+		PlayerBattleOpponent op = model.update(tDelta);
+		if (op != null) {
 			swappedOut(true);
 			model.parent.scene.setSubscene(null);
 			model.parent.scene.swappedOut(true);
 			model.parent.scene = model.parent.scenes.get(Model.SceneType.BATTLE);
+			model.parent.battleModel.initRemote(op);
 			model.parent.scene.swappedIn(true);
 			return;
 		}
+
+		close.hidden = !model.error;
+		close.update(tDelta);
 
 		if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 			swappedOut(true);
@@ -66,8 +81,11 @@ public class AwaitingClientScene implements Scene {
 		batch.begin();
 
 		Sprite s = model.parent.sprites.get("ui/popup/confirmBackground");
-		s.setBounds((Constants.WIDTH - 970) / 2, (Constants.HEIGHT - 300), 970, 300);
+		s.setBounds((Constants.WIDTH - 970) / 2, Constants.HEIGHT - 300, 970, 300);
 		s.draw(batch);
+
+		if (model.error)
+			close.draw(batch);
 
 		BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 		if (model.message != null) {

@@ -45,7 +45,7 @@ public class SummonAnimation extends BattleAnimation {
 				s.flip(true, false);
 			s.draw(batch);
 		} else {
-			Sprite s = model.parent.sprites.get("monster/rock/evol2");
+			Sprite s = model.parent.sprites.get(model.op.party.get(0).monsterType.sprite);
 			float sideDimension = Math.min(moveElapsedTime / (ANIMATION_TIME - FREEZE_TIME), 1) * 120;
 			s.setBounds(Constants.WIDTH - 200 - 120 + (120 - sideDimension) / 2, (Constants.HEIGHT - sideDimension) / 2, sideDimension, sideDimension);
 			if (s.isFlipX())

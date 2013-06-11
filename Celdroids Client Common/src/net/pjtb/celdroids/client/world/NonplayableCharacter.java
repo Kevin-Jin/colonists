@@ -11,6 +11,7 @@ public class NonplayableCharacter implements Entity {
 	private final WorldModel model;
 
 	private final String spritePathPrefix;
+	public final String trainerProps;
 
 	private DirectionalPad.State dirInProgress;
 	private double posX, posY;
@@ -21,7 +22,7 @@ public class NonplayableCharacter implements Entity {
 
 	private boolean collided;
 
-	public NonplayableCharacter(WorldModel model, int posX, int posY) {
+	public NonplayableCharacter(WorldModel model, int posX, int posY, String trainerProps) {
 		this.model = model;
 		this.posX = posX;
 		this.posY = posY;
@@ -29,6 +30,8 @@ public class NonplayableCharacter implements Entity {
 		spritePathPrefix = "character/human2/";
 		dirInProgress = DirectionalPad.State.NONE;
 		sprite = spritePathPrefix + "down/0";
+
+		this.trainerProps = trainerProps;
 	}
 
 	@Override

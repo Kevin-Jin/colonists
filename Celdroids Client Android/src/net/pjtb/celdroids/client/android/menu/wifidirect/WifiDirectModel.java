@@ -30,6 +30,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	private BroadcastReceiver wifiDirectReceiver;
 
 	public WifiDirectModel(AndroidModel model) {
+		super(model);
 		this.parent = model;
 	}
 

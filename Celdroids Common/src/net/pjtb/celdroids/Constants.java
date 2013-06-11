@@ -9,4 +9,7 @@ public class Constants {
 	public static final int BUFFER_SIZE = 1024;
 
 	public static final float SPLASH_SCREEN_MIN_TIME = 0;
+
+	public static final int FILE_SIGNATURE = 0xCE1D01D5;
+	public static final short VERSION = 1;
 }

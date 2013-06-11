@@ -262,6 +262,9 @@ public class NioSession implements Session {
 
 		@Override
 		public void close() {
+			//TODO: figure out whether we actually wrote n bytes. if not, log warning and pad buffer with zeros.
+			//...or, go back to where length was written and overwrite it. we can get eliminate inefficient
+			//BufferedPacketWriter instances that way as long as we have an upper bound for packet length.
 			try {
 				sendOrQueue(writeBuf);
 			} catch (IOException e) {
@@ -311,32 +314,32 @@ public class NioSession implements Session {
 		@Override
 		public void putShort(short s) {
 			putBytes(
-				(byte) ((s & 0xFF)),
-				(byte) ((s >>> 8) & 0xFF)
+				(byte) ((s >>> 8) & 0xFF),
+				(byte) ((s & 0xFF))
 			);
 		}
 
 		@Override
 		public void putInt(int i) {
 			putBytes(
-				(byte) ((i & 0xFF)),
-				(byte) ((i >>> 8) & 0xFF),
+				(byte) ((i >>> 24) & 0xFF),
 				(byte) ((i >>> 16) & 0xFF),
-				(byte) ((i >>> 24) & 0xFF)
+				(byte) ((i >>> 8) & 0xFF),
+				(byte) ((i & 0xFF))
 			);
 		}
 
 		@Override
 		public void putLong(long l) {
 			putBytes(
-				(byte) ((l & 0xFF)),
-				(byte) ((l >>> 8) & 0xFF),
-				(byte) ((l >>> 16) & 0xFF),
-				(byte) ((l >>> 24) & 0xFF),
-				(byte) ((l >>> 32) & 0xFF),
-				(byte) ((l >>> 40) & 0xFF),
+				(byte) ((l >>> 56) & 0xFF),
 				(byte) ((l >>> 48) & 0xFF),
-				(byte) ((l >>> 56) & 0xFF)
+				(byte) ((l >>> 40) & 0xFF),
+				(byte) ((l >>> 32) & 0xFF),
+				(byte) ((l >>> 24) & 0xFF),
+				(byte) ((l >>> 16) & 0xFF),
+				(byte) ((l >>> 8) & 0xFF),
+				(byte) ((l & 0xFF))
 			);
 		}
 

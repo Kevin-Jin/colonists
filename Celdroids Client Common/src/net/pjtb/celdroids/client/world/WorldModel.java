@@ -6,6 +6,7 @@ import java.util.List;
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.TrainerProperties;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
@@ -34,7 +35,7 @@ public class WorldModel {
 		mapBoundsRows = MAP_VIEW_ROWS;
 		grid = new Entity[mapBoundsRows][mapBoundsColumns];
 		grid[6][7] = avatar;
-		grid[5][7] = new NonplayableCharacter(this, 7, 5);
+		grid[5][7] = new NonplayableCharacter(this, 7, 5, "trainers/red.json");
 		animatedEntities = new ArrayList<Entity>();
 		animatedEntities.add(avatar);
 		animatedEntities.add(grid[5][7]);
@@ -44,6 +45,7 @@ public class WorldModel {
 			public void run() {
 				parent.scene.swappedOut(true);
 				parent.scene = parent.scenes.get(Model.SceneType.BATTLE);
+				parent.battleModel.initLocal(parent.assets.<TrainerProperties>get(((NonplayableCharacter) getEntity(avatar.getNextLocation())).trainerProps).createInstance());
 				parent.scene.swappedIn(true);
 			}
 		};
@@ -59,8 +61,7 @@ public class WorldModel {
 	}
 
 	public void updateActionButtonBehavior() {
-		Entity ent;
-		if (avatar.isStationary() && (ent = getEntity(avatar.getNextLocation())) != null && ent instanceof NonplayableCharacter) {
+		if (avatar.isStationary() && getEntity(avatar.getNextLocation()) instanceof NonplayableCharacter) {
 			//TrainerProperties loads from XML/JSON for NPCs, socket messages for multiplayer
 			//TrainerProperties { trainerName, party[], appearance }
 			//parent.battleModel.properties = new net.pjtb.celdroids.client.TrainerProperties();

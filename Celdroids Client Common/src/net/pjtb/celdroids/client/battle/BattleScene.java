@@ -1,15 +1,11 @@
 package net.pjtb.celdroids.client.battle;
 
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.client.Button;
 import net.pjtb.celdroids.client.CeldroidBattleMove;
 import net.pjtb.celdroids.client.CeldroidMonster;
-import net.pjtb.celdroids.client.ConfirmPopupScene;
-import net.pjtb.celdroids.client.Model;
 import net.pjtb.celdroids.client.Scene;
 
 import com.badlogic.gdx.Gdx;
@@ -21,11 +17,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class BattleScene implements Scene {
-	private enum BattleSubSceneType { CONFIRM_FLEE_POPUP }
-
 	private final BattleModel model;
 
-	protected final Map<BattleSubSceneType, Scene> subScenes;
 	private Scene subScene;
 
 	private final FanSelect partySwitcher, attackList;
@@ -39,13 +32,10 @@ public class BattleScene implements Scene {
 	private String text;
 	private float remainingTextTime;
 
-	public BattleScene(Model m) {
-		this.model = new BattleModel(m);
+	public BattleScene(BattleModel model) {
+		this.model = model;
 
-		subScenes = new EnumMap<BattleSubSceneType, Scene>(BattleSubSceneType.class);
-		subScenes.put(BattleSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m, "Are you sure you want to flee?", Model.SceneType.WORLD));
-
-		runButton = new Button(m, "Flee", new Runnable() {
+		runButton = new Button(model.parent, "Flee", new Runnable() {
 			@Override
 			public void run() {
 				flee();
@@ -64,7 +54,7 @@ public class BattleScene implements Scene {
 
 	private void flee() {
 		if (model.canAct) {
-			subScene = subScenes.get(BattleSubSceneType.CONFIRM_FLEE_POPUP);
+			subScene = model.subScenes.get(BattleModel.BattleSubSceneType.CONFIRM_FLEE_POPUP);
 			subScene.swappedIn(true);
 		}
 	}
@@ -128,7 +118,7 @@ public class BattleScene implements Scene {
 			model.showOpponentCeldroid = model.showSelfCeldroid = false;
 			smnAnimation.reset();
 			model.currentAnimation = smnAnimation;
-			text = "Enemy summoned " + "Rock2";
+			text = model.op.name + " summoned " + model.op.party.get(0).getName();
 			remainingTextTime = 2;
 			model.canAct = false;
 		}
@@ -147,10 +137,9 @@ public class BattleScene implements Scene {
 	}
 
 	private void checkForOpponentMove() {
-		//TODO: check for network or AI response
-		atkAnimation.reset(model.parent.assets.get("moves/rock.json", CeldroidBattleMove.class));
+		atkAnimation.reset(model.parent.assets.get(model.op.nextMove(), CeldroidBattleMove.class));
 		model.currentAnimation = atkAnimation;
-		text = "Enemy " + "Rock2" + " used " + atkAnimation.move.name + "!";
+		text = "Enemy " + model.op.party.get(0).getName() + " used " + atkAnimation.move.name + "!";
 		remainingTextTime = 2;
 	}
 
@@ -209,7 +198,7 @@ public class BattleScene implements Scene {
 			s.flip(true, false);
 		s.draw(batch);
 		if (model.showOpponentCeldroid) {
-			s = model.parent.sprites.get("monster/rock/evol2");
+			s = model.parent.sprites.get(model.op.party.get(0).monsterType.sprite);
 			s.setBounds(Constants.WIDTH - 200 - 120, (Constants.HEIGHT - 120) / 2, 120, 120);
 			if (s.isFlipX())
 				s.flip(true, false);
