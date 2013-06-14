@@ -9,7 +9,7 @@ public class DismissAnimation extends BattleAnimation {
 	private static final float ANIMATION_TIME = 1.5f; //total time to show animation, in seconds
 	private static final float FREEZE_TIME = 1f; //time out of total to show final animation state, in seconds
 
-	private String sprite;
+	public int swapWith;
 
 	public DismissAnimation(BattleModel model) {
 		super(model);
@@ -23,6 +23,7 @@ public class DismissAnimation extends BattleAnimation {
 
 	@Override
 	public void draw(SpriteBatch batch) {
+		String sprite = model.self.party.get(swapWith).monsterType.sprite;
 		if (model.selfTurn) {
 			Sprite s = model.parent.sprites.get(sprite);
 			float sideDimension = Math.max(1 - moveElapsedTime / (ANIMATION_TIME - FREEZE_TIME), 0) * 120;
@@ -40,11 +41,11 @@ public class DismissAnimation extends BattleAnimation {
 		}
 	}
 
-	public void reset(String sprite) {
+	public void reset(int swapWith) {
 		moveElapsedTime = 0;
 		moveEndTime = ANIMATION_TIME;
 
-		this.sprite = sprite;
+		this.swapWith = swapWith;
 		if (model.selfTurn)
 			model.showSelfCeldroid = false;
 		else

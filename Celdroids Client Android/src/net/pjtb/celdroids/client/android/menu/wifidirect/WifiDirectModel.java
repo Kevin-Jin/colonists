@@ -29,6 +29,8 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	private IntentFilter wifiDirectFilter;
 	private BroadcastReceiver wifiDirectReceiver;
 
+	public boolean isHost;
+
 	public WifiDirectModel(AndroidModel model) {
 		super(model);
 		this.parent = model;
@@ -90,10 +92,13 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 									@Override
 									public void run() {
 										progress("Attempting connection...");
-										if (info.groupFormed && info.isGroupOwner)
+										if (info.groupFormed && info.isGroupOwner) {
 											state = NioSession.beginCreateServer(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
-										else
+											isHost = true;
+										} else {
 											state = NioSession.beginCreateClient(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
+											isHost = false;
+										}
 									}
 								});
 							}

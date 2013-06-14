@@ -45,7 +45,7 @@ public class WorldModel {
 			public void run() {
 				parent.scene.swappedOut(true);
 				parent.scene = parent.scenes.get(Model.SceneType.BATTLE);
-				parent.battleModel.initLocal(parent.assets.<TrainerProperties>get(((NonplayableCharacter) getEntity(avatar.getNextLocation())).trainerProps).createInstance());
+				parent.battleModel.initLocal(parent.assets.<TrainerProperties>get(((NonplayableCharacter) getEntity(avatar.getNextLocation())).trainerProps).createInstance(parent.battleModel));
 				parent.scene.swappedIn(true);
 			}
 		};

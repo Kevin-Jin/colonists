@@ -52,7 +52,7 @@ public class FanSelect implements ViewComponent {
 		this.triggerRadiusSq = triggerRadius * triggerRadius;
 		this.selectionRadius = selectionRadius;
 		this.outerBoundaryRadiusSq = (selectionRadius + 100) * (selectionRadius + 100);
-		fontTint = NumberUtils.intToFloatColor(0x7F << 24 | 0xAF << 16 | 0xAF << 8 | 0xAF);
+		fontTint = NumberUtils.intToFloatColor(0x7F << 24 | 0x7F << 16 | 0x7F << 8 | 0x7F);
 		selectedFontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0x00);
 		groupFontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
 	}

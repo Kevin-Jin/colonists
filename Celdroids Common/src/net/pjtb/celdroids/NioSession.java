@@ -209,7 +209,6 @@ public class NioSession implements Session {
 				ByteBuffer buf = iter.next();
 				buf.flip();
 				channel.write(buf);
-				buf.compact();
 				if (buf.remaining() != 0) {
 					success = false;
 				} else {
@@ -219,6 +218,7 @@ public class NioSession implements Session {
 						canUseFastWriteBuf = true;
 					}
 				}
+				buf.compact();
 			}
 			if (success) {
 				SelectionKey key = channel.keyFor(selector);
@@ -235,8 +235,8 @@ public class NioSession implements Session {
 			if (flushed && !bufFlushed) {
 				buf.flip();
 				channel.write(buf);
-				buf.compact();
 				flushed = (buf.remaining() == 0);
+				buf.compact();
 			}
 			if (!flushed) {
 				if (buf == fastWriteBuf) {

@@ -24,13 +24,13 @@ public class BattleScene implements Scene {
 	private final FanSelect partySwitcher, attackList;
 	private final Button runButton;
 
-	private final AttackAnimation atkAnimation;
-	private final SummonAnimation smnAnimation;
-	private final DismissAnimation dmAnimation;
-
 	private float fontTint;
 	private String text;
 	private float remainingTextTime;
+
+	private CeldroidMonster[] selfPartyNoLeader;
+	private String[] selfPartyNoLeaderNames;
+	private FanSelect.SelectTask partySwitchTask;
 
 	public BattleScene(BattleModel model) {
 		this.model = model;
@@ -45,10 +45,6 @@ public class BattleScene implements Scene {
 		partySwitcher = new FanSelect(model.parent, 10 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Party");
 		attackList = new FanSelect(model.parent, 500 + 120 / 2, Constants.HEIGHT / 2, -Math.PI / 3, Math.PI / 3, 60, 200, "Attack");
 
-		atkAnimation = new AttackAnimation(model);
-		smnAnimation = new SummonAnimation(model);
-		dmAnimation = new DismissAnimation(model);
-
 		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0xFF << 16 | 0x00 << 8 | 0x00);
 	}
 
@@ -59,68 +55,35 @@ public class BattleScene implements Scene {
 		}
 	}
 
-	private void calledMonster() {
-		final List<CeldroidBattleMove> moves = model.party.get(0).monsterType.moves;
-		String[] moveNames = new String[moves.size()];
-		for (int i = 0; i < moveNames.length; i++)
-			moveNames[i] = moves.get(i).name;
-
-		attackList.setSelections(new FanSelect.SelectTask() {
-			@Override
-			public void selected(int index) {
-				atkAnimation.reset(moves.get(index));
-				model.currentAnimation = atkAnimation;
-				text = model.party.get(0).getName() + " used " + atkAnimation.move.name + "!";
-				remainingTextTime = 2;
-				model.canAct = false;
-			}
-		}, moveNames);
-
-		smnAnimation.reset();
-		model.currentAnimation = smnAnimation;
-		text = "Go, " + model.party.get(0).getName() + "!";
-		remainingTextTime = 2;
-		model.canAct = false;
-	}
-
 	@Override
 	public void swappedIn(boolean transition) {
-		Gdx.gl10.glClearColor(1f, 1f, 1f, 1);
+		Gdx.gl10.glClearColor(0.5f, 1f, 0.5f, 1);
 
 		if (transition) {
 			model.selfTurn = model.canAct = false;
-			model.updateParty();
-			smnAnimation.initial = true;
 
-			final CeldroidMonster[] restOfParty = model.party.subList(1, model.party.size()).toArray(new CeldroidMonster[model.party.size() - 1]);
-			final String[] selectablePartyNames = new String[restOfParty.length];
-			for (int i = 0; i < restOfParty.length; i++)
-				selectablePartyNames[i] = restOfParty[i].getName();
-			final FanSelect.SelectTask[] partySwitchTask = new FanSelect.SelectTask[1];
-			partySwitchTask[0] = new FanSelect.SelectTask() {
+			selfPartyNoLeader = model.self.party.subList(1, model.self.party.size()).toArray(new CeldroidMonster[model.self.party.size() - 1]);
+			selfPartyNoLeaderNames = new String[selfPartyNoLeader.length];
+			partySwitchTask = new FanSelect.SelectTask() {
 				@Override
 				public void selected(int index) {
-					model.swapPartyLead(index + 1);
-					restOfParty[index] = model.party.get(index + 1);
-					for (int i = 0; i < restOfParty.length; i++)
-						selectablePartyNames[i] = restOfParty[i].getName();
-					partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
+					model.self.dmAnimation.reset(index + 1);
+					model.self.sendMove(model.self.dmAnimation);
+					model.op.sendMove(model.self.dmAnimation);
 
-					dmAnimation.reset(model.party.get(index + 1).monsterType.sprite);
-					model.currentAnimation = dmAnimation;
-					text = "Come back, " + model.party.get(index + 1).getName() + "!";
-					remainingTextTime = 2;
-					model.canAct = false;
+					model.self.smnAnimation.reset();
+					model.self.sendMove(model.self.smnAnimation);
+					model.op.sendMove(model.self.smnAnimation);
 				}
 			};
-			partySwitcher.setSelections(partySwitchTask[0], selectablePartyNames);
+			for (int i = 0; i < selfPartyNoLeader.length; i++)
+				selfPartyNoLeaderNames[i] = selfPartyNoLeader[i].getName();
+			partySwitcher.setSelections(partySwitchTask, selfPartyNoLeaderNames);
 
 			model.showOpponentCeldroid = model.showSelfCeldroid = false;
-			smnAnimation.reset();
-			model.currentAnimation = smnAnimation;
-			text = model.op.name + " summoned " + model.op.party.get(0).getName();
-			remainingTextTime = 2;
-			model.canAct = false;
+			model.self.smnAnimation.reset();
+			model.self.sendMove(model.self.smnAnimation);
+			model.op.sendMove(model.self.smnAnimation);
 		}
 	}
 
@@ -136,11 +99,63 @@ public class BattleScene implements Scene {
 			subScene.resume();
 	}
 
+	private void checkForOwnMove() {
+		model.currentAnimation = model.self.getNextMove(model);
+		if (model.currentAnimation instanceof AttackAnimation) {
+			text = model.self.party.get(0).getName() + " used " + model.self.atkAnimation.move.name + "!";
+			remainingTextTime = 2;
+			model.canAct = false;
+		} else if (model.currentAnimation instanceof SummonAnimation) {
+			final List<CeldroidBattleMove> moves = model.self.party.get(0).monsterType.moves;
+			String[] moveNames = new String[moves.size()];
+			for (int i = 0; i < moveNames.length; i++)
+				moveNames[i] = moves.get(i).name;
+			attackList.setSelections(new FanSelect.SelectTask() {
+				@Override
+				public void selected(int index) {
+					CeldroidBattleMove move = moves.get(index);
+					model.self.atkAnimation.reset(move);
+					model.self.sendMove(model.self.atkAnimation);
+					model.op.sendMove(model.self.atkAnimation);
+				}
+			}, moveNames);
+
+			text = "Go, " + model.self.party.get(0).getName() + "!";
+			remainingTextTime = 2;
+			model.canAct = false;
+		} else if (model.currentAnimation instanceof DismissAnimation) {
+			int swapWith = ((DismissAnimation) model.currentAnimation).swapWith;
+			CeldroidMonster currentLead = model.self.party.get(0);
+			model.self.party.set(0, model.self.party.get(swapWith));
+			model.self.party.set(swapWith, currentLead);
+			selfPartyNoLeader[swapWith - 1] = model.self.party.get(swapWith);
+			for (int i = 0; i < selfPartyNoLeader.length; i++)
+				selfPartyNoLeaderNames[i] = selfPartyNoLeader[i].getName();
+			partySwitcher.setSelections(partySwitchTask, selfPartyNoLeaderNames);
+
+			text = "Come back, " + model.self.party.get(swapWith).getName() + "!";
+			remainingTextTime = 2;
+			model.canAct = false;
+		}
+	}
+
 	private void checkForOpponentMove() {
-		atkAnimation.reset(model.parent.assets.get(model.op.nextMove(), CeldroidBattleMove.class));
-		model.currentAnimation = atkAnimation;
-		text = "Enemy " + model.op.party.get(0).getName() + " used " + atkAnimation.move.name + "!";
-		remainingTextTime = 2;
+		model.currentAnimation = model.op.getNextMove(model);
+		if (model.currentAnimation instanceof AttackAnimation) {
+			text = "Enemy " + model.op.party.get(0).getName() + " used " + model.op.atkAnimation.move.name + "!";
+			remainingTextTime = 2;
+		} else if (model.currentAnimation instanceof SummonAnimation) {
+			text = model.op.name + " summoned " + model.op.party.get(0).getName();
+			remainingTextTime = 2;
+		} else if (model.currentAnimation instanceof DismissAnimation) {
+			int swapWith = ((DismissAnimation) model.currentAnimation).swapWith;
+			CeldroidMonster currentLead = model.op.party.get(0);
+			model.op.party.set(0, model.op.party.get(swapWith));
+			model.op.party.set(swapWith, currentLead);
+
+			text = model.op.name + " called back " + model.op.party.get(swapWith).getName();
+			remainingTextTime = 2;
+		}
 	}
 
 	@Override
@@ -161,9 +176,9 @@ public class BattleScene implements Scene {
 		if (model.currentAnimation != null)
 			model.currentAnimation.update(tDelta);
 		if (model.currentAnimation == null)
-			if (!model.showOpponentCeldroid && !model.selfTurn || !model.showSelfCeldroid && model.selfTurn)
-				calledMonster();
-			else if (!model.selfTurn)
+			if (model.selfTurn)
+				checkForOwnMove();
+			else
 				checkForOpponentMove();
 
 		if (subScene == null) {
@@ -185,7 +200,7 @@ public class BattleScene implements Scene {
 			s.flip(true, false);
 		s.draw(batch);
 		if (model.showSelfCeldroid) {
-			s = model.parent.sprites.get(model.party.get(0).monsterType.sprite);
+			s = model.parent.sprites.get(model.self.party.get(0).monsterType.sprite);
 			s.setBounds(500, (Constants.HEIGHT - 120) / 2, 120, 120);
 			if (!s.isFlipX())
 				s.flip(true, false);

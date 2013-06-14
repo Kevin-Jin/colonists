@@ -1,7 +1,7 @@
 package net.pjtb.celdroids.client.android.menu.wifidirect;
 
 import net.pjtb.celdroids.client.Model;
-import net.pjtb.celdroids.client.PlayerBattleOpponent;
+import net.pjtb.celdroids.client.NetworkPlayerBattleOpponent;
 import net.pjtb.celdroids.client.Scene;
 
 import com.badlogic.gdx.Gdx;
@@ -36,13 +36,13 @@ public class WifiDirectSelectionScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
-		PlayerBattleOpponent op = model.update(tDelta);
+		NetworkPlayerBattleOpponent op = model.update(tDelta);
 		if (op != null) {
 			swappedOut(true);
 			model.parent.scene.setSubscene(null);
 			model.parent.scene.swappedOut(true);
 			model.parent.scene = model.parent.scenes.get(Model.SceneType.BATTLE);
-			model.parent.battleModel.initRemote(op);
+			model.parent.battleModel.initRemote(op, !model.isHost);
 			model.parent.scene.swappedIn(true);
 			return;
 		}

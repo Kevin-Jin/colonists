@@ -28,28 +28,32 @@ public abstract class ConnectStatusPopupModel {
 		error = true;
 	}
 
-	public PlayerBattleOpponent update(float tDelta) {
+	public NetworkPlayerBattleOpponent update(float tDelta) {
 		if (session != null) {
 			Session.PacketReader reader = session.read();
 			if (reader == null)
 				return null;
 
-			if (reader.getInt() != Constants.FILE_SIGNATURE) {
-				session.close();
-				failed("Failed service check");
-				session = null;
-				return null;
+			NetworkPlayerBattleOpponent op;
+			try {
+				if (reader.getInt() != Constants.FILE_SIGNATURE) {
+					session.close();
+					failed("Failed service check");
+					session = null;
+					return null;
+				}
+				if (reader.getShort() != Constants.VERSION) {
+					session.close();
+					failed("Peer is on a different version");
+					session = null;
+					return null;
+				}
+				op = new NetworkPlayerBattleOpponent(reader.getLengthPrefixedAsciiString(), session, parent.battleModel);
+				for (byte i = reader.getByte(); i > 0; --i)
+					op.party.add(new CeldroidMonster(parent.assets.<CeldroidProperties>get(reader.getLengthPrefixedAsciiString()), null));
+			} finally {
+				reader.close();
 			}
-			if (reader.getShort() != Constants.VERSION) {
-				session.close();
-				failed("Peer is on a different version");
-				session = null;
-				return null;
-			}
-			String name = reader.getLengthPrefixedAsciiString();
-			PlayerBattleOpponent op = new PlayerBattleOpponent(name, session);
-			for (byte i = reader.getByte(); i > 0; --i)
-				op.party.add(new CeldroidMonster(parent.assets.<CeldroidProperties>get(reader.getLengthPrefixedAsciiString()), null));
 			progress("Success!");
 			session = null;
 			return op;

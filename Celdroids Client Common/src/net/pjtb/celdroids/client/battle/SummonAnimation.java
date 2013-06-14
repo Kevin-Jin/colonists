@@ -9,7 +9,7 @@ public class SummonAnimation extends BattleAnimation {
 	private static final float ANIMATION_TIME = 1.5f; //total time to show animation, in seconds
 	private static final float FREEZE_TIME = 1f; //time out of total to show final animation state, in seconds
 
-	public boolean initial; //for special case at beginning of battle when we can move after we summon
+	public boolean swapTurnsAtEnd; //for special case at beginning of battle when we can move after we summon
 
 	public SummonAnimation(BattleModel model) {
 		super(model);
@@ -23,9 +23,9 @@ public class SummonAnimation extends BattleAnimation {
 		if (moveElapsedTime > moveEndTime) {
 			if (wasOwnTurn) {
 				model.showSelfCeldroid = true;
-				if (initial) {
+				if (!swapTurnsAtEnd) {
 					//TODO: assign useTurn to true before super.update, instead of having to do this...
-					initial = false;
+					swapTurnsAtEnd = true;
 					model.selfTurn = !model.selfTurn;
 					model.canAct = model.selfTurn;
 				}
@@ -38,7 +38,7 @@ public class SummonAnimation extends BattleAnimation {
 	@Override
 	public void draw(SpriteBatch batch) {
 		if (model.selfTurn) {
-			Sprite s = model.parent.sprites.get(model.party.get(0).monsterType.sprite);
+			Sprite s = model.parent.sprites.get(model.self.party.get(0).monsterType.sprite);
 			float sideDimension = Math.min(moveElapsedTime / (ANIMATION_TIME - FREEZE_TIME), 1) * 120;
 			s.setBounds(500 + (120 - sideDimension) / 2, (Constants.HEIGHT - sideDimension) / 2, sideDimension, sideDimension);
 			if (!s.isFlipX())

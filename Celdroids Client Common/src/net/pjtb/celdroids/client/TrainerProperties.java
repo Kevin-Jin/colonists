@@ -2,6 +2,8 @@ package net.pjtb.celdroids.client;
 
 import java.util.ArrayList;
 
+import net.pjtb.celdroids.client.battle.BattleModel;
+
 public class TrainerProperties {
 	public final String trainerName;
 	public final ArrayList<CeldroidProperties> monsters;
@@ -16,8 +18,8 @@ public class TrainerProperties {
 		monsters = null;
 	}
 
-	public AiBattleOpponent createInstance() {
-		AiBattleOpponent op = new AiBattleOpponent(trainerName);
+	public AiBattleOpponent createInstance(BattleModel model) {
+		AiBattleOpponent op = new AiBattleOpponent(trainerName, model);
 		for (CeldroidProperties monster : monsters)
 			op.party.add(new CeldroidMonster(monster, null));
 		return op;
