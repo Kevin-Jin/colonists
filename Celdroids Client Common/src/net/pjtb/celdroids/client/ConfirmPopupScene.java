@@ -81,7 +81,7 @@ public class ConfirmPopupScene implements Scene {
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.FilledRectangle);
 		shapeRenderer.setColor(0, 0, 0, 0.5f);
-		shapeRenderer.filledRect(0, 0, Constants.WIDTH, Constants.HEIGHT);
+		shapeRenderer.filledRect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
 		shapeRenderer.end();
 		Gdx.gl10.glDisable(GL10.GL_BLEND);
 		batch.begin();

@@ -76,7 +76,7 @@ public class Model {
 					@SuppressWarnings("rawtypes")
 					@Override
 					public CeldroidBattleMove read(Json json, Object jsonData, Class type) {
-						CeldroidBattleMove move = assets.get(jsonData.toString());
+						CeldroidBattleMove move = assets.get(jsonData.toString(), CeldroidBattleMove.class);
 						if (move == null)
 							throw new NullPointerException();
 						return move;
@@ -109,7 +109,7 @@ public class Model {
 					@SuppressWarnings("rawtypes")
 					@Override
 					public CeldroidProperties read(Json json, Object jsonData, Class type) {
-						CeldroidProperties celdroid = assets.get(jsonData.toString());
+						CeldroidProperties celdroid = assets.get(jsonData.toString(), CeldroidProperties.class);
 						if (celdroid == null)
 							throw new NullPointerException();
 						return celdroid;

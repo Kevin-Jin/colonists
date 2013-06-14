@@ -23,16 +23,15 @@ public class DismissAnimation extends BattleAnimation {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		String sprite = model.self.party.get(swapWith).monsterType.sprite;
 		if (model.selfTurn) {
-			Sprite s = model.parent.sprites.get(sprite);
+			Sprite s = model.parent.sprites.get(model.self.party.get(swapWith).monsterType.sprite);
 			float sideDimension = Math.max(1 - moveElapsedTime / (ANIMATION_TIME - FREEZE_TIME), 0) * 120;
 			s.setBounds(500 + (120 - sideDimension) / 2, (Constants.HEIGHT - sideDimension) / 2, sideDimension, sideDimension);
 			if (!s.isFlipX())
 				s.flip(true, false);
 			s.draw(batch);
 		} else {
-			Sprite s = model.parent.sprites.get(sprite);
+			Sprite s = model.parent.sprites.get(model.op.party.get(swapWith).monsterType.sprite);
 			float sideDimension = Math.max(1 - moveElapsedTime / (ANIMATION_TIME - FREEZE_TIME), 0) * 120;
 			s.setBounds(Constants.WIDTH - 200 - 120 + (120 - sideDimension) / 2, (Constants.HEIGHT - sideDimension) / 2, sideDimension, sideDimension);
 			if (s.isFlipX())

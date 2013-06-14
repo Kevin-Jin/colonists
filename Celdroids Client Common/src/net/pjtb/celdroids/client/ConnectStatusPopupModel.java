@@ -2,7 +2,6 @@ package net.pjtb.celdroids.client;
 
 import net.pjtb.celdroids.Constants;
 import net.pjtb.celdroids.NioSession;
-import net.pjtb.celdroids.NioSession.IncompleteNioSession;
 import net.pjtb.celdroids.Session;
 
 public abstract class ConnectStatusPopupModel {
@@ -11,8 +10,8 @@ public abstract class ConnectStatusPopupModel {
 	public boolean error;
 	public String message;
 
-	protected IncompleteNioSession state;
-	private NioSession session;
+	protected NioSession.IncompleteNioSession state;
+	private Session session;
 
 	protected ConnectStatusPopupModel(Model model) {
 		this.parent = model;
@@ -50,7 +49,7 @@ public abstract class ConnectStatusPopupModel {
 				}
 				op = new NetworkPlayerBattleOpponent(reader.getLengthPrefixedAsciiString(), session, parent.battleModel);
 				for (byte i = reader.getByte(); i > 0; --i)
-					op.party.add(new CeldroidMonster(parent.assets.<CeldroidProperties>get(reader.getLengthPrefixedAsciiString()), null));
+					op.party.add(new CeldroidMonster(parent.assets.get(reader.getLengthPrefixedAsciiString(), CeldroidProperties.class), null));
 			} finally {
 				reader.close();
 			}
