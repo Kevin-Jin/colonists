@@ -11,7 +11,7 @@ public abstract class ConnectStatusPopupModel {
 	public String message;
 
 	protected NioSession.IncompleteNioSession state;
-	private Session session;
+	protected Session session;
 
 	protected ConnectStatusPopupModel(Model model) {
 		this.parent = model;
