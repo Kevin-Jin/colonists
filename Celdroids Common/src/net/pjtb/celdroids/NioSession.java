@@ -487,7 +487,22 @@ public class NioSession implements Session {
 	}
 
 	public void close() {
-		
+		if (channel != null) {
+			try {
+				channel.close();
+			} catch (IOException ex) {
+				
+			}
+		}
+		if (selector != null) {
+			try {
+				selector.close();
+			} catch (IOException ex) {
+				
+			}
+		}
+		channel = null;
+		selector = null;
 	}
 
 	public static abstract class IncompleteNioSession {
@@ -687,6 +702,8 @@ public class NioSession implements Session {
 						clientChannel = channel.accept();
 				}
 				key.cancel();
+				channel.close();
+				channel = null;
 				clientChannel.configureBlocking(false);
 				clientChannel.register(selector, SelectionKey.OP_READ);
 				return new NioSession(selector, clientChannel);

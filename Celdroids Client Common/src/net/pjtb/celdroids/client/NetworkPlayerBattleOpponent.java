@@ -14,6 +14,8 @@ public class NetworkPlayerBattleOpponent extends BattleOpponent {
 
 	private final Session ses;
 
+	public Runnable onFlee;
+
 	public NetworkPlayerBattleOpponent(String name, Session ses, BattleModel model) {
 		super(name, model);
 		this.ses = ses;
@@ -69,5 +71,12 @@ public class NetworkPlayerBattleOpponent extends BattleOpponent {
 				writer.close();
 			}
 		}
+	}
+
+	@Override
+	public void sendFlee() {
+		ses.close();
+		if (onFlee != null)
+			onFlee.run();
 	}
 }

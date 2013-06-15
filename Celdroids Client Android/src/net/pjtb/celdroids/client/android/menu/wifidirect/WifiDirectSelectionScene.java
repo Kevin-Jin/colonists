@@ -45,6 +45,13 @@ public class WifiDirectSelectionScene implements Scene {
 	public void update(float tDelta) {
 		NetworkPlayerBattleOpponent op = model.update(tDelta);
 		if (op != null) {
+			op.onFlee = new Runnable() {
+				@Override
+				public void run() {
+					model.disconnect();
+				}
+			};
+
 			swappedOut(true);
 			model.parent.scene.setSubscene(null);
 			model.parent.scene.swappedOut(true);

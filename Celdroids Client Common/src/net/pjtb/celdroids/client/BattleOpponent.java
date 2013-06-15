@@ -36,4 +36,8 @@ public abstract class BattleOpponent {
 	}
 
 	public abstract void sendMove(BattleAnimation anim);
+
+	public void sendFlee() {
+		
+	}
 }

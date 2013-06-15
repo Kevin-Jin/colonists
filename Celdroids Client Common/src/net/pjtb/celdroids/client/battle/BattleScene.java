@@ -242,7 +242,8 @@ public class BattleScene implements Scene {
 
 	@Override
 	public void swappedOut(boolean transition) {
-		
+		if (transition)
+			model.op.sendFlee();
 	}
 
 	@Override

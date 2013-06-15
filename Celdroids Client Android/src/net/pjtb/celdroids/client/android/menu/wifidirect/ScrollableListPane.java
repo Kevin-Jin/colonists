@@ -87,12 +87,12 @@ public class ScrollableListPane<T> implements ViewComponent {
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		if (down && wasDown)
-			yOffset = Math.max(Math.min(Gdx.input.getDeltaY() + yOffset, SELECTION_HEIGHT / 2), -(SELECTION_HEIGHT + SPACER_HEIGHT) * selections.size() + Constants.HEIGHT - VERTICAL_MARGIN * 2 - SELECTION_HEIGHT / 2);
+			yOffset = Math.max(Math.min(Gdx.input.getDeltaY() + yOffset, SELECTION_HEIGHT / 2), Math.min(-(SELECTION_HEIGHT + SPACER_HEIGHT) * selections.size() + Constants.HEIGHT - VERTICAL_MARGIN * 2, 0) - SELECTION_HEIGHT / 2);
 		else
-			yOffset = Math.max(Math.min(yOffset, 0), -(SELECTION_HEIGHT + SPACER_HEIGHT) * selections.size() + Constants.HEIGHT - VERTICAL_MARGIN * 2);
+			yOffset = Math.max(Math.min(yOffset, 0), Math.min(-(SELECTION_HEIGHT + SPACER_HEIGHT) * selections.size() + Constants.HEIGHT - VERTICAL_MARGIN * 2, 0));
 
 		int relativeX = Gdx.input.getX() - HORIZONTAL_MARGIN;
-		int relativeY = Gdx.input.getY() - VERTICAL_MARGIN;
+		int relativeY = Gdx.input.getY() - yOffset - VERTICAL_MARGIN;
 
 		if (!down && wasDown) {
 			if (selected != -1) {
@@ -100,8 +100,8 @@ public class ScrollableListPane<T> implements ViewComponent {
 				selected = -1;
 			}
 		} else if (down && !wasDown) {
-			if (relativeX >= 0 && relativeX < Constants.WIDTH - HORIZONTAL_MARGIN && relativeY >= 0 && relativeY < Constants.HEIGHT - VERTICAL_MARGIN && !selections.isEmpty()) {
-				selected = (relativeY - yOffset) / (SELECTION_HEIGHT + SPACER_HEIGHT);
+			if (relativeX >= 0 && relativeX < Constants.WIDTH - HORIZONTAL_MARGIN && relativeY >= 0 && relativeY < (SELECTION_HEIGHT + SPACER_HEIGHT) * selections.size()) {
+				selected = relativeY / (SELECTION_HEIGHT + SPACER_HEIGHT);
 				initialSelectedYOffset = yOffset;
 			} else {
 				selected = -1;

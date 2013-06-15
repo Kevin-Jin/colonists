@@ -23,6 +23,7 @@ import android.os.Handler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 
+//TODO: 30 second timeout on "Getting peer permission...", or some more robust way of figuring out when the peer denies or ignores?
 public class WifiDirectModel extends ConnectStatusPopupModel {
 	public final AndroidModel parent;
 
@@ -32,7 +33,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	private WifiP2pManager.Channel channel;
 	private IntentFilter wifiDirectFilter;
 	private BroadcastReceiver wifiDirectReceiver;
-	private boolean scanning;
+	private boolean shouldScan, scanning;
 
 	public final ScrollableListPane<String> selections;
 
@@ -41,6 +42,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	public WifiDirectModel(AndroidModel model) {
 		super(model);
 		this.parent = model;
+		shouldScan = true;
 
 		mainThreadHandler = new Handler(parent.getApplication().getApplicationContext().getMainLooper());
 		selections = new ScrollableListPane<String>("Initializing...", model, new ScrollableListPane.SelectTask<String>() {
@@ -54,12 +56,13 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 						wifiDirect.connect(channel, config, new WifiP2pManager.ActionListener() {
 							@Override
 							public void onSuccess() {
-								//handled in WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION
+								shouldScan = false;
+								progress("Getting peer permission...");
 							}
 
 							@Override
-							public void onFailure(int reason) {
-								
+							public void onFailure(int reasonCode) {
+								failed("Could not connect, reason: " + reasonCode);
 							}
 						});
 					}
@@ -83,18 +86,18 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	@Override
 	public NetworkPlayerBattleOpponent update(float tDelta) {
 		NetworkPlayerBattleOpponent op = super.update(tDelta);
-		if (op == null && session == null && state == null && !scanning) {
+		if (op == null && session == null && state == null && !scanning && shouldScan) {
 			mainThreadHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					if (!scanning) {
+					if (!scanning && shouldScan) {
 						scanning = true;
 						wifiDirect.discoverPeers(channel, new WifiP2pManager.ActionListener() {
 							@Override
 							public void onSuccess() {
 								//handled in WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION
 							}
-			
+
 							@Override
 							public void onFailure(int reasonCode) {
 								failed("Could not scan, reason: " + reasonCode);
@@ -113,6 +116,8 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 			@Override
 			public void run() {
 				parent.getApplication().unregisterReceiver(wifiDirectReceiver);
+				scanning = false;
+				shouldScan = false;
 			}
 		});
 	}
@@ -145,10 +150,12 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 								@Override
 								public void onPeersAvailable(WifiP2pDeviceList peers) {
 									//TODO: pre-association service discovery
-									selections.text = null;
-									selections.clearSelections();
-									for (WifiP2pDevice device : peers.getDeviceList())
-										selections.addSelection(device.deviceName, device.deviceAddress);
+									if (shouldScan) {
+										selections.text = null;
+										selections.clearSelections();
+										for (WifiP2pDevice device : peers.getDeviceList())
+											selections.addSelection(device.deviceName, device.deviceAddress);
+									}
 								}
 							});
 						} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
@@ -159,16 +166,15 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 				                wifiDirect.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
 									@Override
 									public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-										scanning = false;
 										Gdx.app.postRunnable(new Runnable() {
 											@Override
 											public void run() {
 												progress("Attempting connection...");
 												if (info.groupFormed && info.isGroupOwner) {
-													state = NioSession.beginCreateServer(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
+													state = NioSession.beginCreateServer(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
 													isHost = true;
 												} else {
-													state = NioSession.beginCreateClient(new InetSocketAddress(Constants.PORT), Constants.SOCKET_TIMEOUT);
+													state = NioSession.beginCreateClient(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), Constants.PORT), Constants.SOCKET_TIMEOUT);
 													isHost = false;
 												}
 											}
@@ -183,7 +189,8 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 						}
 					}
 				};
-		
+
+				shouldScan = true;
 				parent.getApplication().registerReceiver(wifiDirectReceiver, wifiDirectFilter);
 			}
 		});
@@ -198,7 +205,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 					public void onSuccess() {
 						//handled in WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION
 					}
-		
+
 					@Override
 					public void onFailure(int reasonCode) {
 						
@@ -213,6 +220,8 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 			@Override
 			public void run() {
 				parent.getApplication().unregisterReceiver(wifiDirectReceiver);
+				scanning = false;
+				shouldScan = false;
 			}
 		});
 	}
@@ -221,6 +230,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 		mainThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
+				shouldScan = true;
 				parent.getApplication().registerReceiver(wifiDirectReceiver, wifiDirectFilter);
 			}
 		});
