@@ -1,5 +1,6 @@
 package net.pjtb.celdroids.client.desktop;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,8 +17,11 @@ public class DesktopGame {
 		boolean fullscreen = remainingArgs.remove("fullscreen");
 		boolean unlimitedFps = remainingArgs.remove("novsync");
 		boolean useFrame = remainingArgs.remove("frame");
+		File dbPath = new File(System.getProperty("net.pjtb.celdroids.client.desktop.state.dir", "state"));
+		if (!dbPath.exists() && !dbPath.mkdirs())
+			throw new RuntimeException("Could not create database directory " + dbPath.getAbsolutePath());
 
-		DesktopModel model = new DesktopModel();
+		DesktopModel model = new DesktopModel(dbPath);
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.title = "Celdroids";
 		cfg.width = Constants.WIDTH;

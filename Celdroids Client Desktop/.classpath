@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="libs/gdx-natives.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Celdroids Client Common"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Celdroids Common"/>
+	<classpathentry exported="true" kind="lib" path="libs/sqlite-jdbc-3.7.15-SNAPSHOT-2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

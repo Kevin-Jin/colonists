@@ -38,6 +38,8 @@ public class Model {
 	public final AssetManager assets;
 	public final Map<String, Sprite> sprites;
 
+	public DatabaseManager db;
+
 	public Model() {
 		controller = new ControllerHelper();
 
@@ -223,5 +225,7 @@ public class Model {
 
 	public void onDispose() {
 		assets.dispose();
+		if (db != null)
+			db.closeAll();
 	}
 }

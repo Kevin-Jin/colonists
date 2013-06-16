@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="/Celdroids Client Common/libs/gdx.jar" sourcepath="/Celdroids Client Common/libs/gdx-sources.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Celdroids Client Common"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Celdroids Common"/>
+	<classpathentry exported="true" kind="lib" path="libs/sqldroid-1.0.0RC1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
