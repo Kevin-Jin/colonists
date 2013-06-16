@@ -47,7 +47,7 @@ public class DirectConnectModel extends ConnectStatusPopupModel implements Input
 		int cursorX = ControllerHelper.getCursorX();
 		int cursorY = ControllerHelper.getCursorY();
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;
-		//in case user hid soft keyboard
+		// in case user hid soft keyboard
 		if (Gdx.input.isButtonPressed(Buttons.LEFT) && (cursorX >= leftX && cursorY >= bottomY && cursorX < leftX + 970 && cursorY < bottomY + 300))
 			Gdx.input.setOnscreenKeyboardVisible(true);
 

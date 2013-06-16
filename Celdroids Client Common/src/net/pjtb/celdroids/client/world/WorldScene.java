@@ -17,7 +17,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
 
 public class WorldScene implements Scene {
-	public enum WorldSubSceneType { IN_GAME_MENU, CONFIRM_FLEE_POPUP }
+	public enum WorldSubSceneType {
+		IN_GAME_MENU, CONFIRM_FLEE_POPUP
+	}
 
 	private final WorldModel model;
 
@@ -52,7 +54,7 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void swappedIn(boolean transition) {
-		Gdx.gl10.glClearColor(1f, 1f, 1f, 1);
+		Gdx.gl10.glClearColor(1, 1, 1, 1);
 
 		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
 		staticTiles.beginCache();

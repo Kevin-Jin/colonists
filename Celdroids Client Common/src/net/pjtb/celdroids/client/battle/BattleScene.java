@@ -57,7 +57,7 @@ public class BattleScene implements Scene {
 
 	@Override
 	public void swappedIn(boolean transition) {
-		Gdx.gl10.glClearColor(0.5f, 1f, 0.5f, 1);
+		Gdx.gl10.glClearColor(0.5f, 1, 0.5f, 1);
 
 		if (transition) {
 			model.selfTurn = model.canAct = false;
@@ -227,7 +227,7 @@ public class BattleScene implements Scene {
 			BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 			TextBounds bnds = fnt.getBounds(text);
 			fnt.setColor(fontTint);
-			fnt.draw(batch, text, (float) ((Constants.WIDTH - bnds.width) / 2), (float) (50 + bnds.height));
+			fnt.draw(batch, text, (Constants.WIDTH - bnds.width) / 2, 50 + bnds.height);
 		}
 
 		if (model.canAct) {

@@ -91,7 +91,7 @@ public class AwaitingClientScene implements Scene {
 		if (model.message != null) {
 			TextBounds bnds = fnt.getBounds(model.message);
 			fnt.setColor(model.error ? errorTint : successTint);
-			fnt.draw(batch, model.message, (float) ((Constants.WIDTH - bnds.width) / 2), (float) (Constants.HEIGHT - 300 / 2 - bnds.height));
+			fnt.draw(batch, model.message, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - 300 / 2 - bnds.height);
 		}
 	}
 

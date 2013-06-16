@@ -1,12 +1,6 @@
 package net.pjtb.celdroids.client.android.menu.wifidirect;
 
 import java.net.InetSocketAddress;
-
-import net.pjtb.celdroids.Constants;
-import net.pjtb.celdroids.NioSession;
-import net.pjtb.celdroids.client.ConnectStatusPopupModel;
-import net.pjtb.celdroids.client.NetworkPlayerBattleOpponent;
-import net.pjtb.celdroids.client.android.AndroidModel;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +13,12 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.os.Handler;
+
+import net.pjtb.celdroids.Constants;
+import net.pjtb.celdroids.NioSession;
+import net.pjtb.celdroids.client.ConnectStatusPopupModel;
+import net.pjtb.celdroids.client.NetworkPlayerBattleOpponent;
+import net.pjtb.celdroids.client.android.AndroidModel;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -95,7 +95,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 						wifiDirect.discoverPeers(channel, new WifiP2pManager.ActionListener() {
 							@Override
 							public void onSuccess() {
-								//handled in WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION
+								// handled in WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION
 							}
 
 							@Override
@@ -149,7 +149,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 							wifiDirect.requestPeers(channel, new WifiP2pManager.PeerListListener() {
 								@Override
 								public void onPeersAvailable(WifiP2pDeviceList peers) {
-									//TODO: pre-association service discovery
+									// TODO: pre-association service discovery
 									if (shouldScan) {
 										selections.text = null;
 										selections.clearSelections();
@@ -161,9 +161,9 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 						} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 							NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
-				            if (networkInfo.isConnected()) {
-				            	//connected
-				                wifiDirect.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
+							if (networkInfo.isConnected()) {
+								// connected
+								wifiDirect.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
 									@Override
 									public void onConnectionInfoAvailable(final WifiP2pInfo info) {
 										Gdx.app.postRunnable(new Runnable() {
@@ -182,10 +182,10 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 									}
 								});
 							} else {
-								//disconnected
+								// disconnected
 							}
 						} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-							//Respond to this device's wifi state changing
+							// Respond to this device's wifi state changing
 						}
 					}
 				};
@@ -203,7 +203,7 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 				wifiDirect.removeGroup(channel, new ActionListener() {
 					@Override
 					public void onSuccess() {
-						//handled in WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION
+						// handled in WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION
 					}
 
 					@Override

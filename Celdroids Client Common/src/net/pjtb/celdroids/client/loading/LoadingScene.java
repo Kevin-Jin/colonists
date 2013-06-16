@@ -1,13 +1,13 @@
 package net.pjtb.celdroids.client.loading;
 
+import net.pjtb.celdroids.Constants;
+import net.pjtb.celdroids.client.Model;
+import net.pjtb.celdroids.client.Scene;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
-import net.pjtb.celdroids.Constants;
-import net.pjtb.celdroids.client.Model;
-import net.pjtb.celdroids.client.Scene;
 
 public class LoadingScene implements Scene {
 	private final Model model;

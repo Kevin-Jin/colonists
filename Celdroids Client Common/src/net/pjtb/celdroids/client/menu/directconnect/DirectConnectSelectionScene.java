@@ -90,14 +90,14 @@ public class DirectConnectSelectionScene implements Scene {
 		BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 		TextBounds bnds = fnt.getBounds("Enter the address:");
 		fnt.setColor(promptTint);
-		fnt.draw(batch, "Enter the address:", (float) ((Constants.WIDTH - bnds.width) / 2), (float) (Constants.HEIGHT - 300 / 2 + bnds.height * 2));
+		fnt.draw(batch, "Enter the address:", (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - 300 / 2 + bnds.height * 2);
 		bnds = fnt.getBounds(model.entered + "_");
 		fnt.setColor(model.inactive ? inactiveTint : entryTint);
-		fnt.draw(batch, model.entered + "_", (float) ((Constants.WIDTH - bnds.width) / 2), (float) (Constants.HEIGHT + (bnds.height - 300) / 2));
+		fnt.draw(batch, model.entered + "_", (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT + (bnds.height - 300) / 2);
 		if (model.message != null) {
 			bnds = fnt.getBounds(model.message);
 			fnt.setColor(model.error ? errorTint : successTint);
-			fnt.draw(batch, model.message, (float) ((Constants.WIDTH - bnds.width) / 2), (float) (Constants.HEIGHT - 300 / 2 - bnds.height));
+			fnt.draw(batch, model.message, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - 300 / 2 - bnds.height);
 		}
 	}
 

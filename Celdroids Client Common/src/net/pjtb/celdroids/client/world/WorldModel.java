@@ -62,9 +62,6 @@ public class WorldModel {
 
 	public void updateActionButtonBehavior() {
 		if (avatar.isStationary() && getEntity(avatar.getNextLocation()) instanceof NonplayableCharacter) {
-			//TrainerProperties loads from XML/JSON for NPCs, socket messages for multiplayer
-			//TrainerProperties { trainerName, party[], appearance }
-			//parent.battleModel.properties = new net.pjtb.celdroids.client.TrainerProperties();
 			actionButton.text = "Battle!";
 			actionButton.callback = BATTLE_BUTTON;
 		} else {

@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class FanSelect implements ViewComponent {
-	private static final double NORMALIZE_CENTER = 0; //[-PI, PI]
+	private static final double NORMALIZE_CENTER = 0; // [-PI, PI]
 
 	private static double normalize(double theta) {
 		return theta - 2 * Math.PI * Math.floor((theta + Math.PI - NORMALIZE_CENTER) / (2 * Math.PI));
@@ -125,12 +125,12 @@ public class FanSelect implements ViewComponent {
 
 				TextBounds bnds = fnt.getBounds(selectionTexts[i]);
 				fnt.setColor(i == selected ? selectedFontTint : fontTint);
-				fnt.draw(batch, selectionTexts[i], (float) (x - bnds.width / 2), (float) (y + bnds.height / 2));
+				fnt.draw(batch, selectionTexts[i], (float) x - bnds.width / 2, (float) y + bnds.height / 2);
 			}
 		} else {
 			TextBounds bnds = fnt.getBounds(text);
 			fnt.setColor(groupFontTint);
-			fnt.draw(batch, text, (float) (centerX - bnds.width / 2), (float) (centerY + bnds.height / 2));
+			fnt.draw(batch, text, centerX - bnds.width / 2, centerY + bnds.height / 2);
 		}
 	}
 }

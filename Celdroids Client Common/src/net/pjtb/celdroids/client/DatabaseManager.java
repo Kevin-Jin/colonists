@@ -31,7 +31,7 @@ public class DatabaseManager {
 
 	public void initialize(String driver) throws SQLException {
 		try {
-			Class.forName(driver); //load the jdbc driver
+			Class.forName(driver); // load the jdbc driver
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("Unable to find JDBC library.");
 		}

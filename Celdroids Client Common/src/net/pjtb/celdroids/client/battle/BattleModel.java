@@ -14,7 +14,9 @@ import net.pjtb.celdroids.client.NetworkPlayerBattleOpponent;
 import net.pjtb.celdroids.client.Scene;
 
 public class BattleModel {
-	public enum BattleSubSceneType { CONFIRM_FLEE_POPUP }
+	public enum BattleSubSceneType {
+		CONFIRM_FLEE_POPUP
+	}
 
 	public final Model parent;
 

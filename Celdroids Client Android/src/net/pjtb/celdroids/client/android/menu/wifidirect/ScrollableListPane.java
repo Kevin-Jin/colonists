@@ -119,7 +119,7 @@ public class ScrollableListPane<T> implements ViewComponent {
 		try {
 			batch.end();
 			shapeRenderer.begin(ShapeRenderer.ShapeType.FilledRectangle);
-			shapeRenderer.setColor((float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, 1f);
+			shapeRenderer.setColor((float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, 1);
 			shapeRenderer.filledRect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, VERTICAL_MARGIN - Constants.HEIGHT);
 			shapeRenderer.end();
 			batch.begin();
@@ -128,7 +128,7 @@ public class ScrollableListPane<T> implements ViewComponent {
 			if (text != null) {
 				TextBounds bnds = fnt.getBounds(text);
 				fnt.setColor(error ? textErrorTint : textTint);
-				fnt.draw(batch, text, (float) ((Constants.WIDTH - bnds.width) / 2), (float) ((Constants.HEIGHT + bnds.height) / 2));
+				fnt.draw(batch, text, (Constants.WIDTH - bnds.width) / 2, (Constants.HEIGHT + bnds.height) / 2);
 				return;
 			}
 
@@ -137,18 +137,18 @@ public class ScrollableListPane<T> implements ViewComponent {
 				batch.end();
 				shapeRenderer.begin(ShapeRenderer.ShapeType.FilledRectangle);
 				if (i == selected) {
-					shapeRenderer.setColor((float) 0x33 / 0xFF, (float) 0xB5 / 0xFF, (float) 0xE5 / 0xFF, 1f);
+					shapeRenderer.setColor((float) 0x33 / 0xFF, (float) 0xB5 / 0xFF, (float) 0xE5 / 0xFF, 1);
 					shapeRenderer.filledRect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, -SELECTION_HEIGHT);
 					fnt.setColor(selectedFontTint);
 				} else {
 					fnt.setColor(fontTint);
 				}
-				shapeRenderer.setColor((float) 0x9D / 0xFF, (float) 0x9D / 0xFF, (float) 0x9D / 0xFF, 1f);
+				shapeRenderer.setColor((float) 0x9D / 0xFF, (float) 0x9D / 0xFF, (float) 0x9D / 0xFF, 1);
 				shapeRenderer.filledRect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - SELECTION_HEIGHT, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, -SPACER_HEIGHT);
 				shapeRenderer.end();
 				batch.begin();
 				TextBounds bnds = fnt.getBounds(selections.get(i).name);
-				fnt.draw(batch, selections.get(i).name, (float) ((Constants.WIDTH - bnds.width) / 2), Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - (float) (SELECTION_HEIGHT - bnds.height) / 2);
+				fnt.draw(batch, selections.get(i).name, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - (SELECTION_HEIGHT - bnds.height) / 2);
 			}
 		} finally {
 			Gdx.gl10.glDisable(GL10.GL_SCISSOR_TEST);

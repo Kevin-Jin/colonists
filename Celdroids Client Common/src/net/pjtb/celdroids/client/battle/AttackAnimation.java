@@ -7,9 +7,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class AttackAnimation extends BattleAnimation {
-	private static final float ANIMATION_TIME = 1.5f; //total time to show animation, in seconds
-	private static final float FREEZE_TIME = 0.5f; //time out of total to have animation stay over dest, in seconds
-	private static final float ANIMATION_FREQUENCY = 7; //in frames per second
+	private static final float ANIMATION_TIME = 1.5f; // total time to show animation, in seconds
+	private static final float FREEZE_TIME = 0.5f; // time out of total to have animation stay over dest, in seconds
+	private static final float ANIMATION_FREQUENCY = 7; // in frames per second
 
 	public CeldroidBattleMove move;
 

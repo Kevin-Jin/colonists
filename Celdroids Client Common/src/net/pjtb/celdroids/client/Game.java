@@ -17,23 +17,23 @@ public class Game implements ApplicationListener {
 
 	@Override
 	public void create() {
-		//reverse what OpenGL considers front-facing polygons (correction for upside down textures) and enable backface culling
+		// reverse what OpenGL considers front-facing polygons (correction for upside down textures) and enable backface culling
 		Gdx.gl10.glFrontFace(GL10.GL_CW);
 		Gdx.gl10.glEnable(GL10.GL_CULL_FACE);
 		Gdx.gl10.glCullFace(GL10.GL_BACK);
-		//enable alpha blending
+		// enable alpha blending
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		//set up viewport
+		// set up viewport
 		Gdx.gl10.glViewport(0, 0, Constants.WIDTH, Constants.HEIGHT);
 
-		//switch to projection matrix to set an orthographic projection
+		// switch to projection matrix to set an orthographic projection
 		Gdx.gl10.glMatrixMode(GL10.GL_PROJECTION);
 		Gdx.gl10.glLoadIdentity();
-		//sets origin to bottom left corner of screen - beware that textures still have to be flipped vertically
+		// sets origin to bottom left corner of screen - beware that textures still have to be flipped vertically
 		Gdx.gl10.glOrthof(0, Constants.WIDTH, 0, Constants.HEIGHT, 0, 100);
 
-		//we never change back to projection matrix, so switch matrix mode here once
+		// we never change back to projection matrix, so switch matrix mode here once
 		Gdx.gl10.glMatrixMode(GL10.GL_MODELVIEW);
 
 		Gdx.input.setCatchBackKey(true);
@@ -70,7 +70,7 @@ public class Game implements ApplicationListener {
 
 	@Override
 	public void resume() {
-		//TODO: don't release nonvolatile assets in pause() and load only volatile assets (e.g. textures) here
+		// TODO: don't release nonvolatile assets in pause() and load only volatile assets (e.g. textures) here
 		model.startLoadingResources(0);
 		model.onResume();
 	}

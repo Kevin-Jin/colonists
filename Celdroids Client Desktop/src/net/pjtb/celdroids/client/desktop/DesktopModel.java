@@ -18,7 +18,7 @@ public class DesktopModel extends Model {
 		try {
 			db = new DatabaseManager("jdbc:sqlite:" + dbPath.getAbsolutePath() + "/saves.sqlite", null, null, false);
 			db.initialize("org.sqlite.JDBC");
-			db.cleanup(null, null, db.getConnection()); //test for connection errors
+			db.cleanup(null, null, db.getConnection()); // test for connection errors
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

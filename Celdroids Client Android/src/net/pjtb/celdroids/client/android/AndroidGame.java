@@ -1,8 +1,8 @@
 package net.pjtb.celdroids.client.android;
 
-import net.pjtb.celdroids.client.Game;
-
 import android.os.Bundle;
+
+import net.pjtb.celdroids.client.Game;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 

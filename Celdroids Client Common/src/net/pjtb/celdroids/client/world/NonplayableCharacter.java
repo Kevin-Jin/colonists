@@ -4,9 +4,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class NonplayableCharacter implements Entity {
-	private static final float VELOCITY = 3; //tiles per second
-	private static final float ANIMATION_FREQUENCY = 7; //walking animation, in frames per second
-	private static final float CHANGE_DIRECTION_DELAY = 0.25f; //in seconds
+	private static final float VELOCITY = 3; // tiles per second
+	private static final float ANIMATION_FREQUENCY = 7; // walking animation, in frames per second
+	private static final float CHANGE_DIRECTION_DELAY = 0.25f; // in seconds
 
 	private final WorldModel model;
 
@@ -46,7 +46,7 @@ public class NonplayableCharacter implements Entity {
 				timeSinceStart = 0;
 				sprite = sprite.substring(0, sprite.lastIndexOf('/') + 1) + "0";
 			} else {
-				//make sure stillTimeEnd will not get messed when changing direction after a collision
+				// make sure stillTimeEnd will not get messed when changing direction after a collision
 				String direction = sprite.substring(spritePathPrefix.length(), sprite.lastIndexOf('/'));
 				if (direction.equals("left") && !flip && dirInProgress == DirectionalPad.State.LEFT
 						|| direction.equals("left") && flip && dirInProgress == DirectionalPad.State.RIGHT

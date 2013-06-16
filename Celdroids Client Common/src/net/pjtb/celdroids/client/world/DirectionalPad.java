@@ -11,7 +11,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class DirectionalPad implements ViewComponent {
-	public enum State { UP, RIGHT, DOWN, LEFT, NONE }
+	public enum State {
+		UP, RIGHT, DOWN, LEFT, NONE
+	}
 
 	private final Model model;
 

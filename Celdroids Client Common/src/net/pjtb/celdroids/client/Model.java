@@ -23,7 +23,9 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializer;
 
 public class Model {
-	public enum SceneType { LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE }
+	public enum SceneType {
+		LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE
+	}
 
 	public final ControllerHelper controller;
 
@@ -139,7 +141,7 @@ public class Model {
 	public void onStart() {
 		battleModel = new BattleModel(this);
 
-		//initialize scene instances
+		// initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
 		scenes.put(SceneType.LOAD_SCREEN, sceneFactory.makeLoadingScene(this));
 		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene(this));
@@ -153,13 +155,13 @@ public class Model {
 		loading = true;
 		remainingLoadTime = minSplashTime;
 
-		//synchronous load loading screen assets
+		// synchronous load loading screen assets
 		TextureParameter param = new TextureParameter();
 		param.minFilter = param.magFilter = TextureFilter.Nearest;
 		assets.load("images/backgrounds/splash.png", Texture.class, param);
 		assets.finishLoading();
 
-		//asynchronous load all other assets
+		// asynchronous load all other assets
 		assets.load("images/sprites/sprites.pack", TextureAtlas.class);
 		assets.load("fonts/buttons.fnt", BitmapFont.class);
 		assets.load("images/backgrounds/titleScreen.png", Texture.class, param);
@@ -171,8 +173,8 @@ public class Model {
 		assets.load("monsters/rock2.json", CeldroidProperties.class);
 		assets.load("monsters/water1.json", CeldroidProperties.class);
 		assets.load("trainers/red.json", TrainerProperties.class);
-		//TODO: load music using assets.load(..., Music.class),
-		//and sound effects using assets.load(..., Sound.class)
+		// TODO: load music using assets.load(..., Music.class),
+		// and sound effects using assets.load(..., Sound.class)
 	}
 
 	public void continueLoadingResources(float tDelta) {

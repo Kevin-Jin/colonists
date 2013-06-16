@@ -6,8 +6,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.NumberUtils;
@@ -93,7 +93,7 @@ public class ConfirmPopupScene implements Scene {
 		BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
 		TextBounds bnds = fnt.getBounds(text);
 		fnt.setColor(fontTint);
-		fnt.draw(batch, text, (float) ((Constants.WIDTH - bnds.width) / 2), (float) (Constants.HEIGHT / 2 + bnds.height * 2));
+		fnt.draw(batch, text, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT / 2 + bnds.height * 2);
 		yes.draw(batch);
 		no.draw(batch);
 	}

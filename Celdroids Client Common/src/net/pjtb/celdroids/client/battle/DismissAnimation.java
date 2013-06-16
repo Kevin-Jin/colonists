@@ -6,8 +6,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class DismissAnimation extends BattleAnimation {
-	private static final float ANIMATION_TIME = 1.5f; //total time to show animation, in seconds
-	private static final float FREEZE_TIME = 1f; //time out of total to show final animation state, in seconds
+	private static final float ANIMATION_TIME = 1.5f; // total time to show animation, in seconds
+	private static final float FREEZE_TIME = 1; // time out of total to show final animation state, in seconds
 
 	public int swapWith;
 

@@ -19,7 +19,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MainMenuScene implements Scene {
-	public enum MainMenuSubSceneType { HOST, DIRECT_IP_CONNECT, P2P_CONNECT, CONFIRM_FLEE_POPUP }
+	public enum MainMenuSubSceneType {
+		HOST, DIRECT_IP_CONNECT, P2P_CONNECT, CONFIRM_FLEE_POPUP
+	}
 
 	private final Model model;
 

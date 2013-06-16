@@ -19,7 +19,7 @@ public class AiBattleOpponent extends BattleOpponent {
 		if (anim != null)
 			return anim;
 
-		//TODO: actual intelligence
+		// TODO: actual intelligence
 		List<CeldroidBattleMove> moves = party.get(0).monsterType.moves;
 		atkAnimation.reset(model.parent.assets.get(moves.get((int) (Math.random() * moves.size())).file, CeldroidBattleMove.class));
 		return atkAnimation;

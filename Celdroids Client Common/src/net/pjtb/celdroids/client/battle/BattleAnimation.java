@@ -1,8 +1,8 @@
 package net.pjtb.celdroids.client.battle;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
 import net.pjtb.celdroids.client.ViewComponent;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class BattleAnimation implements ViewComponent {
 	protected final BattleModel model;
@@ -20,7 +20,7 @@ public abstract class BattleAnimation implements ViewComponent {
 	public void update(float tDelta) {
 		moveElapsedTime += tDelta;
 		if (moveElapsedTime > moveEndTime) {
-			//animation over
+			// animation over
 			model.currentAnimation = null;
 			if (useTurn) {
 				model.selfTurn = !model.selfTurn;

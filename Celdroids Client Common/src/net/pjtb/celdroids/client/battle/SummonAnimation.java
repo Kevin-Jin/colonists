@@ -6,10 +6,10 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class SummonAnimation extends BattleAnimation {
-	private static final float ANIMATION_TIME = 1.5f; //total time to show animation, in seconds
-	private static final float FREEZE_TIME = 1f; //time out of total to show final animation state, in seconds
+	private static final float ANIMATION_TIME = 1.5f; // total time to show animation, in seconds
+	private static final float FREEZE_TIME = 1; // time out of total to show final animation state, in seconds
 
-	public boolean swapTurnsAtEnd; //for special case at beginning of battle when we can move after we summon
+	public boolean swapTurnsAtEnd; // for special case at beginning of battle when we can move after we summon
 
 	public SummonAnimation(BattleModel model) {
 		super(model);
@@ -24,7 +24,7 @@ public class SummonAnimation extends BattleAnimation {
 			if (wasOwnTurn) {
 				model.showSelfCeldroid = true;
 				if (!swapTurnsAtEnd) {
-					//TODO: assign useTurn to true before super.update, instead of having to do this...
+					// TODO: assign useTurn to true before super.update, instead of having to do this...
 					swapTurnsAtEnd = true;
 					model.selfTurn = !model.selfTurn;
 					model.canAct = model.selfTurn;

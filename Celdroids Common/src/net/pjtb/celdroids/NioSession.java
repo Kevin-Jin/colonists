@@ -31,7 +31,7 @@ public class NioSession implements Session {
 						return false;
 					}
 					if (readBuf.remaining() != 0)
-						return false; //not enough bytes
+						return false; // not enough bytes
 					readBuf.flip();
 					short packetLength = readBuf.getShort();
 					readBuf.clear();
@@ -45,7 +45,7 @@ public class NioSession implements Session {
 					return false;
 				}
 				if (readBuf.remaining() != 0)
-					return false; //not enough bytes
+					return false; // not enough bytes
 				readBuf.flip();
 				return true;
 			} catch (IOException e) {
@@ -98,7 +98,7 @@ public class NioSession implements Session {
 
 		@Override
 		public String getAsciiString(int n) {
-			//uses O(2n) memory, but takes half as long than alternatives
+			// uses O(2n) memory, but takes half as long than alternatives
 			byte[] bytes = getBytes(n);
 			char[] ret = new char[n];
 			for (int x = 0; x < n; x++)
@@ -262,9 +262,9 @@ public class NioSession implements Session {
 
 		@Override
 		public void close() {
-			//TODO: figure out whether we actually wrote n bytes. if not, log warning and pad buffer with zeros.
-			//...or, go back to where length was written and overwrite it. we can get eliminate inefficient
-			//BufferedPacketWriter instances that way as long as we have an upper bound for packet length.
+			// TODO: figure out whether we actually wrote n bytes. if not, log warning and pad buffer with zeros.
+			// ...or, go back to where length was written and overwrite it. we can get eliminate inefficient
+			// BufferedPacketWriter instances that way as long as we have an upper bound for packet length.
 			try {
 				sendOrQueue(writeBuf);
 			} catch (IOException e) {
@@ -390,7 +390,7 @@ public class NioSession implements Session {
 				writer.sendOrQueue(buf);
 
 				if (buffer.length > Constants.BUFFER_SIZE)
-					buffer = new byte[0x40]; //don't keep large buffer allocated after a very long packet
+					buffer = new byte[0x40]; // don't keep large buffer allocated after a very long packet
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -454,7 +454,7 @@ public class NioSession implements Session {
 
 			int actions = selector.selectNow();
 			if (actions == 0)
-				//no packets received since last call here
+				// no packets received since last call here
 				return null;
 
 			unprocessedKeys = selector.selectedKeys().iterator();
@@ -486,6 +486,7 @@ public class NioSession implements Session {
 		return unknownSizeWriter;
 	}
 
+	@Override
 	public void close() {
 		if (channel != null) {
 			try {
@@ -565,7 +566,7 @@ public class NioSession implements Session {
 				int actions = selector.selectNow();
 				if (actions == 0) {
 					if (elapsedTime >= timeout && timeout != 0) {
-						//connect timed out
+						// connect timed out
 						channel.close();
 						selector.close();
 						channel = null;
@@ -685,7 +686,7 @@ public class NioSession implements Session {
 				int actions = selector.selectNow();
 				if (actions == 0) {
 					if (elapsedTime >= timeout && timeout != 0) {
-						//accept timed out
+						// accept timed out
 						channel.close();
 						selector.close();
 						channel = null;
