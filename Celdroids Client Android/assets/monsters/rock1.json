@@ -1,5 +1,0 @@
-{
-	name: "Rock1",
-	sprite: "monster/rock/evol1",
-	moves: ["moves/rock.json"]
-}

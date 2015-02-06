@@ -1,5 +1,0 @@
-{
-	name: "Water1",
-	sprite: "monster/water/evol1",
-	moves: ["moves/bubble.json"]
-}

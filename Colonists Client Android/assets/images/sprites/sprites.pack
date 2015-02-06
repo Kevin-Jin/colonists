@@ -1,0 +1,82 @@
+
+sprites.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+ui/button/pressed
+  rotate: false
+  xy: 320, 471
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+ui/button/regular
+  rotate: false
+  xy: 320, 343
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+ui/menuScene/close
+  rotate: false
+  xy: 320, 55
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/menuScene/selectedClose
+  rotate: false
+  xy: 640, 576
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/popup/confirmBackground
+  rotate: false
+  xy: 0, 720
+  size: 970, 300
+  orig: 970, 300
+  offset: 0, 0
+  index: -1
+ui/worldScene/back
+  rotate: false
+  xy: 320, 199
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/worldScene/controlBar
+  rotate: false
+  xy: 0, 0
+  size: 320, 720
+  orig: 320, 720
+  offset: 0, 0
+  index: -1
+ui/worldScene/more
+  rotate: false
+  xy: 428, 199
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedArrow
+  rotate: false
+  xy: 320, 599
+  size: 320, 121
+  orig: 320, 121
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedBack
+  rotate: false
+  xy: 428, 55
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+ui/worldScene/selectedMore
+  rotate: false
+  xy: 748, 576
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1

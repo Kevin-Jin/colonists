@@ -1,2 +1,1 @@
-../../Celdroids Client Android/assets/fonts/buttons.fnt <- Agency FB, 64 pt, #FFFFFF
-(logo) <- Fixedsys
+../../Colonists Client Android/assets/fonts/buttons.fnt <- Tempus Sans ITC, 64 pt, #FFFFFF

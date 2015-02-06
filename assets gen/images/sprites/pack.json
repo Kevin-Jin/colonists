@@ -1,4 +1,6 @@
 {
+        paddingX: 0,
+        paddingY: 0,
         filterMin: Nearest,
         filterMag: Nearest,
         combineSubdirectories: true
