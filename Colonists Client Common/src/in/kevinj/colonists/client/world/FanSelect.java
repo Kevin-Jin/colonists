@@ -1,6 +1,5 @@
 package in.kevinj.colonists.client.world;
 
-import in.kevinj.colonists.client.ControllerHelper;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.ViewComponent;
 
@@ -89,8 +88,8 @@ public class FanSelect implements ViewComponent {
 		if (hidden)
 			return;
 
-		int cursorX = ControllerHelper.getCursorX();
-		int cursorY = ControllerHelper.getCursorY();
+		int cursorX = model.controller.getCursorX(null);
+		int cursorY = model.controller.getCursorY(null);
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		double distanceSqFromCenter = distanceSqFromCenter(cursorX, cursorY);

@@ -2,6 +2,7 @@ package in.kevinj.colonists.client;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.utils.NumberUtils;
 
 public class Button implements ViewComponent {
 	private final Model model;
+	private final Camera transformer;
 
 	public String text;
 	public Runnable callback;
@@ -20,8 +22,9 @@ public class Button implements ViewComponent {
 
 	public boolean hidden;
 
-	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA) {
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA, Camera transformer) {
 		this.model = model;
+		this.transformer = transformer;
 
 		this.text = text;
 		this.callback = task;
@@ -36,8 +39,16 @@ public class Button implements ViewComponent {
 		fontTint = NumberUtils.intToFloatColor(fontA << 24 | fontB << 16 | fontG << 8 | fontR);
 	}
 
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA) {
+		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", tintR, tintG, tintB, tintA, fontR, fontG, fontB, fontA, null);
+	}
+
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, Camera transformer) {
+		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255, 191, 191, 191, 255, transformer);
+	}
+
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height) {
-		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255, 191, 191, 191, 255);
+		this(model, text, task, x, y, width, height, null);
 	}
 
 	@Override
@@ -45,8 +56,8 @@ public class Button implements ViewComponent {
 		if (hidden)
 			return;
 
-		int cursorX = ControllerHelper.getCursorX();
-		int cursorY = ControllerHelper.getCursorY();
+		int cursorX = model.controller.getCursorX(transformer);
+		int cursorY = model.controller.getCursorY(transformer);
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		boolean inBounds = (cursorX > x && cursorX < x + width && cursorY > y && cursorY < y + height);

@@ -1,7 +1,6 @@
 package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.Constants;
-import in.kevinj.colonists.client.ControllerHelper;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.ViewComponent;
 
@@ -39,8 +38,8 @@ public class DirectionalPad implements ViewComponent {
 			state = State.NONE;
 			target = false;
 		} else {
-			int dpadX = ControllerHelper.getCursorX() - WorldModel.MAP_VIEW_WIDTH;
-			int dpadY = ControllerHelper.getCursorY() - 200;
+			int dpadX = model.controller.getCursorX(null) - WorldModel.MAP_VIEW_WIDTH;
+			int dpadY = model.controller.getCursorY(null) - 200;
 			boolean inBounds = (dpadX >= 0 && dpadY >= 0 && dpadX < WorldModel.CONTROL_VIEW_WIDTH && dpadY < WorldModel.CONTROL_VIEW_WIDTH);
 			if (!wasDown)
 				target = inBounds;

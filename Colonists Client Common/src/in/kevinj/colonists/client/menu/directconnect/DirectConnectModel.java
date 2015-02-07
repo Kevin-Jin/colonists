@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.NioSession;
 import in.kevinj.colonists.client.ConnectStatusPopupModel;
-import in.kevinj.colonists.client.ControllerHelper;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
 
@@ -44,8 +43,8 @@ public class DirectConnectModel extends ConnectStatusPopupModel implements Input
 
 	@Override
 	public NetworkPlayerBattleOpponent update(float tDelta) {
-		int cursorX = ControllerHelper.getCursorX();
-		int cursorY = ControllerHelper.getCursorY();
+		int cursorX = parent.controller.getCursorX(null);
+		int cursorY = parent.controller.getCursorY(null);
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;
 		// in case user hid soft keyboard
 		if (Gdx.input.isButtonPressed(Buttons.LEFT) && (cursorX >= leftX && cursorY >= bottomY && cursorX < leftX + 970 && cursorY < bottomY + 300))

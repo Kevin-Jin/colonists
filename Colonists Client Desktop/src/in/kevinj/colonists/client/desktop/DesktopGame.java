@@ -24,8 +24,8 @@ public class DesktopGame {
 		DesktopModel model = new DesktopModel(dbPath);
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.title = "Colonists";
-		cfg.width = Constants.WIDTH;
-		cfg.height = Constants.HEIGHT;
+		cfg.width = Constants.WIDTH / 2;
+		cfg.height = Constants.HEIGHT / 2;
 		cfg.useGL20 = false;
 		cfg.foregroundFPS = cfg.backgroundFPS = 0;
 		cfg.vSyncEnabled = !unlimitedFps;

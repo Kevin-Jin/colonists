@@ -1,11 +1,13 @@
 package in.kevinj.colonists.client;
 
+import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.world.BattleModel;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
@@ -13,6 +15,7 @@ import com.badlogic.gdx.assets.loaders.SynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -27,6 +30,7 @@ public class Model {
 		LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE
 	}
 
+	public final OrthographicCamera cam;
 	public final ControllerHelper controller;
 
 	public final Map<SceneType, Scene> scenes;
@@ -37,13 +41,17 @@ public class Model {
 	private boolean loading;
 	private float remainingLoadTime;
 
+	//TODO: manage all textures for current scene and async load
+	//non-managed textures on context restore. if scene is switched
+	//and texture is not loaded in time, then display loading screen
 	public final AssetManager assets;
 	public final Map<String, Sprite> sprites;
 
 	public DatabaseManager db;
 
 	public Model() {
-		controller = new ControllerHelper();
+		cam = new OrthographicCamera();
+		controller = new ControllerHelper(cam);
 
 		scenes = new EnumMap<SceneType, Scene>(SceneType.class);
 		scene = EmptyScene.instance;
@@ -83,6 +91,7 @@ public class Model {
 				return json.fromJson(TrainerProperties.class, resolve(fileName));
 			}
 		});
+		Texture.setAssetManager(assets);
 	}
 
 	protected SceneFactory createSceneFactory() {
@@ -91,6 +100,7 @@ public class Model {
 
 	public void onStart() {
 		battleModel = new BattleModel(this);
+		cam.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
 
 		// initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
@@ -103,6 +113,7 @@ public class Model {
 	}
 
 	public void startLoadingResources(float minSplashTime) {
+		Gdx.graphics.setContinuousRendering(true);
 		loading = true;
 		remainingLoadTime = minSplashTime;
 
@@ -150,6 +161,7 @@ public class Model {
 			scene = scenes.get(SceneType.MAIN_MENU);
 			scene.swappedIn(true);
 		}
+		Gdx.graphics.setContinuousRendering(false);
 	}
 
 	public void onPause() {
@@ -159,9 +171,9 @@ public class Model {
 	}
 
 	public void onResume() {
-		scene.swappedOut(false);
-		scene = scenes.get(SceneType.LOAD_SCREEN);
-		scene.swappedIn(false);
+		//scene.swappedOut(false);
+		//scene = scenes.get(SceneType.LOAD_SCREEN);
+		//scene.swappedIn(false);
 	}
 
 	public void releaseAllResources() {

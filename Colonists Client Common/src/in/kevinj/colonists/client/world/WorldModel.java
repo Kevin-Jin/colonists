@@ -51,7 +51,8 @@ public class WorldModel {
 		};
 		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);
 
-		cam = new OrthographicCamera(Constants.WIDTH, Constants.HEIGHT);
+		cam = new OrthographicCamera();
+		cam.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
 	}
 
 	public Entity getEntity(Coordinate loc) {

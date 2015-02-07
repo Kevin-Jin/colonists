@@ -130,6 +130,7 @@ public class WorldScene implements Scene {
 			ent.draw(batch);
 		batch.end();
 		batch.begin();
+		model.parent.cam.apply(Gdx.gl10);
 
 		if (model.actionButton.text != null)
 			model.actionButton.draw(batch);

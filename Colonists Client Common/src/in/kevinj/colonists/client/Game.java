@@ -2,6 +2,7 @@ package in.kevinj.colonists.client;
 
 import in.kevinj.colonists.Constants;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class Game implements ApplicationListener {
 	private Model model;
 	private SpriteBatch batch;
+	private boolean paused;
 
 	public Game(Model model) {
 		this.model = model;
@@ -57,22 +59,28 @@ public class Game implements ApplicationListener {
 
 		model.scene.update(tDelta);
 		model.controller.update(tDelta);
+		if (paused && Gdx.app.getType() == Application.ApplicationType.Android)
+			return;
+
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		batch.begin();
+		model.cam.apply(Gdx.gl10);
 		model.scene.draw(batch);
 		batch.end();
 	}
 
 	@Override
 	public void pause() {
-		model.releaseAllResources();
+		//model.releaseAllResources();
 		model.onPause();
+		paused = true;
 	}
 
 	@Override
 	public void resume() {
 		// TODO: don't release nonvolatile assets in pause() and load only volatile assets (e.g. textures) here
-		model.startLoadingResources(0);
+		paused = false;
+		//model.startLoadingResources(0);
 		model.onResume();
 	}
 

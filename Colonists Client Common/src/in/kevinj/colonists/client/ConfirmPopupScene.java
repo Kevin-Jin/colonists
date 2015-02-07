@@ -4,26 +4,17 @@ import in.kevinj.colonists.Constants;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.NumberUtils;
 
-public class ConfirmPopupScene implements Scene {
-	private final Model model;
-
+public class ConfirmPopupScene extends PopupScene {
 	private final float fontTint;
 	private final String text;
 	private final Model.SceneType nextScene;
 	private final Button yes, no;
 
-	private final ShapeRenderer shapeRenderer;
-
 	public ConfirmPopupScene(Model m, String text, Model.SceneType nextScene) {
-		this.model = m;
+		super(m);
 
 		fontTint = NumberUtils.intToFloatColor(0xFF << 24 | 0xFF << 16 | 0x00 << 8 | 0x00);
 		this.text = text;
@@ -33,15 +24,13 @@ public class ConfirmPopupScene implements Scene {
 			public void run() {
 				proceed();
 			}
-		}, (Constants.WIDTH - 522) / 2, Constants.HEIGHT / 2 - 100, 256, 128);
+		}, (Constants.WIDTH - 522) / 2, getButtonY(), 256, 128);
 		this.no = new Button(model, "No", new Runnable() {
 			@Override
 			public void run() {
 				back();
 			}
-		}, (Constants.WIDTH - 522) / 2 + 266, Constants.HEIGHT / 2 - 100, 256, 128);
-
-		shapeRenderer = new ShapeRenderer();
+		}, (Constants.WIDTH - 522) / 2 + 266, getButtonY(), 256, 128);
 	}
 
 	private void proceed() {
@@ -76,24 +65,9 @@ public class ConfirmPopupScene implements Scene {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		batch.end();
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
-		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(0, 0, 0, 0.5f);
-		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
-		shapeRenderer.end();
-		Gdx.gl10.glDisable(GL10.GL_BLEND);
-		batch.begin();
+		super.draw(batch);
+		this.drawText(batch, text, fontTint);
 
-		Sprite s = model.sprites.get("ui/popup/confirmBackground");
-		s.setBounds((Constants.WIDTH - 970) / 2, (Constants.HEIGHT - 300) / 2, 970, 300);
-		s.draw(batch);
-
-		BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
-		TextBounds bnds = fnt.getBounds(text);
-		fnt.setColor(fontTint);
-		fnt.draw(batch, text, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT / 2 + bnds.height * 2);
 		yes.draw(batch);
 		no.draw(batch);
 	}

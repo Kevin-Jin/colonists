@@ -4,36 +4,31 @@ import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
+import in.kevinj.colonists.client.PopupScene;
 import in.kevinj.colonists.client.Scene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.NumberUtils;
 
-public class AwaitingClientScene implements Scene {
+public class AwaitingClientScene extends PopupScene {
 	private final AwaitingClientModel model;
 
 	private final Scene parentScene;
 
 	private final float successTint, errorTint;
-	private final ShapeRenderer shapeRenderer;
 
 	private final Button close;
 
 	public AwaitingClientScene(Model m, Scene mainMenuScene) {
+		super(m);
 		this.model = new AwaitingClientModel(m);
 
 		this.parentScene = mainMenuScene;
 
 		successTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0xFF << 8 | 0xFF);
 		errorTint = NumberUtils.intToFloatColor(0xFF << 24 | 0x00 << 16 | 0x00 << 8 | 0xFF);
-		shapeRenderer = new ShapeRenderer();
 
 		this.close = new Button(m, "Okay", new Runnable() {
 			@Override
@@ -41,7 +36,7 @@ public class AwaitingClientScene implements Scene {
 				swappedOut(true);
 				parentScene.setSubscene(null);
 			}
-		}, (Constants.WIDTH - 256) / 2, Constants.HEIGHT - 192, 256, 128);
+		}, (Constants.WIDTH - 256) / 2, getButtonY(), 256, 128);
 	}
 
 	@Override
@@ -70,29 +65,11 @@ public class AwaitingClientScene implements Scene {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		batch.end();
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
-		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(0, 0, 0, 0.5f);
-		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
-		shapeRenderer.end();
-		Gdx.gl10.glDisable(GL10.GL_BLEND);
-		batch.begin();
-
-		Sprite s = model.parent.sprites.get("ui/popup/confirmBackground");
-		s.setBounds((Constants.WIDTH - 970) / 2, Constants.HEIGHT - 300, 970, 300);
-		s.draw(batch);
+		super.draw(batch);
+		this.drawText(batch, model.message, model.error ? errorTint : successTint);
 
 		if (model.error)
 			close.draw(batch);
-
-		BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
-		if (model.message != null) {
-			TextBounds bnds = fnt.getBounds(model.message);
-			fnt.setColor(model.error ? errorTint : successTint);
-			fnt.draw(batch, model.message, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - 300 / 2 - bnds.height);
-		}
 	}
 
 	@Override

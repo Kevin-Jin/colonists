@@ -46,27 +46,27 @@ public class MainMenuScene implements Scene {
 				model.scene = model.scenes.get(Model.SceneType.WORLD);
 				model.scene.swappedIn(true);
 			}
-		}, 10, 10, 256, 128));
+		}, 60, 450, 600, 128));
 		buttons.add(new Button(m, "Host", new Runnable() {
 			@Override
 			public void run() {
 				subScene = subScenes.get(MainMenuSubSceneType.HOST);
 				subScene.swappedIn(true);
 			}
-		}, 310, 10, 256, 128));
+		}, 60, 300, 600, 128));
 		buttons.add(new Button(m, "Connect", new Runnable() {
 			@Override
 			public void run() {
 				subScene = subScenes.get(MainMenuSubSceneType.DIRECT_IP_CONNECT);
 				subScene.swappedIn(true);
 			}
-		}, 610, 10, 256, 128));
+		}, 60, 150, 600, 128));
 		buttons.add(new Button(m, null, new Runnable() {
 			@Override
 			public void run() {
 				close();
 			}
-		}, 1172, 576, 108, 144, "ui/menuScene/close", "ui/menuScene/selectedClose", 255, 255, 255, 255, -1, -1, -1, -1));
+		}, 576, 1172, 144, 108, "ui/menuScene/close", "ui/menuScene/selectedClose", 255, 255, 255, 255, -1, -1, -1, -1));
 	}
 
 	private void close() {
