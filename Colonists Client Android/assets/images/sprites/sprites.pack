@@ -1,82 +1,178 @@
 
 sprites.png
 format: RGBA8888
-filter: Nearest,Nearest
+filter: Linear,Nearest
 repeat: none
-ui/button/pressed
+environment/portBamboo
   rotate: false
-  xy: 320, 471
-  size: 256, 128
-  orig: 256, 128
+  xy: 2, 478
+  size: 256, 221
+  orig: 256, 221
   offset: 0, 0
   index: -1
-ui/button/regular
+environment/portHemp
   rotate: false
-  xy: 320, 343
+  xy: 582, 478
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/portIron
+  rotate: false
+  xy: 260, 355
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/portNone
+  rotate: false
+  xy: 2, 255
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/portPlain
+  rotate: false
+  xy: 518, 255
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/portRice
+  rotate: false
+  xy: 260, 132
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/portStone
+  rotate: false
+  xy: 2, 32
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/tileBamboo
+  rotate: false
+  xy: 518, 32
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+ui/button/pressed
+  rotate: false
+  xy: 260, 2
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 ui/menuScene/close
   rotate: false
-  xy: 320, 55
+  xy: 840, 555
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/menuScene/selectedClose
   rotate: false
-  xy: 640, 576
+  xy: 886, 409
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/popup/confirmBackground
   rotate: false
-  xy: 0, 720
+  xy: 2, 701
   size: 970, 300
   orig: 970, 300
   offset: 0, 0
   index: -1
 ui/worldScene/back
   rotate: false
-  xy: 320, 199
+  xy: 776, 332
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
-ui/worldScene/controlBar
-  rotate: false
-  xy: 0, 0
-  size: 320, 720
-  orig: 320, 720
-  offset: 0, 0
-  index: -1
 ui/worldScene/more
   rotate: false
-  xy: 428, 199
+  xy: 776, 186
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/selectedArrow
   rotate: false
-  xy: 320, 599
+  xy: 260, 578
   size: 320, 121
   orig: 320, 121
   offset: 0, 0
   index: -1
 ui/worldScene/selectedBack
   rotate: false
-  xy: 428, 55
+  xy: 776, 40
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
   index: -1
 ui/worldScene/selectedMore
   rotate: false
-  xy: 748, 576
+  xy: 886, 263
   size: 108, 144
   orig: 108, 144
+  offset: 0, 0
+  index: -1
+
+sprites2.png
+format: RGBA8888
+filter: Linear,Nearest
+repeat: none
+environment/tileHemp
+  rotate: false
+  xy: 2, 2
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/tileIron
+  rotate: false
+  xy: 324, 724
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/tileRice
+  rotate: false
+  xy: 324, 501
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/tileStone
+  rotate: false
+  xy: 582, 724
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/tileWasteland
+  rotate: false
+  xy: 324, 278
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+ui/button/regular
+  rotate: false
+  xy: 582, 594
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+ui/worldScene/controlBar
+  rotate: false
+  xy: 2, 225
+  size: 320, 720
+  orig: 320, 720
   offset: 0, 0
   index: -1

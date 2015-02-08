@@ -1,6 +1,5 @@
 package in.kevinj.colonists.client.world;
 
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class NonplayableCharacter implements Entity {
@@ -253,10 +252,10 @@ public class NonplayableCharacter implements Entity {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		Sprite s = model.parent.sprites.get(sprite);
+		/*Sprite s = model.parent.sprites.get(sprite);
 		s.setBounds((float) (posX * WorldModel.TILE_SIZE), (float) (posY * WorldModel.TILE_SIZE), WorldModel.TILE_SIZE, WorldModel.TILE_SIZE);
 		if (s.isFlipX() != flip)
 			s.flip(true, false);
-		s.draw(batch);
+		s.draw(batch);*/
 	}
 }

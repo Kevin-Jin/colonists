@@ -1,12 +1,8 @@
 package in.kevinj.colonists.client.world;
 
-import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.ViewComponent;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class DirectionalPad implements ViewComponent {
@@ -14,22 +10,22 @@ public class DirectionalPad implements ViewComponent {
 		UP, RIGHT, DOWN, LEFT, NONE
 	}
 
-	private final Model model;
+	//private final Model model;
 
-	private boolean down, target;
+	//private boolean down, target;
 
 	public boolean hidden;
 	public State state;
 
 	public DirectionalPad(Model model) {
-		this.model = model;
+		//this.model = model;
 
 		state = State.NONE;
 	}
 
 	@Override
 	public void update(float tDelta) {
-		if (hidden)
+		/*if (hidden)
 			return;
 
 		boolean wasDown = down;
@@ -59,12 +55,12 @@ public class DirectionalPad implements ViewComponent {
 			} else {
 				state = State.NONE;
 			}
-		}
+		}*/
 	}
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		Sprite s;
+		/*Sprite s;
 		switch (state) {
 			case UP:
 				s = model.sprites.get("ui/worldScene/selectedArrow");
@@ -98,6 +94,6 @@ public class DirectionalPad implements ViewComponent {
 				break;
 			case NONE:
 				break;
-		}
+		}*/
 	}
 }
