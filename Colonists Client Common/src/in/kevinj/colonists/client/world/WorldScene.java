@@ -68,14 +68,15 @@ public class WorldScene implements Scene {
 		resourceTiles.put(MapTile.ResourceType.BAMBOO, model.parent.sprites.get("environment/tileBamboo"));
 		resourceTiles.put(MapTile.ResourceType.HEMP, model.parent.sprites.get("environment/tileHemp"));
 		resourceTiles.put(MapTile.ResourceType.IRON, model.parent.sprites.get("environment/tileIron"));
-		resourceTiles.put(MapTile.ResourceType.STONE, model.parent.sprites.get("environment/tileStone"));
+		resourceTiles.put(MapTile.ResourceType.BROWNSTONE, model.parent.sprites.get("environment/tileBrownstone"));
 		resourceTiles.put(MapTile.ResourceType.WASTELAND, model.parent.sprites.get("environment/tileWasteland"));
 		portTiles = new EnumMap<MapTile.PortType, Sprite>(MapTile.PortType.class);
 		portTiles.put(MapTile.PortType.RICE, model.parent.sprites.get("environment/portRice"));
 		portTiles.put(MapTile.PortType.BAMBOO, model.parent.sprites.get("environment/portBamboo"));
 		portTiles.put(MapTile.PortType.HEMP, model.parent.sprites.get("environment/portHemp"));
 		portTiles.put(MapTile.PortType.IRON, model.parent.sprites.get("environment/portIron"));
-		portTiles.put(MapTile.PortType.STONE, model.parent.sprites.get("environment/portStone"));
+		portTiles.put(MapTile.PortType.BROWNSTONE, model.parent.sprites.get("environment/portBrownstone"));
+		portTiles.put(MapTile.PortType.PLAIN, model.parent.sprites.get("environment/portPlain"));
 		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("environment/portNone"));
 		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
@@ -114,11 +115,16 @@ public class WorldScene implements Scene {
 				if (tile == null || tile.getChit() == 0)
 					continue;
 
+				String message = Integer.toString(tile.getChit());
 				BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 				fnt.setColor(1, 0, 0, 1);
-				TextBounds bnds = fnt.getBounds(Integer.toString(tile.getChit()));
+				TextBounds bnds = fnt.getBounds(message);
 				//fnt.draw(batch, Integer.toString(tile.getChit()), offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y - (tileHeight - bnds.height) / 2);
-				fnt.draw(batch, Integer.toString(tile.getChit()), offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
+				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
+
+				/*message = "(" + x + ", " + y + ", " + (-x - y) + ")";
+				bnds = fnt.getBounds(message);
+				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * (y + 1));*/
 			}
 		}
 	}

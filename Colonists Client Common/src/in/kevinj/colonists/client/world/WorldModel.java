@@ -6,6 +6,7 @@ import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.TrainerProperties;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -63,36 +64,56 @@ public class WorldModel {
 		cam.update();
 	}
 
-	private int randomOrientation(Random r, int a, int b) {
-		if (r.nextBoolean())
-			return a;
-		else
-			return b;
-	}
-
 	private void initializeMap() {
 		Random r = new Random();
-		boolean placePort = false;
-		//TODO: algorithm to randomly stagger the 9 port tiles with no two ports rotated to two edges adjacent to one another
-		int remainingStaggerings = 5;
-		Queue<MapTile.ResourceTile> tiles = MapTile.ResourceTile.getRandomTiles(r);
-		for (int x = 1; x < 6; x++) {
-			//if (remainingStaggerings > 0 && r.nextBoolean())
-				//remainingStaggerings--;
-			int startTile = Math.max(x - 2, 1);
-			int endTile = startTile + 5 - Math.abs(3 - x);
-			for (int y = startTile; y < endTile; y++)
-				resources[y][x] = tiles.poll();
-			placePort = x % 2 != 0 ^ remainingStaggerings % 2 == 1;
-			resources[startTile - 1][x] = new MapTile.PortTile(placePort ? MapTile.PortType.NONE : MapTile.PortType.BAMBOO, x == 3 ? 0 : x < 3 ? randomOrientation(r, 0, 300) : randomOrientation(r, 0, 60));
-			placePort = x %2 == 0 ^ remainingStaggerings % 2 == 1;
-			resources[endTile][x] = new MapTile.PortTile(placePort ? MapTile.PortType.NONE : MapTile.PortType.STONE, x == 3 ? 180 : x < 3 ? randomOrientation(r, 180, 240) : randomOrientation(r, 180, 120));
+
+		//keystone water tiles only touch a resource tile on one edge (i.e.
+		//corner in the hexagon that the map makes). these keystones exist at
+		//(0, 0), (0, 3), (3, 0), (3, 6), (6, 3), (6, 6). pick a
+		//random one as a reference point to make PortTile.getRandomPorts()
+		//easier to implement.
+		int keystone = r.nextInt(6);
+		int x, y, rot;
+		switch (keystone) {
+			case 0:	x = 3;	y = 0;	rot = 0;	break;
+			case 1:	x = 6;	y = 3;	rot = 60;	break;
+			case 2:	x = 6;	y = 6;	rot = 120;	break;
+			case 3:	x = 3;	y = 6;	rot = 180;	break;
+			case 4:	x = 0;	y = 3;	rot = 240;	break;
+			case 5:	x = 0;	y = 0;	rot = 300;	break;
+			default:	throw new AssertionError("Wrong keystone ID");
 		}
-		for (int y = 0; y < 4; y++) {
-			placePort = y % 2 != 0 ^ remainingStaggerings % 2 == 1;
-			resources[y][0] = new MapTile.PortTile(placePort ? MapTile.PortType.NONE : MapTile.PortType.IRON, y > 2 ? 240 : randomOrientation(r, 240, 300));
-			placePort = y % 2 != 0 ^ remainingStaggerings % 2 == 1;
-			resources[y + 3][6] = new MapTile.PortTile(placePort ? MapTile.PortType.NONE : MapTile.PortType.RICE, y > 2 ? 120 : randomOrientation(r, 120, 60));
+		Queue<MapTile> tiles = new LinkedList<MapTile>();
+		MapTile.PortTile.getRandomPorts(r, rot, tiles);
+		MapTile.ResourceTile.getRandomResources(r, tiles);
+		for (int rad = 3; rad >= 0; --rad) {
+			for (int i = 0; i < Math.max(1, 6 * rad); i++) {
+				resources[y][x] = tiles.poll();
+				if (y == 3 - rad) {
+					if (x == 3) y++;
+					x++;
+				} else if (y == 3 + rad) {
+					if (x == 3) y--;
+					x--;
+				} else if (x > 3) {
+					if (x != 3 + rad) x++;
+					y++;
+				} else if (x < 3) {
+					if (x != 3 - rad) x--;
+					y--;
+				}
+			}
+			if (y == 3 - rad) {
+				if (x != 3) x++;
+				y++;
+			} else if (y == 3 + rad) {
+				if (x != 3) x--;
+				y--;
+			} else if (x == 3 - rad) {
+				x++;
+			} else if (x == 3 + rad) {
+				x--;
+			}
 		}
 	}
 
