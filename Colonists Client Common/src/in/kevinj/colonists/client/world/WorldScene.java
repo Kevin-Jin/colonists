@@ -25,6 +25,14 @@ public class WorldScene implements Scene {
 		IN_GAME_MENU, CONFIRM_FLEE_POPUP
 	}
 
+	private static final int
+		NO_DEBUG		= 0,
+		DEBUG_TILES		= 1,
+		DEBUG_VERTICES	= 2,
+		DEBUG_EDGES		= 4
+	;
+	private static int DEBUG_MODE = NO_DEBUG;
+
 	private final WorldModel model;
 
 	protected final Map<WorldSubSceneType, Scene> subScenes;
@@ -38,6 +46,7 @@ public class WorldScene implements Scene {
 	private final ShapeRenderer shapeRenderer;
 	private SpriteCache staticTiles;
 	private int staticTilesCacheId;
+	private int tileWidth, tileHeight;
 
 	public WorldScene(Model m) {
 		this.model = new WorldModel(m);
@@ -85,12 +94,12 @@ public class WorldScene implements Scene {
 		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("environment/portNone"));
 		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
-		int tileHeight = (int) textureToUse.getHeight();
-		int tileWidth = (int) textureToUse.getWidth();
+		tileHeight = (int) textureToUse.getHeight();
+		tileWidth = (int) textureToUse.getWidth();
 
 		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
 		staticTiles.beginCache();
-		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= (tileHeight + 1) / 2) {
+		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
 			for (int y = 0; y < model.mapBoundsRows; y++) {
 				tile = model.resources[y][x];
 				if (tile == null) {
@@ -110,26 +119,75 @@ public class WorldScene implements Scene {
 	}
 
 	private void drawChits(SpriteBatch batch) {
-		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
-		int tileHeight = (int) textureToUse.getHeight();
-		int tileWidth = (int) textureToUse.getWidth();
-		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= (tileHeight + 1) / 2) {
+		String message;
+		BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
+		TextBounds bnds;
+		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
 			for (int y = 0; y < model.mapBoundsRows; y++) {
 				tile = model.resources[y][x];
 				if (tile == null || tile.getChit() == 0)
 					continue;
 
-				String message = Integer.toString(tile.getChit());
-				BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
+				message = Integer.toString(tile.getChit());
 				fnt.setColor(1, 0, 0, 1);
-				TextBounds bnds = fnt.getBounds(message);
-				//fnt.draw(batch, Integer.toString(tile.getChit()), offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y - (tileHeight - bnds.height) / 2);
-				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
-
-				/*message = "(" + x + ", " + y + ", " + (-x - y) + ")";
 				bnds = fnt.getBounds(message);
-				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * (y + 1));*/
+				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
+			}
+		}
+	}
+
+	private void drawEntities(SpriteBatch batch) {
+		Gdx.gl10.glEnable(GL10.GL_BLEND);
+		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		Sprite road = model.parent.sprites.get("environment/road");
+		Sprite village = model.parent.sprites.get("environment/village");
+		Sprite metro = model.parent.sprites.get("environment/metro");
+		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.grid.entrySet()) {
+			WorldModel.EntityCoordinate coord = entities.getKey();
+			if (coord.isEdge()) {
+				//draw road
+				if (coord.xHundredths == 50) {
+					//horizontal
+					road.setPosition(
+						tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2,
+						tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x - road.getHeight() / 2
+					);
+					road.setRotation(0);
+				} else if (coord.yHundredths == 25) {
+					//negative slope
+					road.setPosition(
+						tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2 + road.getHeight() / 2,
+						tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x
+					);
+					road.setRotation(120);
+				} else if (coord.yHundredths == 75) {
+					//positive slope
+					road.setPosition(
+						tileWidth / 4 * 3 * coord.x,
+						tileHeight * (coord.y + 1) - tileHeight / 2 * (coord.x - 1) - road.getHeight()
+					);
+					road.setRotation(60);
+				}
+				road.setColor(1, 0.5f, 1, 1);
+				road.setOrigin(0, 0);
+				road.draw(batch);
+			} else {
+				//draw house
+				Sprite sprite = Math.random() < 0.5 ? village : metro;
+				sprite.setColor(1, 0.5f, 1, 1);
+				if (coord.yHundredths == 50) {
+					sprite.setPosition(
+						tileWidth / 4 * 3 * coord.x - sprite.getWidth() / 2,
+						tileHeight * (coord.y + 1) - tileHeight / 2 * (coord.x - 1) - sprite.getHeight() / 2
+					);
+				} else if (coord.yHundredths == 0) {
+					sprite.setPosition(
+						tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2 - sprite.getWidth() / 2,
+						tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x - sprite.getHeight() / 2
+					);
+				}
+				sprite.draw(batch);
 			}
 		}
 	}
@@ -213,10 +271,62 @@ public class WorldScene implements Scene {
 		staticTiles.draw(staticTilesCacheId);
 		staticTiles.end();
 
+		if (DEBUG_MODE != NO_DEBUG) {
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+			model.getCamera().apply(Gdx.gl10);
+			Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+			shapeRenderer.setColor(0, 0, 0, 1);
+			//outline vertices
+			if ((DEBUG_MODE & DEBUG_VERTICES) != 0)
+				for (int x = 0, offsetX = tileWidth / 2 - tileWidth / 4 * 3, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
+					for (int y = 0; y <= model.mapBoundsRows + 1; y++)
+						shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y + tileHeight, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+						//shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX, offsetY + tileHeight * y - tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+			//outline edges
+			if ((DEBUG_MODE & DEBUG_EDGES) != 0)
+				for (int x = 0, offsetX = -tileWidth / 2, offsetY = tileHeight; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
+					for (int y = 0; y <= model.mapBoundsRows + 1; y++)
+						shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX, offsetY + tileHeight * y - tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+			shapeRenderer.end();
+
+			String message;
+			BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
+			fnt.setColor(0, 0, 0, 1);
+			TextBounds bnds;
+			batch.begin();
+			model.getCamera().apply(Gdx.gl10);
+			Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+			//print hexagonal tile coordinates
+			if ((DEBUG_MODE & DEBUG_TILES) != 0) {
+				for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+					for (int y = 0; y < model.mapBoundsRows; y++) {
+						message = "(" + x + ", " + y + ", " + (-x - y) + ")";
+						bnds = fnt.getBounds(message);
+						fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * (y + 1) - tileHeight / 2 + bnds.height / 2);
+					}
+				}
+			}
+			//print vertex coordinates
+			if ((DEBUG_MODE & DEBUG_VERTICES) != 0) {
+				for (int x = 0, offsetX = tileWidth / 2 - tileWidth / 4 * 3, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+					for (int y = 0; y <= model.mapBoundsRows + 1; y++) {
+						message = "(" + x + "," + y + ".5)";
+						bnds = fnt.getBounds(message);
+						fnt.draw(batch, message, offsetX, offsetY + tileHeight * (y + 1) + bnds.height / 2);
+						message = "(" + (x - 1) + "," + y + ".0)";
+						bnds = fnt.getBounds(message);
+						fnt.draw(batch, message, offsetX - tileWidth / 4 * 3, offsetY + tileHeight * (y + 1) + bnds.height / 2);
+					}
+				}
+			}
+			batch.end();
+		}
+
 		batch.begin();
 		model.getCamera().apply(Gdx.gl10);
 		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		drawChits(batch);
+		drawEntities(batch);
 		//for (Entity ent : model.animatedEntities)
 			//ent.draw(batch);
 		batch.end();

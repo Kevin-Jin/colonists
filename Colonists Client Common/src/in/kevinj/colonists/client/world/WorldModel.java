@@ -6,15 +6,176 @@ import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.ScaleDisplay;
 import in.kevinj.colonists.client.TrainerProperties;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 
 public class WorldModel extends ScaleDisplay {
+	public static class TileCoordinate implements Comparable<TileCoordinate> {
+		public byte x, y;
+
+		public TileCoordinate(int x, int y) {
+			this.x = (byte) x;
+			this.y = (byte) y;
+		}
+
+		public byte getZ() {
+			return (byte) (-x - y);
+		}
+
+		@Override
+		public int compareTo(TileCoordinate other) {
+			return this.hashCode() - other.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object b) {
+			if (b instanceof TileCoordinate) {
+				TileCoordinate other = (TileCoordinate) b;
+				return other.x == this.x && other.y == this.y;
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return (this.x & 0xFF) << 8 | this.y & 0xFF;
+		}
+
+		@Override
+		public String toString() {
+			return "TileCoordinate[" + x + "," + y + "," + getZ() + "]";
+		}
+	}
+
+	/**
+	 * Takes advantage of the fact that regular triangles are the dual
+	 * polyhedron of regular hexagons. We use two triangles stacked on top of
+	 * each other for each x, y in the hexagonal grid to make it easier to
+	 * find adjacent resource tiles. Vertices are referenced by the coordinates
+	 * of the triangle. Edges are referenced by the midpoint of the two
+	 * vertices they connect.
+	 */
+	public static class EntityCoordinate implements Comparable<EntityCoordinate> {
+		private static final DecimalFormat FMT = new DecimalFormat("0.00");
+
+		public final byte x, y;
+		/**
+		 * 0 corresponds to leftmost vertex, 1 corresponds to bottom left edge,
+		 * 2 corresponds to bottom left vertex, and so on...
+		 */
+		public final byte xHundredths, yHundredths;
+
+		public EntityCoordinate(int x, int xHundredths, int y, int yHundredths) {
+			byte[] xNorm = normalize(x, xHundredths);
+			byte[] yNorm = normalize(y, yHundredths);
+			this.x = xNorm[0];
+			this.xHundredths = xNorm[1];
+			this.y = yNorm[0];
+			this.yHundredths = yNorm[1];
+		}
+
+		private byte[] normalize(int a, int aHundredths) {
+			if (aHundredths >= 0 && aHundredths < 100)
+				return new byte[] { (byte) a, (byte) aHundredths };
+
+			//make sure aHundreths is not negative
+			a -= 1;
+			aHundredths += 100;
+			//integer division and modulus
+			a += aHundredths / 100;
+			aHundredths %= 100;
+			return new byte[] { (byte) a, (byte) aHundredths };
+		}
+
+		public boolean isEdge() {
+			return xHundredths == 50 || yHundredths == 25 || yHundredths == 75;
+		}
+
+		public List<TileCoordinate> adjacentTiles() {
+			List<TileCoordinate> list = new ArrayList<TileCoordinate>(3);
+			list.add(new TileCoordinate(x, (y * 100 + xHundredths - 50) / 100));
+			list.add(new TileCoordinate(x - 1, y - 1));
+			list.add(new TileCoordinate((x * 100 - xHundredths) / 100, y));
+			return list;
+		}
+
+		public List<EntityCoordinate> adjacentEdges() {
+			List<EntityCoordinate> list;
+			if (isEdge()) {
+				list = new ArrayList<EntityCoordinate>(4);
+				//up [yHundredths == 25]/down [yHundredths == 75] left
+				list.add(new EntityCoordinate(x, xHundredths - 50, y, 25));
+				//up right [yHundredths == 25]/left [yHundredths == 75]
+				list.add(new EntityCoordinate(x, 2 * xHundredths, y, yHundredths + 50));
+				//down [yHundredths == 25]/up [yHundredths == 75] right
+				list.add(new EntityCoordinate(x, xHundredths + 50, y, 2 * yHundredths - 25));
+				//down left [yHundredths == 25]/right [yHundredths == 75]
+				list.add(new EntityCoordinate(x, 0, y, yHundredths - 50));
+			} else {
+				list = new ArrayList<EntityCoordinate>(3);
+				int right = -(int) Math.signum(yHundredths - 25);
+				//down left [yHundredths == 0]/right [yHundredths == 50]
+				list.add(new EntityCoordinate(x, 0, y, yHundredths - 25));
+				//right [yHundredths == 0]/left [yHundredths == 50]
+				list.add(new EntityCoordinate(x, xHundredths + 50 * right, y, yHundredths + 25 * right));
+				//up left [yHundredths == 0]/right [yHundredths == 50]
+				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths + 25));
+			}
+			return list;
+		}
+
+		public List<EntityCoordinate> adjacentVertices() {
+			List<EntityCoordinate> list;
+			if (isEdge()) {
+				list = new ArrayList<EntityCoordinate>(2);
+				list.add(new EntityCoordinate(x, (xHundredths - 50) / 100 * 100, y, yHundredths - 25));
+				list.add(new EntityCoordinate(x, (xHundredths + 50) / 100 * 100, y, yHundredths + 25));
+			} else {
+				list = new ArrayList<EntityCoordinate>(3);
+				int right = -(int) Math.signum(yHundredths - 25);
+				//right [yHundredths == 0]/left [yHundredths == 50]
+				list.add(new EntityCoordinate(x + right, xHundredths, y, yHundredths + 50 * right));
+				//up
+				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths + 50));
+				//down
+				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths - 50));
+			}
+			return list;
+		}
+
+		@Override
+		public int compareTo(EntityCoordinate other) {
+			return this.hashCode() - other.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object b) {
+			if (b instanceof EntityCoordinate) {
+				EntityCoordinate other = (EntityCoordinate) b;
+				return other.x == this.x && other.xHundredths == this.xHundredths && other.y == this.y && other.yHundredths == this.yHundredths;
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return (this.x & 0xFF) << 24 | (this.xHundredths & 0xFF) << 16 | (this.y & 0xFF) << 8 | this.yHundredths & 0xFF;
+		}
+
+		@Override
+		public String toString() {
+			return "EntityCoordinate[" + FMT.format(x + xHundredths / 100f) +"," + FMT.format(y + yHundredths / 100f) + "]";
+		}
+	}
+
 	public static final int MAP_VIEW_COLUMNS = 7, MAP_VIEW_ROWS = 7;
 
 	public final Model parent;
@@ -23,8 +184,9 @@ public class WorldModel extends ScaleDisplay {
 
 	public int mapBoundsColumns, mapBoundsRows;
 	public final MapTile[][] resources;
-	public final Entity[][] grid;
+	public final Map<EntityCoordinate, Entity> grid;
 	public final List<Entity> animatedEntities;
+	public TileCoordinate highwayman;
 
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
@@ -41,11 +203,21 @@ public class WorldModel extends ScaleDisplay {
 		resources = new MapTile[mapBoundsRows][mapBoundsColumns];
 		initializeMap();
 
-		grid = new Entity[mapBoundsRows][mapBoundsColumns];
-		//grid[5][7] = new NonplayableCharacter(this, 7, 5, "trainers/red.json");
+		grid = new HashMap<EntityCoordinate, Entity>();
+		//road tests
+		grid.put(new EntityCoordinate(1, 0, 2, 75), avatar);
+		grid.put(new EntityCoordinate(1, 0, 2, 25), avatar);
+		grid.put(new EntityCoordinate(2, 0, 2, 75), avatar);
+		grid.put(new EntityCoordinate(2, 0, 2, 25), avatar);
+		grid.put(new EntityCoordinate(2, 50, 2, 25), avatar);
+		grid.put(new EntityCoordinate(3, 0, 2, 25), avatar);
+		grid.put(new EntityCoordinate(3, 50, 2, 25), avatar);
+		grid.put(new EntityCoordinate(4, 0, 2, 25), avatar);
+		grid.put(new EntityCoordinate(4, 0, 2, 75), avatar);
+		//house tests
+		grid.put(new EntityCoordinate(1, 0, 3, 0), avatar);
+		grid.put(new EntityCoordinate(2, 0, 2, 50), avatar);
 		animatedEntities = new ArrayList<Entity>();
-		//animatedEntities.add(avatar);
-		//animatedEntities.add(grid[5][7]);
 
 		BATTLE_BUTTON = new Runnable() {
 			@Override
@@ -104,6 +276,8 @@ public class WorldModel extends ScaleDisplay {
 		for (int rad = 3; rad >= 0; --rad) {
 			for (int i = 0; i < Math.max(1, 6 * rad); i++) {
 				resources[y][x] = tiles.poll();
+				if (resources[y][x].isResource() && resources[y][x].getResourceType() == MapTile.ResourceType.WASTELAND)
+					highwayman = new TileCoordinate(x, y);
 				if (y == 3 - rad) {
 					if (x == 3) y++;
 					x++;
@@ -133,9 +307,9 @@ public class WorldModel extends ScaleDisplay {
 	}
 
 	public Entity getEntity(Coordinate loc) {
-		if (loc.row < 0 || loc.col < 0 || loc.row >= mapBoundsRows || loc.col >= mapBoundsColumns)
+		//if (loc.row < 0 || loc.col < 0 || loc.row >= mapBoundsRows || loc.col >= mapBoundsColumns)
 			return null;
-		return grid[loc.row][loc.col];
+		//return grid[loc.row][loc.col];
 	}
 
 	public void updateActionButtonBehavior() {

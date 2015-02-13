@@ -27,7 +27,7 @@ public abstract class PopupScene implements Scene {
 	}
 
 	public PopupScene(Model m) {
-		this(m, 700, 970);
+		this(m, Constants.WIDTH - 20, Constants.WIDTH * 4 / 3 - 20);
 	}
 
 	protected int getButtonY() {

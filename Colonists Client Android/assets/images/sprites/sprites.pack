@@ -3,6 +3,13 @@ sprites.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
+environment/metro
+  rotate: false
+  xy: 840, 489
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
 environment/portBamboo
   rotate: false
   xy: 2, 478
@@ -52,11 +59,25 @@ environment/portRice
   orig: 256, 221
   offset: 0, 0
   index: -1
+environment/road
+  rotate: false
+  xy: 2, 18
+  size: 134, 12
+  orig: 134, 12
+  offset: 0, 0
+  index: -1
 environment/tileBamboo
   rotate: false
   xy: 518, 32
   size: 256, 221
   orig: 256, 221
+  offset: 0, 0
+  index: -1
+environment/village
+  rotate: false
+  xy: 906, 489
+  size: 64, 64
+  orig: 64, 64
   offset: 0, 0
   index: -1
 ui/button/pressed
@@ -75,7 +96,7 @@ ui/menuScene/close
   index: -1
 ui/menuScene/selectedClose
   rotate: false
-  xy: 886, 409
+  xy: 886, 343
   size: 108, 144
   orig: 108, 144
   offset: 0, 0
@@ -117,7 +138,7 @@ ui/worldScene/selectedBack
   index: -1
 ui/worldScene/selectedMore
   rotate: false
-  xy: 886, 263
+  xy: 886, 197
   size: 108, 144
   orig: 108, 144
   offset: 0, 0

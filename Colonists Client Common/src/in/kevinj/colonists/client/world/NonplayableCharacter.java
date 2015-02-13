@@ -223,11 +223,12 @@ public class NonplayableCharacter implements Entity {
 	}
 
 	private boolean collision(double posXfinal, double posYfinal) {
-		Coordinate loc = getNextLocation(posXfinal, posYfinal);
+		/*Coordinate loc = getNextLocation(posXfinal, posYfinal);
 		if (loc.row < 0 || loc.col < 0 || loc.row >= model.mapBoundsRows || loc.col >= model.mapBoundsColumns)
 			return true;
 		Entity ent = model.grid[loc.row][loc.col];
-		return (ent != null && ent != this);
+		return (ent != null && ent != this);*/
+		return false;
 	}
 
 	public Coordinate getNextLocation() {
@@ -235,7 +236,7 @@ public class NonplayableCharacter implements Entity {
 	}
 
 	private void updateAvatarInGrid(double posXfinal, double posYfinal) {
-		if (posX == posXfinal) {
+		/*if (posX == posXfinal) {
 			int indexX = (int) posX;
 			model.grid[(int) Math.ceil(posY)][indexX] = null;
 			model.grid[(int) Math.floor(posY)][indexX] = null;
@@ -247,7 +248,7 @@ public class NonplayableCharacter implements Entity {
 			model.grid[indexY][(int) Math.floor(posX)] = null;
 			model.grid[indexY][(int) Math.ceil(posXfinal)] = this;
 			model.grid[indexY][(int) Math.floor(posXfinal)] = this;
-		}
+		}*/
 	}
 
 	@Override
