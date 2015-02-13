@@ -32,6 +32,11 @@ public class WifiDirectSelectionScene implements Scene {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		
+	}
+
+	@Override
 	public void pause() {
 		model.pause();
 	}
@@ -77,13 +82,13 @@ public class WifiDirectSelectionScene implements Scene {
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		model.parent.cam.apply(Gdx.gl10);
+		model.parent.getCamera().apply(Gdx.gl10);
 		shapeRenderer.setColor(0, 0, 0, 0.5f);
 		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
 		shapeRenderer.end();
 		Gdx.gl10.glDisable(GL10.GL_BLEND);
 		batch.begin();
-		model.parent.cam.apply(Gdx.gl10);
+		model.parent.getCamera().apply(Gdx.gl10);
 
 		model.selections.draw(batch);
 	}

@@ -80,6 +80,11 @@ public class MainMenuScene implements Scene {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		
+	}
+
+	@Override
 	public void pause() {
 		if (subScene != null)
 			subScene.pause();

@@ -2,6 +2,6 @@
         paddingX: 2,
         paddingY: 2,
         filterMin: Linear,
-        filterMag: Nearest,
+        filterMag: Linear,
         combineSubdirectories: true
 }

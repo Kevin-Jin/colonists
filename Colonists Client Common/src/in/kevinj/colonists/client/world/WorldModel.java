@@ -3,6 +3,7 @@ package in.kevinj.colonists.client.world;
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.Model;
+import in.kevinj.colonists.client.ScaleDisplay;
 import in.kevinj.colonists.client.TrainerProperties;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.Gdx;
 
-public class WorldModel {
+public class WorldModel extends ScaleDisplay {
 	public static final int MAP_VIEW_COLUMNS = 7, MAP_VIEW_ROWS = 7;
 
 	public final Model parent;
@@ -28,7 +29,7 @@ public class WorldModel {
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
 
-	public final OrthographicCamera cam;
+	private int screenWidth, screenHeight;
 
 	public WorldModel(Model model) {
 		this.parent = model;
@@ -57,11 +58,25 @@ public class WorldModel {
 		};
 		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);
 
-		cam = new OrthographicCamera();
-		cam.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+	}
+
+	@Override
+	public final void resize(int screenWidth, int screenHeight) {
+		this.screenWidth = screenWidth;
+		this.screenHeight = screenHeight;
+		super.resize(screenWidth, screenHeight);
 		cam.zoom = 2f;
-		cam.translate(Constants.WIDTH / 2, 0);
+		cam.position.set(Constants.WIDTH, Constants.HEIGHT / 2, 0);
 		cam.update();
+	}
+
+	public int getScreenWidth() {
+		return screenWidth;
+	}
+
+	public int getScreenHeight() {
+		return screenHeight;
 	}
 
 	private void initializeMap() {

@@ -1,5 +1,6 @@
 package in.kevinj.colonists.client.world;
 
+import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.ConfirmPopupScene;
 import in.kevinj.colonists.client.Model;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class WorldScene implements Scene {
 	public enum WorldSubSceneType {
@@ -33,6 +35,7 @@ public class WorldScene implements Scene {
 
 	private final Button backButton, menuButton;
 
+	private final ShapeRenderer shapeRenderer;
 	private SpriteCache staticTiles;
 	private int staticTilesCacheId;
 
@@ -55,6 +58,8 @@ public class WorldScene implements Scene {
 				openPopupMenu();
 			}
 		}, 1172, 0, 108, 144, "ui/worldScene/more", "ui/worldScene/selectedMore", 255, 255, 255, 255, -1, -1, -1, -1);
+
+		shapeRenderer = new ShapeRenderer();
 	}
 
 	@Override
@@ -130,6 +135,11 @@ public class WorldScene implements Scene {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		model.resize(width, height);
+	}
+
+	@Override
 	public void pause() {
 		if (subScene != null)
 			subScene.pause();
@@ -165,7 +175,7 @@ public class WorldScene implements Scene {
 		if (model.actionButton.text != null)
 			model.actionButton.update(tDelta);
 		//model.cam.position.set(model.avatar.getScreenX(), model.avatar.getScreenY(), 1);
-		model.cam.update();
+		model.getCamera().update();
 
 		if (subScene == null) {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
@@ -181,20 +191,37 @@ public class WorldScene implements Scene {
 	@Override
 	public void draw(SpriteBatch batch) {
 		batch.end();
+
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		Gdx.gl.glViewport(0, 0, model.getScreenWidth(), model.getScreenHeight());
+		shapeRenderer.setColor(0, 0, 0, 1);
+		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
+		shapeRenderer.end();
+
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		shapeRenderer.setColor(255, 255, 255, 1);
+		//shapeRenderer.rect(0, model.screenHeight, model.screenWidth, -model.screenHeight);
+		shapeRenderer.rect(0, 10000, 10000, -20000);
+		shapeRenderer.end();
+
 		staticTiles.begin();
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		model.cam.apply(Gdx.gl10);
+		model.getCamera().apply(Gdx.gl10);
+		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		staticTiles.draw(staticTilesCacheId);
 		staticTiles.end();
+
 		batch.begin();
-		model.cam.apply(Gdx.gl10);
+		model.getCamera().apply(Gdx.gl10);
+		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		drawChits(batch);
 		//for (Entity ent : model.animatedEntities)
 			//ent.draw(batch);
 		batch.end();
 		batch.begin();
-		model.parent.cam.apply(Gdx.gl10);
+		model.parent.getCamera().apply(Gdx.gl10);
 
 		/*if (model.actionButton.text != null)
 			model.actionButton.draw(batch);

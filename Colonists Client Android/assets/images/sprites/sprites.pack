@@ -1,7 +1,7 @@
 
 sprites.png
 format: RGBA8888
-filter: Linear,Nearest
+filter: Linear,Linear
 repeat: none
 environment/portBamboo
   rotate: false
@@ -125,7 +125,7 @@ ui/worldScene/selectedMore
 
 sprites2.png
 format: RGBA8888
-filter: Linear,Nearest
+filter: Linear,Linear
 repeat: none
 environment/tileBrownstone
   rotate: false

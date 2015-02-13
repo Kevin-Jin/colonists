@@ -26,17 +26,6 @@ public class Game implements ApplicationListener {
 		// enable alpha blending
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		// set up viewport
-		Gdx.gl10.glViewport(0, 0, Constants.WIDTH, Constants.HEIGHT);
-
-		// switch to projection matrix to set an orthographic projection
-		Gdx.gl10.glMatrixMode(GL10.GL_PROJECTION);
-		Gdx.gl10.glLoadIdentity();
-		// sets origin to bottom left corner of screen - beware that textures still have to be flipped vertically
-		Gdx.gl10.glOrthof(0, Constants.WIDTH, 0, Constants.HEIGHT, 0, 100);
-
-		// we never change back to projection matrix, so switch matrix mode here once
-		Gdx.gl10.glMatrixMode(GL10.GL_MODELVIEW);
 
 		Gdx.input.setCatchBackKey(true);
 		Gdx.input.setCatchMenuKey(true);
@@ -46,10 +35,11 @@ public class Game implements ApplicationListener {
 		batch = new SpriteBatch();
 	}
 
+	//FIXME: not called immediately if non-continuous rendering is enabled. i.e.
+	//Graphics.requestRendering() not called on resize by libgdx.
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-		
+		model.resize(width, height);
 	}
 
 	@Override
@@ -65,6 +55,7 @@ public class Game implements ApplicationListener {
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 		model.cam.apply(Gdx.gl10);
+		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		model.scene.draw(batch);
 		batch.end();
 	}

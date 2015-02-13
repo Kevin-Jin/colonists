@@ -13,6 +13,7 @@ import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector3;
 
 public class DirectConnectModel extends ConnectStatusPopupModel implements InputProcessor {
 	public String entered;
@@ -43,11 +44,10 @@ public class DirectConnectModel extends ConnectStatusPopupModel implements Input
 
 	@Override
 	public NetworkPlayerBattleOpponent update(float tDelta) {
-		int cursorX = parent.controller.getCursorX(null);
-		int cursorY = parent.controller.getCursorY(null);
+		Vector3 cursor = parent.controller.getCursor(null);
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;
 		// in case user hid soft keyboard
-		if (Gdx.input.isButtonPressed(Buttons.LEFT) && (cursorX >= leftX && cursorY >= bottomY && cursorX < leftX + 970 && cursorY < bottomY + 300))
+		if (Gdx.input.isButtonPressed(Buttons.LEFT) && (cursor.x >= leftX && cursor.y >= bottomY && cursor.x < leftX + 970 && cursor.y < bottomY + 300))
 			Gdx.input.setOnscreenKeyboardVisible(true);
 
 		return super.update(tDelta);

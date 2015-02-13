@@ -15,7 +15,6 @@ import com.badlogic.gdx.assets.loaders.SynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -25,12 +24,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
-public class Model {
+public class Model extends ScaleDisplay {
 	public enum SceneType {
 		LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE
 	}
 
-	public final OrthographicCamera cam;
 	public final ControllerHelper controller;
 
 	public final Map<SceneType, Scene> scenes;
@@ -50,8 +48,7 @@ public class Model {
 	public DatabaseManager db;
 
 	public Model() {
-		cam = new OrthographicCamera();
-		controller = new ControllerHelper(cam);
+		controller = new ControllerHelper(this);
 
 		scenes = new EnumMap<SceneType, Scene>(SceneType.class);
 		scene = EmptyScene.instance;
@@ -100,7 +97,7 @@ public class Model {
 
 	public void onStart() {
 		battleModel = new BattleModel(this);
-		cam.setToOrtho(false, Constants.WIDTH, Constants.HEIGHT);
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		// initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
@@ -162,6 +159,15 @@ public class Model {
 			scene.swappedIn(true);
 		}
 		Gdx.graphics.setContinuousRendering(false);
+	}
+
+	@Override
+	public void resize(int screenWidth, int screenHeight) {
+		super.resize(screenWidth, screenHeight);
+		cam.position.set(Constants.WIDTH / 2, Constants.HEIGHT / 2, 0);
+		cam.update();
+		for (Scene scene : scenes.values())
+			scene.resize(screenWidth, screenHeight);
 	}
 
 	public void onPause() {

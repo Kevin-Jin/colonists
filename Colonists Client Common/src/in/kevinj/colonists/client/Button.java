@@ -2,16 +2,16 @@ package in.kevinj.colonists.client;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class Button implements ViewComponent {
 	private final Model model;
-	private final Camera transformer;
+	private final ScaleDisplay transformer;
 
 	public String text;
 	public Runnable callback;
@@ -22,7 +22,7 @@ public class Button implements ViewComponent {
 
 	public boolean hidden;
 
-	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA, Camera transformer) {
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA, ScaleDisplay transformer) {
 		this.model = model;
 		this.transformer = transformer;
 
@@ -43,7 +43,7 @@ public class Button implements ViewComponent {
 		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", tintR, tintG, tintB, tintA, fontR, fontG, fontB, fontA, null);
 	}
 
-	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, Camera transformer) {
+	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, ScaleDisplay transformer) {
 		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255, 191, 191, 191, 255, transformer);
 	}
 
@@ -56,11 +56,10 @@ public class Button implements ViewComponent {
 		if (hidden)
 			return;
 
-		int cursorX = model.controller.getCursorX(transformer);
-		int cursorY = model.controller.getCursorY(transformer);
+		Vector3 cursor = model.controller.getCursor(transformer);
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
-		boolean inBounds = (cursorX > x && cursorX < x + width && cursorY > y && cursorY < y + height);
+		boolean inBounds = (cursor.x > x && cursor.x < x + width && cursor.y > y && cursor.y < y + height);
 		if (!down) {
 			pressed = false;
 			if (wasDown && target && inBounds)

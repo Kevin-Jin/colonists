@@ -2,16 +2,15 @@ package in.kevinj.colonists.client;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 
 public class ControllerHelper {
-	private Camera defaultCam;
+	private ScaleDisplay defaultTransformer;
 
 	public boolean wasBackPressed, wasMenuPressed;
 
-	public ControllerHelper(Camera cam) {
-		this.defaultCam = cam;
+	public ControllerHelper(ScaleDisplay transformer) {
+		this.defaultTransformer = transformer;
 	}
 
 	public void update(float tDelta) {
@@ -19,21 +18,11 @@ public class ControllerHelper {
 		wasMenuPressed = Gdx.input.isKeyPressed(Keys.ENTER) || Gdx.input.isKeyPressed(Keys.MENU);
 	}
 
-	public int getCursorX(Camera overrideCam) {
+	public Vector3 getCursor(ScaleDisplay transformer) {
 		Vector3 pos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-		if (overrideCam != null)
-			overrideCam.unproject(pos);
-		else
-			defaultCam.unproject(pos);
-		return (int) pos.x;
-	}
-
-	public int getCursorY(Camera overrideCam) {
-		Vector3 pos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-		if (overrideCam != null)
-			overrideCam.unproject(pos);
-		else
-			defaultCam.unproject(pos);
-		return (int) pos.y;
+		if (transformer == null)
+			transformer = defaultTransformer;
+		transformer.getCamera().unproject(pos, transformer.getViewportX(), transformer.getViewportY(), transformer.getViewportWidth(), transformer.getViewportHeight());
+		return pos;
 	}
 }

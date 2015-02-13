@@ -8,6 +8,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
 
 public class FanSelect implements ViewComponent {
@@ -77,9 +78,9 @@ public class FanSelect implements ViewComponent {
 		}
 	}
 
-	private double distanceSqFromCenter(int x, int y) {
-		int a = centerX - x;
-		int b = centerY - y;
+	private double distanceSqFromCenter(double x, double y) {
+		double a = centerX - x;
+		double b = centerY - y;
 		return a * a + b * b;
 	}
 
@@ -88,11 +89,10 @@ public class FanSelect implements ViewComponent {
 		if (hidden)
 			return;
 
-		int cursorX = model.controller.getCursorX(null);
-		int cursorY = model.controller.getCursorY(null);
+		Vector3 cursor = model.controller.getCursor(null);
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
-		double distanceSqFromCenter = distanceSqFromCenter(cursorX, cursorY);
+		double distanceSqFromCenter = distanceSqFromCenter(cursor.x, cursor.y);
 		boolean inBoundsFromCenter = distanceSqFromCenter < triggerRadiusSq;
 		if (!down) {
 			if (wasDown && target && expanded) {
@@ -105,7 +105,7 @@ public class FanSelect implements ViewComponent {
 				expanded = target = inBoundsFromCenter;
 				selected = -1;
 			} else if (target && distanceSqFromCenter >= triggerRadiusSq && distanceSqFromCenter < outerBoundaryRadiusSq) {
-				selected = (int) (normalize(Math.atan2(cursorY - centerY, cursorX - centerX) - angleMin + angleInterval / 2) / angleInterval);
+				selected = (int) (normalize(Math.atan2(cursor.y - centerY, cursor.x - centerX) - angleMin + angleInterval / 2) / angleInterval);
 				if (selected < 0 || selected >= selectionXs.length)
 					selected = -1;
 			} else {

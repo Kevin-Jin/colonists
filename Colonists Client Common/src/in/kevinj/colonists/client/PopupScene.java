@@ -53,6 +53,11 @@ public abstract class PopupScene implements Scene {
 	}
 
 	@Override
+	public void resize(int width, int height) {
+		
+	}
+
+	@Override
 	public void draw(SpriteBatch batch) {
 		batch.end();
 		model.cam.apply(Gdx.gl10);

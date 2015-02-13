@@ -16,7 +16,7 @@ public class DesktopGame {
 		Set<String> remainingArgs = new HashSet<String>(Arrays.asList(args));
 		boolean fullscreen = remainingArgs.remove("fullscreen");
 		boolean unlimitedFps = remainingArgs.remove("novsync");
-		boolean useFrame = remainingArgs.remove("frame");
+		boolean useFrame = !remainingArgs.remove("noframe");
 		File dbPath = new File(System.getProperty("in.kevinj.colonists.client.desktop.state.dir", "state"));
 		if (!dbPath.exists() && !dbPath.mkdirs())
 			throw new RuntimeException("Could not create database directory " + dbPath.getAbsolutePath());
@@ -29,7 +29,7 @@ public class DesktopGame {
 		cfg.useGL20 = false;
 		cfg.foregroundFPS = cfg.backgroundFPS = 0;
 		cfg.vSyncEnabled = !unlimitedFps;
-		cfg.resizable = false;
+		cfg.resizable = true;
 		cfg.fullscreen = fullscreen;
 		if (!useFrame)
 			System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
