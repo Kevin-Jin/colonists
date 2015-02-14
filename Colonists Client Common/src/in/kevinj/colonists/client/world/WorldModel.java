@@ -179,6 +179,7 @@ public class WorldModel extends ScaleDisplay {
 	public static final int MAP_VIEW_COLUMNS = 7, MAP_VIEW_ROWS = 7;
 
 	public final Model parent;
+	public final MapInteraction controller;
 	public final DirectionalPad dpad;
 	public final Avatar avatar;
 
@@ -195,6 +196,7 @@ public class WorldModel extends ScaleDisplay {
 
 	public WorldModel(Model model) {
 		this.parent = model;
+		controller = new MapInteraction(this);
 		dpad = new DirectionalPad(model);
 		avatar = new Avatar(this, 7, 6);
 
@@ -304,6 +306,11 @@ public class WorldModel extends ScaleDisplay {
 				x--;
 			}
 		}
+	}
+
+	public MapTile getTile(TileCoordinate coord) {
+		if (coord == null) return null;
+		return resources[coord.y][coord.x];
 	}
 
 	public Entity getEntity(Coordinate loc) {

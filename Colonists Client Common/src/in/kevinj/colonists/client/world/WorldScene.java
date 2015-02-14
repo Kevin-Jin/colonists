@@ -15,6 +15,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
@@ -47,6 +48,7 @@ public class WorldScene implements Scene {
 	private SpriteCache staticTiles;
 	private int staticTilesCacheId;
 	private int tileWidth, tileHeight;
+	private BitmapFontCache staticChits;
 
 	public WorldScene(Model m) {
 		this.model = new WorldModel(m);
@@ -94,8 +96,8 @@ public class WorldScene implements Scene {
 		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("environment/portNone"));
 		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
-		tileHeight = (int) textureToUse.getHeight();
-		tileWidth = (int) textureToUse.getWidth();
+		model.controller.tileHeight = tileHeight = (int) textureToUse.getHeight();
+		model.controller.tileWidth = tileWidth = (int) textureToUse.getWidth();
 
 		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
 		staticTiles.beginCache();
@@ -116,12 +118,10 @@ public class WorldScene implements Scene {
 			}
 		}
 		staticTilesCacheId = staticTiles.endCache();
-	}
 
-	private void drawChits(SpriteBatch batch) {
-		MapTile tile;
-		String message;
 		BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
+		staticChits = new BitmapFontCache(fnt);
+		String message;
 		TextBounds bnds;
 		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
 			for (int y = 0; y < model.mapBoundsRows; y++) {
@@ -130,19 +130,18 @@ public class WorldScene implements Scene {
 					continue;
 
 				message = Integer.toString(tile.getChit());
-				fnt.setColor(1, 0, 0, 1);
 				bnds = fnt.getBounds(message);
-				fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
+				staticChits.setColor(1, 0, 0, 1);
+				staticChits.addText(message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
 			}
 		}
 	}
 
 	private void drawEntities(SpriteBatch batch) {
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
-		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		Sprite road = model.parent.sprites.get("environment/road");
 		Sprite village = model.parent.sprites.get("environment/village");
 		Sprite metro = model.parent.sprites.get("environment/metro");
+		Sprite highwayman = model.parent.sprites.get("environment/highwayman");
 		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.grid.entrySet()) {
 			WorldModel.EntityCoordinate coord = entities.getKey();
 			if (coord.isEdge()) {
@@ -189,6 +188,8 @@ public class WorldScene implements Scene {
 				}
 				sprite.draw(batch);
 			}
+			highwayman.setPosition(tileWidth / 4 * 3 * model.highwayman.x + highwayman.getWidth() / 2, tileHeight * model.highwayman.y - tileHeight / 2 * model.highwayman.x + tileHeight + (tileHeight - highwayman.getHeight()) / 2);
+			highwayman.draw(batch);
 		}
 	}
 
@@ -225,15 +226,21 @@ public class WorldScene implements Scene {
 		backButton.update(tDelta);
 		menuButton.hidden = (subScene != null);
 		menuButton.update(tDelta);
-		model.dpad.hidden = (subScene != null);
-		model.dpad.update(tDelta);
+		model.controller.hidden = (subScene != null);
+		model.controller.update(tDelta);
+		if (model.controller.getSelectedTile() != null)
+			model.highwayman = model.controller.getSelectedTile();
+		if (model.controller.getSelectedVertex() != null)
+			if (model.grid.remove(model.controller.getSelectedVertex()) == null)
+				model.grid.put(model.controller.getSelectedVertex(), model.avatar);
+		if (model.controller.getSelectedEdge() != null)
+			if (model.grid.remove(model.controller.getSelectedEdge()) == null)
+				model.grid.put(model.controller.getSelectedEdge(), model.avatar);
 		//for (Entity ent : model.animatedEntities)
 			//ent.update(tDelta);
 		model.updateActionButtonBehavior();
 		if (model.actionButton.text != null)
 			model.actionButton.update(tDelta);
-		//model.cam.position.set(model.avatar.getScreenX(), model.avatar.getScreenY(), 1);
-		model.getCamera().update();
 
 		if (subScene == null) {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
@@ -278,15 +285,33 @@ public class WorldScene implements Scene {
 			shapeRenderer.setColor(0, 0, 0, 1);
 			//outline vertices
 			if ((DEBUG_MODE & DEBUG_VERTICES) != 0)
-				for (int x = 0, offsetX = tileWidth / 2 - tileWidth / 4 * 3, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
+				for (int x = 0, offsetX = tileWidth / 2, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
 					for (int y = 0; y <= model.mapBoundsRows + 1; y++)
-						shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y + tileHeight, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+						shapeRenderer.triangle(
+							offsetX,						offsetY + tileHeight * y,
+							offsetX,						offsetY + tileHeight * y + tileHeight,
+							offsetX - tileWidth / 4 * 3,	offsetY + tileHeight * y + tileHeight / 2
+						);
 						//shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX, offsetY + tileHeight * y - tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
 			//outline edges
-			if ((DEBUG_MODE & DEBUG_EDGES) != 0)
-				for (int x = 0, offsetX = -tileWidth / 2, offsetY = tileHeight; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
-					for (int y = 0; y <= model.mapBoundsRows + 1; y++)
-						shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX, offsetY + tileHeight * y - tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+			if ((DEBUG_MODE & DEBUG_EDGES) != 0) {
+				for (int x = 0, offsetX = -tileWidth / 4 * 3, offsetY = tileHeight + tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+					for (int y = 0; y <= model.mapBoundsRows; y++) {
+						shapeRenderer.polygon(new float[] {
+							offsetX + tileWidth,							offsetY + tileHeight * y - (tileHeight + 1) / 2,
+							offsetX + tileWidth / 2,						offsetY + tileHeight * y - (tileHeight + 1) / 2,
+							offsetX + tileWidth / 4 * 3,					offsetY + tileHeight * y,
+							offsetX + tileWidth / 4 * 3 + tileWidth / 2,	offsetY + tileHeight * y
+						});
+						shapeRenderer.polygon(new float[] {
+							offsetX + tileWidth / 4 * 3,					offsetY + tileHeight * y,
+							offsetX + tileWidth / 2,						offsetY + tileHeight * y + tileHeight / 2,
+							offsetX + tileWidth,							offsetY + tileHeight * y + tileHeight / 2,
+							offsetX + tileWidth + tileWidth / 4,			offsetY + tileHeight * y
+						});
+					}
+				}
+			}
 			shapeRenderer.end();
 
 			String message;
@@ -325,7 +350,7 @@ public class WorldScene implements Scene {
 		batch.begin();
 		model.getCamera().apply(Gdx.gl10);
 		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
-		drawChits(batch);
+		staticChits.draw(batch);
 		drawEntities(batch);
 		//for (Entity ent : model.animatedEntities)
 			//ent.draw(batch);

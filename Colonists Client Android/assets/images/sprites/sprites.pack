@@ -3,6 +3,13 @@ sprites.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
+environment/highwayman
+  rotate: false
+  xy: 950, 571
+  size: 68, 128
+  orig: 68, 128
+  offset: 0, 0
+  index: -1
 environment/metro
   rotate: false
   xy: 840, 489
