@@ -1,17 +1,21 @@
 package in.kevinj.colonists.client.menu;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.ConfirmPopupScene;
 import in.kevinj.colonists.client.Model;
+import in.kevinj.colonists.client.PriorityQueueAssetManager;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 import in.kevinj.colonists.client.Scene;
 import in.kevinj.colonists.client.menu.directconnect.DirectConnectSelectionScene;
 import in.kevinj.colonists.client.menu.lobby.AwaitingClientScene;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -42,9 +46,7 @@ public class MainMenuScene implements Scene {
 		buttons.add(new Button(m, "Local", new Runnable() {
 			@Override
 			public void run() {
-				model.scene.swappedOut(true);
-				model.scene = model.scenes.get(Model.SceneType.WORLD);
-				model.scene.swappedIn(true);
+				model.swapScene(model.scenes.get(Model.SceneType.WORLD));
 			}
 		}, 60, 450, 600, 128));
 		buttons.add(new Button(m, "Host", new Runnable() {
@@ -66,7 +68,17 @@ public class MainMenuScene implements Scene {
 			public void run() {
 				close();
 			}
-		}, 576, 1172, 144, 108, "ui/menuScene/close", "ui/menuScene/selectedClose", 255, 255, 255, 255, -1, -1, -1, -1));
+		}, 576, 1172, 144, 108, "closeButton/close", "closeButton/selectedClose", 255, 255, 255, 255, -1, -1, -1, -1));
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.singleton(new PriorityQueueAssetManager.LoadEntry("images/backgrounds/titleScreen.png", Texture.class, null));
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	private void close() {

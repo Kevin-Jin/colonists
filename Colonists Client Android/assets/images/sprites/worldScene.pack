@@ -1,0 +1,171 @@
+
+worldScene.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dpad/back
+  rotate: false
+  xy: 840, 871
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+dpad/controlBar
+  rotate: false
+  xy: 2, 295
+  size: 320, 720
+  orig: 320, 720
+  offset: 0, 0
+  index: -1
+dpad/more
+  rotate: false
+  xy: 840, 725
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+dpad/selectedArrow
+  rotate: false
+  xy: 324, 225
+  size: 320, 121
+  orig: 320, 121
+  offset: 0, 0
+  index: -1
+dpad/selectedBack
+  rotate: false
+  xy: 840, 579
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+dpad/selectedMore
+  rotate: false
+  xy: 840, 433
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+map/highwayman
+  rotate: false
+  xy: 950, 887
+  size: 68, 128
+  orig: 68, 128
+  offset: 0, 0
+  index: -1
+map/metro
+  rotate: false
+  xy: 646, 282
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+map/portBamboo
+  rotate: false
+  xy: 2, 72
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portBrownstone
+  rotate: false
+  xy: 324, 794
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portHemp
+  rotate: false
+  xy: 324, 571
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portIron
+  rotate: false
+  xy: 582, 794
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portNone
+  rotate: false
+  xy: 324, 348
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portPlain
+  rotate: false
+  xy: 582, 571
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/portRice
+  rotate: false
+  xy: 582, 348
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/road
+  rotate: false
+  xy: 2, 58
+  size: 134, 12
+  orig: 134, 12
+  offset: 0, 0
+  index: -1
+map/tileBamboo
+  rotate: false
+  xy: 260, 2
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/tileBrownstone
+  rotate: false
+  xy: 518, 2
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/village
+  rotate: false
+  xy: 840, 367
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+
+worldScene2.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+map/tileHemp
+  rotate: false
+  xy: 2, 225
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/tileIron
+  rotate: false
+  xy: 2, 2
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/tileRice
+  rotate: false
+  xy: 260, 225
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1
+map/tileWasteland
+  rotate: false
+  xy: 260, 2
+  size: 256, 221
+  orig: 256, 221
+  offset: 0, 0
+  index: -1

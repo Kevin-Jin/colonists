@@ -40,11 +40,11 @@ public class Button implements ViewComponent {
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, String inactiveSprite, String activeSprite, int tintR, int tintG, int tintB, int tintA, int fontR, int fontG, int fontB, int fontA) {
-		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", tintR, tintG, tintB, tintA, fontR, fontG, fontB, fontA, null);
+		this(model, text, task, x, y, width, height, inactiveSprite, activeSprite, tintR, tintG, tintB, tintA, fontR, fontG, fontB, fontA, null);
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height, ScaleDisplay transformer) {
-		this(model, text, task, x, y, width, height, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 255, 191, 191, 191, 255, transformer);
+		this(model, text, task, x, y, width, height, "button/regular", "button/pressed", 255, 255, 255, 255, 191, 191, 191, 255, transformer);
 	}
 
 	public Button(Model model, String text, Runnable task, int x, int y, int width, int height) {

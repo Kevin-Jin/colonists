@@ -31,7 +31,7 @@ public class AndroidModel extends Model {
 	}
 
 	@Override
-	public void startLoadingResources(float minSplashTime) {
+	public void startLoadingResources(boolean initialLoad) {
 		try {
 			db = new DatabaseManager("jdbc:sqldroid:" + app.getFilesDir().getAbsolutePath() + "/saves.sqlite", null, null, false);
 			db.initialize("org.sqldroid.SQLDroidDriver");
@@ -39,7 +39,7 @@ public class AndroidModel extends Model {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		super.startLoadingResources(minSplashTime);
+		super.startLoadingResources(initialLoad);
 	}
 
 	public AndroidApplication getApplication() {

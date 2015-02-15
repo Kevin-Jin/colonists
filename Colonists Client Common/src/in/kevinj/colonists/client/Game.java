@@ -1,7 +1,5 @@
 package in.kevinj.colonists.client;
 
-import in.kevinj.colonists.Constants;
-
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -30,8 +28,8 @@ public class Game implements ApplicationListener {
 		Gdx.input.setCatchBackKey(true);
 		Gdx.input.setCatchMenuKey(true);
 
-		model.startLoadingResources(Constants.SPLASH_SCREEN_MIN_TIME);
 		model.onStart();
+		model.startLoadingResources(true);
 		batch = new SpriteBatch();
 	}
 
@@ -47,7 +45,7 @@ public class Game implements ApplicationListener {
 		float tDelta = Gdx.graphics.getDeltaTime();
 		model.continueLoadingResources(tDelta);
 
-		model.scene.update(tDelta);
+		model.sceneToShow.update(tDelta);
 		model.controller.update(tDelta);
 		if (paused && Gdx.app.getType() == Application.ApplicationType.Android)
 			return;
@@ -56,22 +54,19 @@ public class Game implements ApplicationListener {
 		batch.begin();
 		model.cam.apply(Gdx.gl10);
 		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
-		model.scene.draw(batch);
+		model.sceneToShow.draw(batch);
 		batch.end();
 	}
 
 	@Override
 	public void pause() {
-		//model.releaseAllResources();
 		model.onPause();
 		paused = true;
 	}
 
 	@Override
 	public void resume() {
-		// TODO: don't release nonvolatile assets in pause() and load only volatile assets (e.g. textures) here
 		paused = false;
-		//model.startLoadingResources(0);
 		model.onResume();
 	}
 

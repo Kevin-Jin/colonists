@@ -14,7 +14,7 @@ public class DesktopModel extends Model {
 	}
 
 	@Override
-	public void startLoadingResources(float minSplashTime) {
+	public void startLoadingResources(boolean initialLoad) {
 		try {
 			db = new DatabaseManager("jdbc:sqlite:" + dbPath.getAbsolutePath() + "/saves.sqlite", null, null, false);
 			db.initialize("org.sqlite.JDBC");
@@ -22,6 +22,6 @@ public class DesktopModel extends Model {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		super.startLoadingResources(minSplashTime);
+		super.startLoadingResources(initialLoad);
 	}
 }

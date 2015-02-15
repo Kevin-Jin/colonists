@@ -1,6 +1,12 @@
 package in.kevinj.colonists.client;
 
+import java.util.Collection;
+
 public interface Scene extends ViewComponent {
+	public Collection<PriorityQueueAssetManager.LoadEntry> getAssetDependencies();
+
+	public Collection<String> getSpriteSheetDependencies();
+
 	public void swappedIn(boolean transition);
 
 	public void resize(int width, int height);

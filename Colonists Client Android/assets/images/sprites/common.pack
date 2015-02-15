@@ -1,0 +1,40 @@
+
+common.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+button/pressed
+  rotate: false
+  xy: 2, 18
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+button/regular
+  rotate: false
+  xy: 260, 18
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+closeButton/close
+  rotate: false
+  xy: 518, 2
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+closeButton/selectedClose
+  rotate: false
+  xy: 628, 2
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+popup/confirmBackground
+  rotate: false
+  xy: 2, 148
+  size: 970, 300
+  orig: 970, 300
+  offset: 0, 0
+  index: -1

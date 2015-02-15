@@ -1,9 +1,13 @@
 package in.kevinj.colonists.client.android.menu.wifidirect;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
 import in.kevinj.colonists.client.Scene;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -24,6 +28,16 @@ public class WifiDirectSelectionScene implements Scene {
 		this.parentScene = mainMenuScene;
 
 		shapeRenderer = new ShapeRenderer();
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -58,11 +72,9 @@ public class WifiDirectSelectionScene implements Scene {
 			};
 
 			swappedOut(true);
-			model.parent.scene.setSubscene(null);
-			model.parent.scene.swappedOut(true);
-			model.parent.scene = model.parent.scenes.get(Model.SceneType.BATTLE);
+			model.parent.sceneToShow.setSubscene(null);
 			model.parent.battleModel.initRemote(op, !model.isHost);
-			model.parent.scene.swappedIn(true);
+			model.parent.swapScene(model.parent.scenes.get(Model.SceneType.BATTLE));
 			return;
 		}
 

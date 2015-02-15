@@ -1,6 +1,10 @@
 package in.kevinj.colonists.client;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
@@ -32,6 +36,16 @@ public abstract class PopupScene implements Scene {
 
 	protected int getButtonY() {
 		return (Constants.HEIGHT - height) / 2 + paddingBottom;
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	protected int drawText(SpriteBatch batch, String message, float tint, int topY, BitmapFont fnt) {
@@ -72,7 +86,7 @@ public abstract class PopupScene implements Scene {
 		batch.begin();
 		model.cam.apply(Gdx.gl10);
 
-		Sprite s = model.sprites.get("ui/popup/confirmBackground");
+		Sprite s = model.sprites.get("popup/confirmBackground");
 		s.setBounds((Constants.WIDTH - width) / 2, (Constants.HEIGHT - height) / 2, width, height);
 		s.draw(batch);
 	}

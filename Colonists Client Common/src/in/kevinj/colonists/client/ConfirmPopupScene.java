@@ -35,20 +35,13 @@ public class ConfirmPopupScene extends PopupScene {
 
 	private void proceed() {
 		swappedOut(true);
-		model.scene.setSubscene(null);
-		model.scene.swappedOut(true);
-
-		if (nextScene != null) {
-			model.scene = model.scenes.get(nextScene);
-			model.scene.swappedIn(true);
-		} else {
-			Gdx.app.exit();
-		}
+		model.sceneToShow.setSubscene(null);
+		model.swapScene(model.scenes.get(nextScene));
 	}
 
 	private void back() {
 		swappedOut(true);
-		model.scene.setSubscene(null);
+		model.sceneToShow.setSubscene(null);
 	}
 
 	@Override

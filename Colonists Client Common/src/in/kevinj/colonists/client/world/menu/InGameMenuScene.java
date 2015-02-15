@@ -1,7 +1,11 @@
 package in.kevinj.colonists.client.world.menu;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.Scene;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -16,6 +20,16 @@ public class InGameMenuScene implements Scene {
 		this.model = model;
 
 		this.parentScene = worldScene;
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	@Override

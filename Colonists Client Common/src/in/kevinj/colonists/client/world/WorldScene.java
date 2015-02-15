@@ -4,9 +4,14 @@ import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.ConfirmPopupScene;
 import in.kevinj.colonists.client.Model;
+import in.kevinj.colonists.client.PriorityQueueAssetManager;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 import in.kevinj.colonists.client.Scene;
 import in.kevinj.colonists.client.world.menu.InGameMenuScene;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -19,6 +24,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class WorldScene implements Scene {
@@ -74,26 +80,39 @@ public class WorldScene implements Scene {
 	}
 
 	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Arrays.asList(
+			new PriorityQueueAssetManager.LoadEntry("images/sprites/worldScene.pack", TextureAtlas.class, null)/*,
+			new PriorityQueueAssetManager.LoadEntry("trainers/red.json", TrainerProperties.class, null)*/
+		);
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.singleton("images/sprites/worldScene.pack");
+	}
+
+	@Override
 	public void swappedIn(boolean transition) {
 		Gdx.gl10.glClearColor(1, 1, 1, 1);
 
 		//flat topped axial coordinate grid implemented from http://www.redblobgames.com/grids/hexagons/
 		//x increases diagonally down right, y increases straight up, z increases diagonally down left
 		resourceTiles = new EnumMap<MapTile.ResourceType, Sprite>(MapTile.ResourceType.class);
-		resourceTiles.put(MapTile.ResourceType.RICE, model.parent.sprites.get("environment/tileRice"));
-		resourceTiles.put(MapTile.ResourceType.BAMBOO, model.parent.sprites.get("environment/tileBamboo"));
-		resourceTiles.put(MapTile.ResourceType.HEMP, model.parent.sprites.get("environment/tileHemp"));
-		resourceTiles.put(MapTile.ResourceType.IRON, model.parent.sprites.get("environment/tileIron"));
-		resourceTiles.put(MapTile.ResourceType.BROWNSTONE, model.parent.sprites.get("environment/tileBrownstone"));
-		resourceTiles.put(MapTile.ResourceType.WASTELAND, model.parent.sprites.get("environment/tileWasteland"));
+		resourceTiles.put(MapTile.ResourceType.RICE, model.parent.sprites.get("map/tileRice"));
+		resourceTiles.put(MapTile.ResourceType.BAMBOO, model.parent.sprites.get("map/tileBamboo"));
+		resourceTiles.put(MapTile.ResourceType.HEMP, model.parent.sprites.get("map/tileHemp"));
+		resourceTiles.put(MapTile.ResourceType.IRON, model.parent.sprites.get("map/tileIron"));
+		resourceTiles.put(MapTile.ResourceType.BROWNSTONE, model.parent.sprites.get("map/tileBrownstone"));
+		resourceTiles.put(MapTile.ResourceType.WASTELAND, model.parent.sprites.get("map/tileWasteland"));
 		portTiles = new EnumMap<MapTile.PortType, Sprite>(MapTile.PortType.class);
-		portTiles.put(MapTile.PortType.RICE, model.parent.sprites.get("environment/portRice"));
-		portTiles.put(MapTile.PortType.BAMBOO, model.parent.sprites.get("environment/portBamboo"));
-		portTiles.put(MapTile.PortType.HEMP, model.parent.sprites.get("environment/portHemp"));
-		portTiles.put(MapTile.PortType.IRON, model.parent.sprites.get("environment/portIron"));
-		portTiles.put(MapTile.PortType.BROWNSTONE, model.parent.sprites.get("environment/portBrownstone"));
-		portTiles.put(MapTile.PortType.PLAIN, model.parent.sprites.get("environment/portPlain"));
-		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("environment/portNone"));
+		portTiles.put(MapTile.PortType.RICE, model.parent.sprites.get("map/portRice"));
+		portTiles.put(MapTile.PortType.BAMBOO, model.parent.sprites.get("map/portBamboo"));
+		portTiles.put(MapTile.PortType.HEMP, model.parent.sprites.get("map/portHemp"));
+		portTiles.put(MapTile.PortType.IRON, model.parent.sprites.get("map/portIron"));
+		portTiles.put(MapTile.PortType.BROWNSTONE, model.parent.sprites.get("map/portBrownstone"));
+		portTiles.put(MapTile.PortType.PLAIN, model.parent.sprites.get("map/portPlain"));
+		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("map/portNone"));
 		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
 		model.controller.tileHeight = tileHeight = (int) textureToUse.getHeight();
@@ -138,10 +157,10 @@ public class WorldScene implements Scene {
 	}
 
 	private void drawEntities(SpriteBatch batch) {
-		Sprite road = model.parent.sprites.get("environment/road");
-		Sprite village = model.parent.sprites.get("environment/village");
-		Sprite metro = model.parent.sprites.get("environment/metro");
-		Sprite highwayman = model.parent.sprites.get("environment/highwayman");
+		Sprite road = model.parent.sprites.get("map/road");
+		Sprite village = model.parent.sprites.get("map/village");
+		Sprite metro = model.parent.sprites.get("map/metro");
+		Sprite highwayman = model.parent.sprites.get("map/highwayman");
 		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.grid.entrySet()) {
 			WorldModel.EntityCoordinate coord = entities.getKey();
 			if (coord.isEdge()) {

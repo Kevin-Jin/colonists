@@ -54,11 +54,9 @@ public class DirectConnectSelectionScene extends PopupScene {
 		NetworkPlayerBattleOpponent op = model.update(tDelta);
 		if (op != null) {
 			swappedOut(true);
-			model.parent.scene.setSubscene(null);
-			model.parent.scene.swappedOut(true);
-			model.parent.scene = model.parent.scenes.get(Model.SceneType.BATTLE);
+			model.parent.sceneToShow.setSubscene(null);
 			model.parent.battleModel.initRemote(op, true);
-			model.parent.scene.swappedIn(true);
+			model.parent.swapScene(model.parent.scenes.get(Model.SceneType.BATTLE));
 			return;
 		}
 

@@ -32,17 +32,15 @@ public class Model extends ScaleDisplay {
 	public final ControllerHelper controller;
 
 	public final Map<SceneType, Scene> scenes;
-	public Scene scene;
-	private Scene pausedScene;
+	public Scene sceneToShow;
+	private Scene currentScene;
+	private boolean paused;
 	public BattleModel battleModel;
 
-	private boolean loading;
+	private int loadingStep;
 	private float remainingLoadTime;
 
-	//TODO: manage all textures for current scene and async load
-	//non-managed textures on context restore. if scene is switched
-	//and texture is not loaded in time, then display loading screen
-	public final AssetManager assets;
+	public final PriorityQueueAssetManager assets;
 	public final Map<String, Sprite> sprites;
 
 	public DatabaseManager db;
@@ -51,8 +49,8 @@ public class Model extends ScaleDisplay {
 		controller = new ControllerHelper(this);
 
 		scenes = new EnumMap<SceneType, Scene>(SceneType.class);
-		scene = EmptyScene.instance;
-		assets = new AssetManager();
+		sceneToShow = EmptyScene.instance;
+		assets = new PriorityQueueAssetManager();
 		sprites = new HashMap<String, Sprite>();
 
 		assets.setLoader(TrainerProperties.class, new SynchronousAssetLoader<TrainerProperties, AssetLoaderParameters<TrainerProperties>>(new InternalFileHandleResolver()) {
@@ -106,59 +104,114 @@ public class Model extends ScaleDisplay {
 		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(this));
 		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene(battleModel));
 		scenes.putAll(sceneFactory.additionalScenes());
-		scene = scenes.get(SceneType.LOAD_SCREEN);
+		sceneToShow = scenes.get(SceneType.LOAD_SCREEN);
+		currentScene = scenes.get(SceneType.MAIN_MENU);
 	}
 
-	public void startLoadingResources(float minSplashTime) {
+	@SuppressWarnings("unchecked")
+	public void startLoadingResources(boolean initialLoad) {
 		Gdx.graphics.setContinuousRendering(true);
-		loading = true;
-		remainingLoadTime = minSplashTime;
+		remainingLoadTime = initialLoad ? Constants.SPLASH_SCREEN_MIN_TIME : 0;
 
-		// synchronous load loading screen assets
 		TextureParameter param = new TextureParameter();
 		param.minFilter = param.magFilter = TextureFilter.Nearest;
-		assets.load("images/backgrounds/splash.png", Texture.class, param);
-		assets.finishLoading();
+
+		// synchronous load loading screen assets
+		assets.queueOrMove("images/backgrounds/splash.png", Texture.class, param, 0);
 
 		// asynchronous load all other assets
-		assets.load("images/sprites/sprites.pack", TextureAtlas.class);
-		assets.load("fonts/buttons.fnt", BitmapFont.class);
-		assets.load("images/backgrounds/titleScreen.png", Texture.class, param);
-		//assets.load("trainers/red.json", TrainerProperties.class);
+		assets.queueOrMove("fonts/buttons.fnt", BitmapFont.class, null, 1);
+		assets.queueOrMove("images/sprites/common.pack", TextureAtlas.class, null, 1);
+		for (Scene scene : scenes.values())
+			for (PriorityQueueAssetManager.LoadEntry entry : scene.getAssetDependencies())
+				assets.queueOrMove(entry.fileName, entry.type, entry.parameter, scene == currentScene ? 2 : 3);
 		// TODO: load music using assets.load(..., Music.class),
 		// and sound effects using assets.load(..., Sound.class)
+
+		assets.startLoading();
+		assets.finishLoading(0);
+		loadingStep = 1;
 	}
 
 	public void continueLoadingResources(float tDelta) {
-		if (loading) {
+		//loading screen disappears as soon as all assets needed for the current
+		//scene are loaded. loading of assets for other scenes continues in
+		//background.
+		if (loadingStep == 1) {
+			//common assets
 			remainingLoadTime -= tDelta;
-			if (assets.update()) {
-				for (AtlasRegion reg : assets.get("images/sprites/sprites.pack", TextureAtlas.class).getRegions())
+			if (assets.update(loadingStep))
+				loadingStep = 2;
+		} else if (loadingStep == 2) {
+			//current scene specific assets
+			remainingLoadTime -= tDelta;
+			if (assets.update(loadingStep)) {
+				for (AtlasRegion reg : assets.get("images/sprites/common.pack", TextureAtlas.class).getRegions())
 					sprites.put(reg.name, new Sprite(reg));
+				for (String pack : currentScene.getSpriteSheetDependencies())
+					for (AtlasRegion reg : assets.get(pack, TextureAtlas.class).getRegions())
+						sprites.put(reg.name, new Sprite(reg));
 
-				loading = false;
+				loadingStep = 3;
 				if (remainingLoadTime <= 0)
 					finishedLoadingResources();
 			}
-		} else if (remainingLoadTime > 0) {
-			remainingLoadTime -= tDelta;
-			if (remainingLoadTime <= 0)
-				finishedLoadingResources();
+		} else {
+			if (remainingLoadTime > 0) {
+				//all assets loaded, but need to display load screen for minimum amount of time
+				remainingLoadTime -= tDelta;
+				if (remainingLoadTime <= 0 && loadingStep != 4) {
+					finishedLoadingResources();
+					if (loadingStep == -1)
+						Gdx.graphics.setContinuousRendering(false);
+				}
+			}
+			if (loadingStep == 3 || loadingStep == 4) {
+				//remaining assets
+				if (assets.update()) {
+					for (Scene scene : scenes.values())
+						for (String pack : scene.getSpriteSheetDependencies())
+							for (AtlasRegion reg : assets.get(pack, TextureAtlas.class).getRegions())
+								sprites.put(reg.name, new Sprite(reg));
+
+					if (remainingLoadTime <= 0) {
+						if (loadingStep == 4)
+							finishedLoadingResources();
+						Gdx.graphics.setContinuousRendering(false);
+					}
+
+					loadingStep = -1;
+				}
+			}
 		}
 	}
 
 	private void finishedLoadingResources() {
-		scene.swappedOut(true);
-		if (pausedScene != null) {
-			scene = pausedScene;
-			scene.swappedIn(true);
-			scene.resume();
-			pausedScene = null;
-		} else {
-			scene = scenes.get(SceneType.MAIN_MENU);
-			scene.swappedIn(true);
+		sceneToShow.swappedOut(true);
+		sceneToShow = currentScene;
+		sceneToShow.swappedIn(true);
+		if (paused) {
+			sceneToShow.resume();
+			paused = false;
 		}
-		Gdx.graphics.setContinuousRendering(false);
+	}
+
+	public void swapScene(Scene nextScene) {
+		if (nextScene == null)
+			Gdx.app.exit();
+
+		sceneToShow.swappedOut(true);
+
+		if (loadingStep != -1) {
+			//swapping scene immediately after resume or create. assets for
+			//other scenes still not fully loaded. put the loading screen back on.
+			loadingStep = 4;
+			currentScene = nextScene;
+			sceneToShow = scenes.get(SceneType.LOAD_SCREEN);
+		} else {
+			sceneToShow = nextScene;
+		}
+		sceneToShow.swappedIn(true);
 	}
 
 	@Override
@@ -171,15 +224,18 @@ public class Model extends ScaleDisplay {
 	}
 
 	public void onPause() {
-		scene.pause();
-		if (scene != scenes.get(SceneType.LOAD_SCREEN))
-			pausedScene = scene;
+		sceneToShow.pause();
+		if (sceneToShow != scenes.get(SceneType.LOAD_SCREEN)) {
+			currentScene = sceneToShow;
+			paused = true;
+		}
 	}
 
 	public void onResume() {
-		//scene.swappedOut(false);
-		//scene = scenes.get(SceneType.LOAD_SCREEN);
-		//scene.swappedIn(false);
+		startLoadingResources(false);
+		sceneToShow.swappedOut(false);
+		sceneToShow = scenes.get(SceneType.LOAD_SCREEN);
+		sceneToShow.swappedIn(false);
 	}
 
 	public void releaseAllResources() {
@@ -188,6 +244,7 @@ public class Model extends ScaleDisplay {
 	}
 
 	public void onDispose() {
+		assets.finishLoading();
 		assets.dispose();
 		if (db != null)
 			db.closeAll();

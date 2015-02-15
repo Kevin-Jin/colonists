@@ -224,10 +224,8 @@ public class WorldModel extends ScaleDisplay {
 		BATTLE_BUTTON = new Runnable() {
 			@Override
 			public void run() {
-				parent.scene.swappedOut(true);
-				parent.scene = parent.scenes.get(Model.SceneType.BATTLE);
 				parent.battleModel.initLocal(parent.assets.get(((NonplayableCharacter) getEntity(avatar.getNextLocation())).trainerProps, TrainerProperties.class).createInstance(parent.battleModel));
-				parent.scene.swappedIn(true);
+				parent.swapScene(parent.scenes.get(Model.SceneType.BATTLE));
 			}
 		};
 		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);

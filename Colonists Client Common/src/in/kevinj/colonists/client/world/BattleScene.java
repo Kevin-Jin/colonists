@@ -2,7 +2,11 @@ package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 import in.kevinj.colonists.client.Scene;
+
+import java.util.Collection;
+import java.util.Collections;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -44,6 +48,16 @@ public class BattleScene implements Scene {
 			subScene = model.subScenes.get(BattleModel.BattleSubSceneType.CONFIRM_FLEE_POPUP);
 			subScene.swappedIn(true);
 		}
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	@Override

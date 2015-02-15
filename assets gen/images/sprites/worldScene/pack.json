@@ -1,0 +1,7 @@
+{
+        paddingX: 2,
+        paddingY: 2,
+        filterMin: Linear,
+        filterMag: Linear,
+        combineSubdirectories: true
+}

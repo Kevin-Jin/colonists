@@ -1,5 +1,10 @@
 package in.kevinj.colonists.client;
 
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
+
+import java.util.Collection;
+import java.util.Collections;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class EmptyScene implements Scene {
@@ -7,6 +12,16 @@ public class EmptyScene implements Scene {
 
 	private EmptyScene() {
 		
+	}
+
+	@Override
+	public Collection<LoadEntry> getAssetDependencies() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> getSpriteSheetDependencies() {
+		return Collections.emptyList();
 	}
 
 	@Override
