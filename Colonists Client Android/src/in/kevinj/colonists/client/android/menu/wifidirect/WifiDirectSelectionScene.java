@@ -93,14 +93,14 @@ public class WifiDirectSelectionScene implements Scene {
 		batch.end();
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		shapeRenderer.setProjectionMatrix(model.parent.getCamera().combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		model.parent.getCamera().apply(Gdx.gl10);
 		shapeRenderer.setColor(0, 0, 0, 0.5f);
 		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
 		shapeRenderer.end();
 		Gdx.gl10.glDisable(GL10.GL_BLEND);
+		batch.setProjectionMatrix(model.parent.getCamera().combined);
 		batch.begin();
-		model.parent.getCamera().apply(Gdx.gl10);
 
 		model.selections.draw(batch);
 	}

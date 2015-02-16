@@ -16,6 +16,8 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.math.Vector3;
 
 public class WorldModel extends ScaleDisplay {
 	public static class TileCoordinate implements Comparable<TileCoordinate> {
@@ -176,10 +178,78 @@ public class WorldModel extends ScaleDisplay {
 		}
 	}
 
+	public final class Loupe extends ScaleDisplay {
+		public boolean hidden;
+
+		protected Loupe() {
+			hidden = true;
+		}
+
+		@Override
+		public final void resize(int screenWidth, int screenHeight) {
+			super.resize(screenWidth, screenHeight);
+			cam.zoom = 1f;
+			cam.position.set(Constants.WIDTH, Constants.HEIGHT / 2, 0);
+			cam.update();
+		}
+
+		public void update(float tDelta) {
+			if (!Gdx.input.isButtonPressed(Buttons.LEFT)) {
+				hidden = true;
+				return;
+			}
+
+			hidden = false;
+			//center the loupe on the cursor
+			Vector3 cursor = parent.controller.getCursor(WorldModel.this);
+			cam.position.set(Constants.WIDTH, Constants.HEIGHT / 2, 0);
+			cam.update();
+			cam.project(cursor, 0, 0, Constants.WIDTH / 2, Constants.WIDTH * getViewportHeight() / getViewportWidth() / 2);
+			float zoom = WorldModel.this.cam.zoom;
+			//cam.position.set(
+				//cursor.x * (zoom - 1) / (zoom / 2f) + Constants.WIDTH * (zoom + 1) / (zoom * 2),
+				//cursor.y * (zoom - 1) / (zoom / 2f) + (Constants.HEIGHT - Constants.WIDTH * getViewportHeight() / getViewportWidth()) * (zoom - 1) / (zoom * 2)
+			//, 0);
+			cam.position.x = ((2 * cursor.x + (Constants.WIDTH / 2)) * (zoom - 1) + Constants.WIDTH) / zoom;
+			//FIXME: y is all wrong. doesn't scale properly with Constants.HEIGHT, and can't find a non-discrete function of zoom for constant term  
+			cam.position.y = ((2 * cursor.y + (Constants.HEIGHT - Constants.WIDTH * getViewportHeight() / getViewportWidth()) / 2) * (zoom - 1)) / zoom + Constants.HEIGHT * (zoom - 1) / (zoom * 2) + 128;
+			if (zoom == 1)
+				cam.position.y += 0;
+			else if (zoom == 2)
+				cam.position.y += -320;
+			else if (zoom == 3)
+				cam.position.y += -426;
+			else if (zoom == 4)
+				cam.position.y += -640;
+			cam.update();
+		}
+
+		@Override
+		public int getViewportX() {
+			return WorldModel.this.getViewportX();
+		}
+
+		@Override
+		public int getViewportY() {
+			return WorldModel.this.getViewportY();
+		}
+
+		@Override
+		public int getViewportWidth() {
+			return WorldModel.this.getViewportWidth();
+		}
+
+		@Override
+		public int getViewportHeight() {
+			return WorldModel.this.getViewportHeight();
+		}
+	}
+
 	public static final int MAP_VIEW_COLUMNS = 7, MAP_VIEW_ROWS = 7;
 
 	public final Model parent;
 	public final MapInteraction controller;
+	public final Loupe loupe;
 	public final DirectionalPad dpad;
 	public final Avatar avatar;
 
@@ -197,6 +267,7 @@ public class WorldModel extends ScaleDisplay {
 	public WorldModel(Model model) {
 		this.parent = model;
 		controller = new MapInteraction(this);
+		loupe = new Loupe();
 		dpad = new DirectionalPad(model);
 		avatar = new Avatar(this, 7, 6);
 
@@ -241,6 +312,8 @@ public class WorldModel extends ScaleDisplay {
 		cam.zoom = 2f;
 		cam.position.set(Constants.WIDTH, Constants.HEIGHT / 2, 0);
 		cam.update();
+
+		loupe.resize(screenWidth, screenHeight);
 	}
 
 	public int getScreenWidth() {

@@ -6,6 +6,7 @@ import in.kevinj.colonists.client.ConfirmPopupScene;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.PriorityQueueAssetManager;
 import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
+import in.kevinj.colonists.client.ScaleDisplay;
 import in.kevinj.colonists.client.Scene;
 import in.kevinj.colonists.client.world.menu.InGameMenuScene;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
@@ -26,6 +28,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
 
 public class WorldScene implements Scene {
 	public enum WorldSubSceneType {
@@ -245,6 +248,7 @@ public class WorldScene implements Scene {
 		backButton.update(tDelta);
 		menuButton.hidden = (subScene != null);
 		menuButton.update(tDelta);
+		model.loupe.update(tDelta);
 		model.controller.hidden = (subScene != null);
 		model.controller.update(tDelta);
 		if (model.controller.getSelectedTile() != null)
@@ -265,42 +269,40 @@ public class WorldScene implements Scene {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
 				confirmBack();
 			} else if (model.parent.controller.wasMenuPressed && !Gdx.input.isKeyPressed(Keys.ENTER) && !Gdx.input.isKeyPressed(Keys.MENU)) {
-				openPopupMenu();
+				//openPopupMenu();
 			}
 		} else {
 			subScene.update(tDelta);
 		}
 	}
 
-	@Override
-	public void draw(SpriteBatch batch) {
-		batch.end();
-
+	private void draw(SpriteBatch batch, Camera cam, int viewportX, int viewportY, int viewportWidth, int viewportHeight) {
+		//clear the canvas
+		shapeRenderer.setProjectionMatrix(cam.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		Gdx.gl.glViewport(0, 0, model.getScreenWidth(), model.getScreenHeight());
-		shapeRenderer.setColor(0, 0, 0, 1);
-		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
+		Gdx.gl10.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+		shapeRenderer.setColor(1, 1, 1, 1);
+		shapeRenderer.rect(
+			-model.getCamera().viewportWidth * (model.getCamera().zoom - 2) / 2,
+			//(-model.getCamera().viewportHeight * (model.getCamera().zoom - 2) / 2) + (model.getCamera().viewportHeight * model.getCamera().zoom) - (model.getCamera().position.y + Constants.HEIGHT - model.getCamera().viewportHeight),
+			model.getCamera().viewportHeight * model.getCamera().zoom / 2 - model.getCamera().position.y + Constants.HEIGHT,
+			model.getCamera().viewportWidth * model.getCamera().zoom,
+			-model.getCamera().viewportHeight * model.getCamera().zoom
+		);
 		shapeRenderer.end();
 
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
-		shapeRenderer.setColor(255, 255, 255, 1);
-		//shapeRenderer.rect(0, model.screenHeight, model.screenWidth, -model.screenHeight);
-		shapeRenderer.rect(0, 10000, 10000, -20000);
-		shapeRenderer.end();
-
+		staticTiles.setProjectionMatrix(cam.combined);
 		staticTiles.begin();
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		model.getCamera().apply(Gdx.gl10);
-		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		Gdx.gl10.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		staticTiles.draw(staticTilesCacheId);
 		staticTiles.end();
 
 		if (DEBUG_MODE != NO_DEBUG) {
+			shapeRenderer.setProjectionMatrix(cam.combined);
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-			model.getCamera().apply(Gdx.gl10);
-			Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+			Gdx.gl10.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			shapeRenderer.setColor(0, 0, 0, 1);
 			//outline vertices
 			if ((DEBUG_MODE & DEBUG_VERTICES) != 0)
@@ -337,9 +339,9 @@ public class WorldScene implements Scene {
 			BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 			fnt.setColor(0, 0, 0, 1);
 			TextBounds bnds;
+			batch.setProjectionMatrix(cam.combined);
 			batch.begin();
-			model.getCamera().apply(Gdx.gl10);
-			Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+			Gdx.gl10.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			//print hexagonal tile coordinates
 			if ((DEBUG_MODE & DEBUG_TILES) != 0) {
 				for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
@@ -366,17 +368,80 @@ public class WorldScene implements Scene {
 			batch.end();
 		}
 
+		batch.setProjectionMatrix(cam.combined);
 		batch.begin();
-		model.getCamera().apply(Gdx.gl10);
-		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		Gdx.gl10.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		staticChits.draw(batch);
 		drawEntities(batch);
 		//for (Entity ent : model.animatedEntities)
 			//ent.draw(batch);
 		batch.end();
-		batch.begin();
-		model.parent.getCamera().apply(Gdx.gl10);
+	}
 
+	@Override
+	public void draw(SpriteBatch batch) {
+		batch.end();
+
+		//clear the pillar/letter boxing
+		shapeRenderer.setProjectionMatrix(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().combined);
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		Gdx.gl10.glViewport(0, 0, model.getScreenWidth(), model.getScreenHeight());
+		shapeRenderer.setColor(0, 0, 0, 1);
+		shapeRenderer.rect(0, 0, ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().viewportWidth, ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().viewportHeight);
+		shapeRenderer.end();
+
+		//draw on the canvas
+		draw(batch, model.getCamera(), model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+
+		if (!model.loupe.hidden) {
+			Vector3 yDownCursor = model.parent.controller.getCursor(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY);
+			//begin drawing an outline around the loupe
+			shapeRenderer.setProjectionMatrix(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().combined);
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			Gdx.gl10.glViewport(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportX(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportY(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportWidth(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportHeight());
+			shapeRenderer.setColor(0, 0, 0, 1);
+			shapeRenderer.circle(yDownCursor.x, yDownCursor.y - 192, 135);
+			shapeRenderer.triangle(yDownCursor.x - 96, yDownCursor.y - 200, yDownCursor.x + 96, yDownCursor.y - 200, yDownCursor.x, yDownCursor.y);
+			shapeRenderer.end();
+			//end drawing an outline
+	
+			//begin positioning and shaping the loupe
+			Gdx.gl10.glEnable(GL10.GL_STENCIL_TEST);
+			Gdx.gl10.glColorMask(false, false, false, false);
+			Gdx.gl10.glDepthMask(false);
+			Gdx.gl10.glStencilFunc(GL10.GL_NEVER, 1, 0xFF);
+			Gdx.gl10.glStencilOp(GL10.GL_REPLACE, GL10.GL_KEEP, GL10.GL_KEEP);
+			Gdx.gl10.glStencilMask(0xFF);
+			Gdx.gl10.glClear(GL10.GL_STENCIL_BUFFER_BIT);
+			//ShapeRenderer has problems with Fill when using the default y-up coordinate system
+			shapeRenderer.setProjectionMatrix(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().combined);
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			Gdx.gl10.glViewport(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportX(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportY(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportWidth(), ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getViewportHeight());
+			shapeRenderer.setColor(0, 0, 0, 1);
+			shapeRenderer.circle(yDownCursor.x, yDownCursor.y - 192, 128);
+			shapeRenderer.end();
+			Gdx.gl10.glColorMask(true, true, true, true);
+			Gdx.gl10.glDepthMask(true);
+			Gdx.gl10.glStencilMask(0x00);
+			//end positioning and shaping loupe position
+	
+			//begin drawing inside the loupe
+			Gdx.gl10.glStencilFunc(GL10.GL_EQUAL, 0, 0xFF);
+			Gdx.gl10.glStencilFunc(GL10.GL_EQUAL, 1, 0xFF);
+			draw(batch, model.loupe.getCamera(), model.loupe.getViewportX(), model.loupe.getViewportY(), model.loupe.getViewportWidth(), model.loupe.getViewportHeight());
+			Vector3 cursor = model.parent.controller.getCursor(model);
+			shapeRenderer.setProjectionMatrix(model.loupe.getCamera().combined);
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			Gdx.gl10.glViewport(model.loupe.getViewportX(), model.loupe.getViewportY(), model.loupe.getViewportWidth(), model.loupe.getViewportHeight());
+			shapeRenderer.setColor(0, 0, 0, 1);
+			shapeRenderer.rect(cursor.x - 25, cursor.y + 25, 50, -50);
+			shapeRenderer.end();
+			Gdx.gl10.glDisable(GL10.GL_STENCIL_TEST);
+			//end drawing inside the loupe
+		}
+
+		batch.setProjectionMatrix(model.getCamera().combined);
+		batch.begin();
 		/*if (model.actionButton.text != null)
 			model.actionButton.draw(batch);
 		Sprite s = model.parent.sprites.get("ui/worldScene/controlBar");

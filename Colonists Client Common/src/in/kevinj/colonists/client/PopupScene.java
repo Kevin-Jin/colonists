@@ -74,17 +74,16 @@ public abstract class PopupScene implements Scene {
 	@Override
 	public void draw(SpriteBatch batch) {
 		batch.end();
-		model.cam.apply(Gdx.gl10);
+		shapeRenderer.setProjectionMatrix(model.cam.combined);
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
 		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		model.cam.apply(Gdx.gl10);
 		shapeRenderer.setColor(0, 0, 0, 0.5f);
 		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
 		shapeRenderer.end();
 		Gdx.gl10.glDisable(GL10.GL_BLEND);
+		batch.setProjectionMatrix(model.cam.combined);
 		batch.begin();
-		model.cam.apply(Gdx.gl10);
 
 		Sprite s = model.sprites.get("popup/confirmBackground");
 		s.setBounds((Constants.WIDTH - width) / 2, (Constants.HEIGHT - height) / 2, width, height);

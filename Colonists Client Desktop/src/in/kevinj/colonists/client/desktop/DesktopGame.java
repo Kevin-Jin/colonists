@@ -31,6 +31,7 @@ public class DesktopGame {
 		cfg.vSyncEnabled = !unlimitedFps;
 		cfg.resizable = true;
 		cfg.fullscreen = fullscreen;
+		cfg.stencil = 8;
 		if (!useFrame)
 			System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
 		System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");

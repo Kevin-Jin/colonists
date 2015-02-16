@@ -196,9 +196,14 @@ public class Model extends ScaleDisplay {
 		}
 	}
 
+	//TODO: continuously render for a second or two. otherwise, Android's window
+	//manager doesn't get a fresh screenshot of our app and will show an older
+	//scene when animating to home or recents screen
 	public void swapScene(Scene nextScene) {
-		if (nextScene == null)
+		if (nextScene == null) {
 			Gdx.app.exit();
+			return;
+		}
 
 		sceneToShow.swappedOut(true);
 
@@ -219,6 +224,7 @@ public class Model extends ScaleDisplay {
 		super.resize(screenWidth, screenHeight);
 		cam.position.set(Constants.WIDTH / 2, Constants.HEIGHT / 2, 0);
 		cam.update();
+		ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.resize(screenWidth, screenHeight);
 		for (Scene scene : scenes.values())
 			scene.resize(screenWidth, screenHeight);
 	}

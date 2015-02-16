@@ -90,10 +90,11 @@ public class PriorityQueueAssetManager extends AssetManager {
 					continue;
 
 				oldList = fileNameToPriority.get(desc.fileName);
-				if (oldList != null) {
+				if (oldList != null)
 					priorityList.add(oldList.remove(desc.fileName));
-					fileNameToPriority.put(desc.fileName, priorityList);
-				}
+				else if (entry == null)
+					priorityList.add(new LoadEntry(desc.fileName, desc.type, desc.params));
+				fileNameToPriority.put(desc.fileName, priorityList);
 			}
 		}
 

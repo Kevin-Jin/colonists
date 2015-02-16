@@ -51,9 +51,9 @@ public class Game implements ApplicationListener {
 			return;
 
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		batch.setProjectionMatrix(model.cam.combined);
 		batch.begin();
-		model.cam.apply(Gdx.gl10);
-		Gdx.gl.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		Gdx.gl10.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		model.sceneToShow.draw(batch);
 		batch.end();
 	}

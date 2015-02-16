@@ -118,13 +118,13 @@ public class ScrollableListPane<T> implements ViewComponent {
 		Gdx.gl10.glScissor(HORIZONTAL_MARGIN, VERTICAL_MARGIN, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, Constants.HEIGHT - 2 * VERTICAL_MARGIN);
 		try {
 			batch.end();
+			shapeRenderer.setProjectionMatrix(model.getCamera().combined);
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-			model.getCamera().apply(Gdx.gl10);
 			shapeRenderer.setColor((float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, (float) 0xE4 / 0xFF, 1);
 			shapeRenderer.rect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, VERTICAL_MARGIN - Constants.HEIGHT);
 			shapeRenderer.end();
+			batch.setProjectionMatrix(model.getCamera().combined);
 			batch.begin();
-			model.getCamera().apply(Gdx.gl10);
 
 			BitmapFont fnt = model.assets.get("fonts/buttons.fnt", BitmapFont.class);
 			if (text != null) {
@@ -137,8 +137,8 @@ public class ScrollableListPane<T> implements ViewComponent {
 			fnt.setColor(fontTint);
 			for (int i = 0; i < selections.size(); i++) {
 				batch.end();
+				shapeRenderer.setProjectionMatrix(model.getCamera().combined);
 				shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-				model.getCamera().apply(Gdx.gl10);
 				if (i == selected) {
 					shapeRenderer.setColor((float) 0x33 / 0xFF, (float) 0xB5 / 0xFF, (float) 0xE5 / 0xFF, 1);
 					shapeRenderer.rect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, -SELECTION_HEIGHT);
@@ -149,8 +149,8 @@ public class ScrollableListPane<T> implements ViewComponent {
 				shapeRenderer.setColor((float) 0x9D / 0xFF, (float) 0x9D / 0xFF, (float) 0x9D / 0xFF, 1);
 				shapeRenderer.rect(HORIZONTAL_MARGIN, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - SELECTION_HEIGHT, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, -SPACER_HEIGHT);
 				shapeRenderer.end();
+				batch.setProjectionMatrix(model.getCamera().combined);
 				batch.begin();
-				model.getCamera().apply(Gdx.gl10);
 				TextBounds bnds = fnt.getBounds(selections.get(i).name);
 				fnt.draw(batch, selections.get(i).name, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - (SELECTION_HEIGHT - bnds.height) / 2);
 			}

@@ -181,14 +181,14 @@ public class MapInteraction {
 		if (!down) {
 			if (wasDown) {
 				//check if our pointer moved off the location we started at
-				if (tileTarget != null && !tileTarget.equals(getTile(cursor)))
-					tileTarget = null;
+				if (edgeTarget != null && !edgeTarget.equals(getEdge(cursor, tileTarget, vertexTarget)))
+					edgeTarget = null;
 
 				if (vertexTarget != null && !vertexTarget.equals(getVertex(cursor, tileTarget)))
 					vertexTarget = null;
 
-				if (edgeTarget != null && !edgeTarget.equals(getEdge(cursor, tileTarget, vertexTarget)))
-					edgeTarget = null;
+				if (tileTarget != null && !tileTarget.equals(getTile(cursor)))
+					tileTarget = null;
 			} else {
 				unsetTargets();
 			}
