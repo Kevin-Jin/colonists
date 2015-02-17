@@ -1,5 +1,6 @@
 
-common.png
+common.pack.png
+size: 1024,512
 format: RGBA8888
 filter: Linear,Linear
 repeat: none

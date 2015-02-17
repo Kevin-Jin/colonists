@@ -26,7 +26,6 @@ public class DesktopGame {
 		cfg.title = "Colonists";
 		cfg.width = Constants.WIDTH / 2;
 		cfg.height = Constants.HEIGHT / 2;
-		cfg.useGL20 = false;
 		cfg.foregroundFPS = cfg.backgroundFPS = 0;
 		cfg.vSyncEnabled = !unlimitedFps;
 		cfg.resizable = true;

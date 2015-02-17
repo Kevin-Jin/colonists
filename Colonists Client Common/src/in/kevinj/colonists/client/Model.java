@@ -121,7 +121,7 @@ public class Model extends ScaleDisplay {
 
 		// asynchronous load all other assets
 		assets.queueOrMove("fonts/buttons.fnt", BitmapFont.class, null, 1);
-		assets.queueOrMove("images/sprites/common.pack", TextureAtlas.class, null, 1);
+		assets.queueOrMove("images/sprites/common.pack.atlas", TextureAtlas.class, null, 1);
 		for (Scene scene : scenes.values())
 			for (PriorityQueueAssetManager.LoadEntry entry : scene.getAssetDependencies())
 				assets.queueOrMove(entry.fileName, entry.type, entry.parameter, scene == currentScene ? 2 : 3);
@@ -146,7 +146,7 @@ public class Model extends ScaleDisplay {
 			//current scene specific assets
 			remainingLoadTime -= tDelta;
 			if (assets.update(loadingStep)) {
-				for (AtlasRegion reg : assets.get("images/sprites/common.pack", TextureAtlas.class).getRegions())
+				for (AtlasRegion reg : assets.get("images/sprites/common.pack.atlas", TextureAtlas.class).getRegions())
 					sprites.put(reg.name, new Sprite(reg));
 				for (String pack : currentScene.getSpriteSheetDependencies())
 					for (AtlasRegion reg : assets.get(pack, TextureAtlas.class).getRegions())

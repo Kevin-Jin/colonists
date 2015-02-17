@@ -3,7 +3,7 @@ package in.kevinj.colonists.client;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Game implements ApplicationListener {
@@ -18,12 +18,12 @@ public class Game implements ApplicationListener {
 	@Override
 	public void create() {
 		// reverse what OpenGL considers front-facing polygons (correction for upside down textures) and enable backface culling
-		Gdx.gl10.glFrontFace(GL10.GL_CW);
-		Gdx.gl10.glEnable(GL10.GL_CULL_FACE);
-		Gdx.gl10.glCullFace(GL10.GL_BACK);
+		Gdx.gl20.glFrontFace(GL20.GL_CW);
+		Gdx.gl20.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl20.glCullFace(GL20.GL_BACK);
 		// enable alpha blending
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
-		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl20.glEnable(GL20.GL_BLEND);
+		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
 		Gdx.input.setCatchBackKey(true);
 		Gdx.input.setCatchMenuKey(true);
@@ -50,10 +50,10 @@ public class Game implements ApplicationListener {
 		if (paused && Gdx.app.getType() == Application.ApplicationType.Android)
 			return;
 
-		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.setProjectionMatrix(model.cam.combined);
 		batch.begin();
-		Gdx.gl10.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		Gdx.gl20.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
 		model.sceneToShow.draw(batch);
 		batch.end();
 	}

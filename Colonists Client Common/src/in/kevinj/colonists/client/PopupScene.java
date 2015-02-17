@@ -1,17 +1,17 @@
 package in.kevinj.colonists.client;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public abstract class PopupScene implements Scene {
@@ -76,12 +76,12 @@ public abstract class PopupScene implements Scene {
 		batch.end();
 		shapeRenderer.setProjectionMatrix(model.cam.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
-		Gdx.gl10.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl20.glEnable(GL20.GL_BLEND);
+		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		shapeRenderer.setColor(0, 0, 0, 0.5f);
 		shapeRenderer.rect(0, Constants.HEIGHT, Constants.WIDTH, -Constants.HEIGHT);
 		shapeRenderer.end();
-		Gdx.gl10.glDisable(GL10.GL_BLEND);
+		Gdx.gl20.glDisable(GL20.GL_BLEND);
 		batch.setProjectionMatrix(model.cam.combined);
 		batch.begin();
 

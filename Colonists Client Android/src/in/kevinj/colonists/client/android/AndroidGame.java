@@ -14,7 +14,6 @@ public class AndroidGame extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		model = new AndroidModel(this);
 		AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
-		cfg.useGL20 = false;
 		cfg.stencil = 8;
 		initialize(new Game(model), cfg);
 	}

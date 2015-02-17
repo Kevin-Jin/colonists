@@ -9,7 +9,7 @@ import in.kevinj.colonists.client.ViewComponent;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -114,8 +114,8 @@ public class ScrollableListPane<T> implements ViewComponent {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		Gdx.gl10.glEnable(GL10.GL_SCISSOR_TEST);
-		Gdx.gl10.glScissor(HORIZONTAL_MARGIN, VERTICAL_MARGIN, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, Constants.HEIGHT - 2 * VERTICAL_MARGIN);
+		Gdx.gl20.glEnable(GL20.GL_SCISSOR_TEST);
+		Gdx.gl20.glScissor(HORIZONTAL_MARGIN, VERTICAL_MARGIN, Constants.WIDTH - 2 * HORIZONTAL_MARGIN, Constants.HEIGHT - 2 * VERTICAL_MARGIN);
 		try {
 			batch.end();
 			shapeRenderer.setProjectionMatrix(model.getCamera().combined);
@@ -155,7 +155,7 @@ public class ScrollableListPane<T> implements ViewComponent {
 				fnt.draw(batch, selections.get(i).name, (Constants.WIDTH - bnds.width) / 2, Constants.HEIGHT - VERTICAL_MARGIN - (SELECTION_HEIGHT + SPACER_HEIGHT) * i - yOffset - (SELECTION_HEIGHT - bnds.height) / 2);
 			}
 		} finally {
-			Gdx.gl10.glDisable(GL10.GL_SCISSOR_TEST);
+			Gdx.gl20.glDisable(GL20.GL_SCISSOR_TEST);
 		}
 	}
 }

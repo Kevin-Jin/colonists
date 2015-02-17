@@ -62,7 +62,7 @@ public class BattleScene implements Scene {
 
 	@Override
 	public void swappedIn(boolean transition) {
-		Gdx.gl10.glClearColor(0.5f, 1, 0.5f, 1);
+		Gdx.gl20.glClearColor(0.5f, 1, 0.5f, 1);
 
 		if (transition) {
 			model.selfTurn = model.canAct = false;
