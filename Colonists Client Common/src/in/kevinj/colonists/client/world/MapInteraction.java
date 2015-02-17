@@ -143,22 +143,22 @@ public class MapInteraction {
 		return new WorldModel.EntityCoordinate(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 	}
 
-	public WorldModel.TileCoordinate getSelectedTile() {
-		if (down)
+	public WorldModel.TileCoordinate getSelectedTile(boolean onUp) {
+		if (!onUp ^ down)
 			return null;
 
 		return tileTarget;
 	}
 
-	public WorldModel.EntityCoordinate getSelectedVertex() {
-		if (down)
+	public WorldModel.EntityCoordinate getSelectedVertex(boolean onUp) {
+		if (!onUp ^ down)
 			return null;
 
 		return vertexTarget;
 	}
 
-	public WorldModel.EntityCoordinate getSelectedEdge() {
-		if (down)
+	public WorldModel.EntityCoordinate getSelectedEdge(boolean onUp) {
+		if (!onUp ^ down)
 			return null;
 
 		return edgeTarget;
@@ -179,28 +179,15 @@ public class MapInteraction {
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		if (!down) {
-			if (wasDown) {
-				//check if our pointer moved off the location we started at
-				if (edgeTarget != null && !edgeTarget.equals(getEdge(cursor, tileTarget, vertexTarget)))
-					edgeTarget = null;
-
-				if (vertexTarget != null && !vertexTarget.equals(getVertex(cursor, tileTarget)))
-					vertexTarget = null;
-
-				if (tileTarget != null && !tileTarget.equals(getTile(cursor)))
-					tileTarget = null;
-			} else {
+			if (!wasDown)
 				unsetTargets();
-			}
 		} else {
-			if (!wasDown) {
-				//get tile coordinates for highwayman
-				tileTarget = getTile(cursor);
-				//get triangle coordinates for villages, metros
-				vertexTarget = getVertex(cursor, tileTarget);
-				//get midpoint coordinates for roads
-				edgeTarget = getEdge(cursor, tileTarget, vertexTarget);
-			}
+			//get tile coordinates for highwayman
+			tileTarget = getTile(cursor);
+			//get triangle coordinates for villages, metros
+			vertexTarget = getVertex(cursor, tileTarget);
+			//get midpoint coordinates for roads
+			edgeTarget = getEdge(cursor, tileTarget, vertexTarget);
 		}
 	}
 }

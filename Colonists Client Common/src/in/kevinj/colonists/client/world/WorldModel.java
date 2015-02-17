@@ -179,6 +179,10 @@ public class WorldModel extends ScaleDisplay {
 	}
 
 	public final class Loupe extends ScaleDisplay {
+		public static final int RADIUS = 128;
+		public static final int STEM_HEIGHT = 64;
+		public static final int STEM_WIDTH = 192;
+
 		public boolean hidden;
 
 		protected Loupe() {
@@ -206,21 +210,13 @@ public class WorldModel extends ScaleDisplay {
 			cam.update();
 			cam.project(cursor, 0, 0, Constants.WIDTH / 2, Constants.WIDTH * getViewportHeight() / getViewportWidth() / 2);
 			float zoom = WorldModel.this.cam.zoom;
-			//cam.position.set(
-				//cursor.x * (zoom - 1) / (zoom / 2f) + Constants.WIDTH * (zoom + 1) / (zoom * 2),
-				//cursor.y * (zoom - 1) / (zoom / 2f) + (Constants.HEIGHT - Constants.WIDTH * getViewportHeight() / getViewportWidth()) * (zoom - 1) / (zoom * 2)
-			//, 0);
 			cam.position.x = ((2 * cursor.x + (Constants.WIDTH / 2)) * (zoom - 1) + Constants.WIDTH) / zoom;
-			//FIXME: y is all wrong. doesn't scale properly with Constants.HEIGHT, and can't find a non-discrete function of zoom for constant term  
-			cam.position.y = ((2 * cursor.y + (Constants.HEIGHT - Constants.WIDTH * getViewportHeight() / getViewportWidth()) / 2) * (zoom - 1)) / zoom + Constants.HEIGHT * (zoom - 1) / (zoom * 2) + 128;
-			if (zoom == 1)
-				cam.position.y += 0;
-			else if (zoom == 2)
-				cam.position.y += -320;
-			else if (zoom == 3)
-				cam.position.y += -426;
-			else if (zoom == 4)
-				cam.position.y += -640;
+			cam.position.y = ((2 * cursor.y - (Constants.WIDTH * getViewportHeight() / getViewportWidth()) / 2) * (zoom - 1)) / zoom
+				//correction against the loupe
+				- RADIUS - STEM_HEIGHT
+				//correction against WorldScene camera
+				+ WorldModel.this.cam.position.y / 2 + Constants.HEIGHT / 4
+			;
 			cam.update();
 		}
 
@@ -258,6 +254,8 @@ public class WorldModel extends ScaleDisplay {
 	public final Map<EntityCoordinate, Entity> grid;
 	public final List<Entity> animatedEntities;
 	public TileCoordinate highwayman;
+	public TileCoordinate highwaymanCandidate;
+	public EntityCoordinate villageCandidate, metroCandidate, roadCandidate;
 
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
