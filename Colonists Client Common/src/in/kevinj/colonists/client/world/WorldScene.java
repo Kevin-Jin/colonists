@@ -3,6 +3,7 @@ package in.kevinj.colonists.client.world;
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.ConfirmPopupScene;
+import in.kevinj.colonists.client.ContinuousRendererUtil;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.PriorityQueueAssetManager;
 import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
+//TODO: use LibGDX Stage/Actor + GestureDetector in place of our ScaleDisplay + MapInteraction
 public class WorldScene implements Scene {
 	public enum WorldSubSceneType {
 		IN_GAME_MENU, CONFIRM_FLEE_POPUP
@@ -281,12 +283,12 @@ public class WorldScene implements Scene {
 	}
 
 	private void confirmBack() {
-		subScene = subScenes.get(WorldSubSceneType.CONFIRM_FLEE_POPUP);
+		setSubscene(subScenes.get(WorldSubSceneType.CONFIRM_FLEE_POPUP));
 		subScene.swappedIn(true);
 	}
 
 	private void openPopupMenu() {
-		subScene = subScenes.get(WorldSubSceneType.IN_GAME_MENU);
+		setSubscene(subScenes.get(WorldSubSceneType.IN_GAME_MENU));
 		subScene.swappedIn(true);
 	}
 
@@ -530,6 +532,11 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void setSubscene(Scene scene) {
+		//continuously render for a bit. otherwise, Android's window manager
+		//doesn't get a fresh screenshot of our app and will show an older scene
+		//when animating to home or recents screen
+		ContinuousRendererUtil.instance.doShortContinuousRender();
+
 		this.subScene = scene;
 	}
 }

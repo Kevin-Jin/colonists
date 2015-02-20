@@ -110,7 +110,7 @@ public class Model extends ScaleDisplay {
 
 	@SuppressWarnings("unchecked")
 	public void startLoadingResources(boolean initialLoad) {
-		Gdx.graphics.setContinuousRendering(true);
+		ContinuousRendererUtil.instance.startContinuousRender();
 		remainingLoadTime = initialLoad ? Constants.SPLASH_SCREEN_MIN_TIME : 0;
 
 		TextureParameter param = new TextureParameter();
@@ -163,7 +163,7 @@ public class Model extends ScaleDisplay {
 				if (remainingLoadTime <= 0 && loadingStep != 4) {
 					finishedLoadingResources();
 					if (loadingStep == -1)
-						Gdx.graphics.setContinuousRendering(false);
+						ContinuousRendererUtil.instance.endContinuousRender();
 				}
 			}
 			if (loadingStep == 3 || loadingStep == 4) {
@@ -177,7 +177,7 @@ public class Model extends ScaleDisplay {
 					if (remainingLoadTime <= 0) {
 						if (loadingStep == 4)
 							finishedLoadingResources();
-						Gdx.graphics.setContinuousRendering(false);
+						ContinuousRendererUtil.instance.endContinuousRender();
 					}
 
 					loadingStep = -1;
@@ -196,18 +196,19 @@ public class Model extends ScaleDisplay {
 		}
 	}
 
-	//TODO: continuously render for a second or two. otherwise, Android's window
-	//manager doesn't get a fresh screenshot of our app and will show an older
-	//scene when animating to home or recents screen
 	public void swapScene(Scene nextScene) {
 		if (nextScene == null) {
 			Gdx.app.exit();
 			return;
 		}
+		//continuously render for a bit. otherwise, Android's window manager
+		//doesn't get a fresh screenshot of our app and will show an older scene
+		//when animating to home or recents screen
+		ContinuousRendererUtil.instance.doShortContinuousRender();
 
 		sceneToShow.swappedOut(true);
 
-		if (loadingStep != -1) {
+		if (loadingStep >= 0) {
 			//swapping scene immediately after resume or create. assets for
 			//other scenes still not fully loaded. put the loading screen back on.
 			loadingStep = 4;

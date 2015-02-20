@@ -1,5 +1,6 @@
 package in.kevinj.colonists.client.menu.directconnect;
 
+import in.kevinj.colonists.client.ContinuousRendererUtil;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
 import in.kevinj.colonists.client.PopupScene;
@@ -36,7 +37,7 @@ public class DirectConnectSelectionScene extends PopupScene {
 		Gdx.input.setOnscreenKeyboardVisible(true);
 		Gdx.input.setInputProcessor(model);
 		//otherwise, key repeat delay seems to be too low on LWJGL backend
-		Gdx.graphics.setContinuousRendering(true);
+		ContinuousRendererUtil.instance.startContinuousRender();
 	}
 
 	@Override
@@ -79,7 +80,7 @@ public class DirectConnectSelectionScene extends PopupScene {
 	public void swappedOut(boolean transition) {
 		if (transition)
 			model.swappedOut();
-		Gdx.graphics.setContinuousRendering(false);
+		ContinuousRendererUtil.instance.endContinuousRender();
 		Gdx.input.setInputProcessor(null);
 		Gdx.input.setOnscreenKeyboardVisible(false);
 	}

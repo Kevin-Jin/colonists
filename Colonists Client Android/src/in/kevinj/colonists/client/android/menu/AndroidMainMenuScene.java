@@ -16,7 +16,7 @@ public class AndroidMainMenuScene extends MainMenuScene {
 		buttons.add(new Button(model, "Wifi Direct", new Runnable() {
 			@Override
 			public void run() {
-				subScene = subScenes.get(MainMenuSubSceneType.P2P_CONNECT);
+				setSubscene(subScenes.get(MainMenuSubSceneType.P2P_CONNECT));
 				subScene.swappedIn(true);
 			}
 		}, 910, 10, 256, 128));

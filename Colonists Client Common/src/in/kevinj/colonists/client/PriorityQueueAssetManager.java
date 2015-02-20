@@ -89,12 +89,14 @@ public class PriorityQueueAssetManager extends AssetManager {
 				if (isLoaded(desc.fileName))
 					continue;
 
-				oldList = fileNameToPriority.get(desc.fileName);
-				if (oldList != null)
+				oldList = fileNameToPriority.remove(desc.fileName);
+				if (oldList != null) {
 					priorityList.add(oldList.remove(desc.fileName));
-				else if (entry == null)
+					fileNameToPriority.put(desc.fileName, priorityList);
+				} else if (entry == null) {
 					priorityList.add(new LoadEntry(desc.fileName, desc.type, desc.params));
-				fileNameToPriority.put(desc.fileName, priorityList);
+					fileNameToPriority.put(desc.fileName, priorityList);
+				}
 			}
 		}
 
@@ -136,6 +138,21 @@ public class PriorityQueueAssetManager extends AssetManager {
 		//called for their parents.
 		if (priorityList != null)
 			priorityList.notLoadedCount--;
+	}
+
+	@Override
+	public void unload(String fileName) {
+		super.unload(fileName);
+		PriorityList priorityList = fileNameToPriority.remove(fileName);
+		if (priorityList != null)
+			priorityList.notLoadedCount--;
+	}
+
+	@Override
+	public void clear() {
+		super.clear();
+		queuedToLoad.clear();
+		fileNameToPriority.clear();
 	}
 
 	public void finishLoading(int priority) {

@@ -1,5 +1,7 @@
 package in.kevinj.colonists.client.world;
 
+import in.kevinj.colonists.client.ContinuousRendererUtil;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.math.Vector3;
@@ -181,6 +183,8 @@ public class MapInteraction {
 		if (!down) {
 			if (!wasDown)
 				unsetTargets();
+			else //make sure Android doesn't show old frames when animating to home/recents screen
+				ContinuousRendererUtil.instance.doShortContinuousRender();
 		} else {
 			//get tile coordinates for highwayman
 			tileTarget = getTile(cursor);

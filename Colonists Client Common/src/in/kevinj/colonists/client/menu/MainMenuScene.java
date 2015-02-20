@@ -3,6 +3,7 @@ package in.kevinj.colonists.client.menu;
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.ConfirmPopupScene;
+import in.kevinj.colonists.client.ContinuousRendererUtil;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.PriorityQueueAssetManager;
 import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
@@ -52,14 +53,14 @@ public class MainMenuScene implements Scene {
 		buttons.add(new Button(m, "Host", new Runnable() {
 			@Override
 			public void run() {
-				subScene = subScenes.get(MainMenuSubSceneType.HOST);
+				setSubscene(subScenes.get(MainMenuSubSceneType.HOST));
 				subScene.swappedIn(true);
 			}
 		}, 60, 300, 600, 128));
 		buttons.add(new Button(m, "Connect", new Runnable() {
 			@Override
 			public void run() {
-				subScene = subScenes.get(MainMenuSubSceneType.DIRECT_IP_CONNECT);
+				setSubscene(subScenes.get(MainMenuSubSceneType.DIRECT_IP_CONNECT));
 				subScene.swappedIn(true);
 			}
 		}, 60, 150, 600, 128));
@@ -82,7 +83,7 @@ public class MainMenuScene implements Scene {
 	}
 
 	private void close() {
-		subScene = subScenes.get(MainMenuSubSceneType.CONFIRM_FLEE_POPUP);
+		setSubscene(subScenes.get(MainMenuSubSceneType.CONFIRM_FLEE_POPUP));
 		subScene.swappedIn(true);
 	}
 
@@ -149,6 +150,11 @@ public class MainMenuScene implements Scene {
 
 	@Override
 	public void setSubscene(Scene scene) {
+		//continuously render for a bit. otherwise, Android's window manager
+		//doesn't get a fresh screenshot of our app and will show an older scene
+		//when animating to home or recents screen
+		ContinuousRendererUtil.instance.doShortContinuousRender();
+
 		this.subScene = scene;
 	}
 }
