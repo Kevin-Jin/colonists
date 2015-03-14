@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
@@ -30,6 +29,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 
 //TODO: use LibGDX Stage/Actor + GestureDetector in place of our ScaleDisplay + MapInteraction
@@ -160,6 +160,8 @@ public class WorldScene implements Scene {
 				staticChits.addText(message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
 			}
 		}
+
+		Gdx.input.setCursorCatched(true);
 	}
 
 	private void setEdgeSpritePosition(Sprite road, WorldModel.EntityCoordinate coord) {
@@ -298,6 +300,7 @@ public class WorldScene implements Scene {
 		backButton.update(tDelta);
 		menuButton.hidden = (subScene != null);
 		menuButton.update(tDelta);
+		model.loupe.hidden = (subScene != null);
 		model.loupe.update(tDelta);
 		model.controller.hidden = (subScene != null);
 		model.controller.update(tDelta);
@@ -341,9 +344,9 @@ public class WorldScene implements Scene {
 		}
 	}
 
-	private void draw(SpriteBatch batch, Camera cam, int viewportX, int viewportY, int viewportWidth, int viewportHeight) {
+	private void draw(SpriteBatch batch, Matrix4 transform, int viewportX, int viewportY, int viewportWidth, int viewportHeight, int outerStencil) {
 		//clear the canvas
-		shapeRenderer.setProjectionMatrix(cam.combined);
+		shapeRenderer.setProjectionMatrix(transform);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		shapeRenderer.setColor(1, 1, 1, 1);
@@ -356,7 +359,7 @@ public class WorldScene implements Scene {
 		);
 		shapeRenderer.end();
 
-		staticTiles.setProjectionMatrix(cam.combined);
+		staticTiles.setProjectionMatrix(transform);
 		staticTiles.begin();
 		Gdx.gl20.glEnable(GL20.GL_BLEND);
 		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -365,7 +368,7 @@ public class WorldScene implements Scene {
 		staticTiles.end();
 
 		if (DEBUG_MODE != NO_DEBUG) {
-			shapeRenderer.setProjectionMatrix(cam.combined);
+			shapeRenderer.setProjectionMatrix(transform);
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			shapeRenderer.setColor(0, 0, 0, 1);
@@ -404,7 +407,7 @@ public class WorldScene implements Scene {
 			BitmapFont fnt = model.parent.assets.get("fonts/buttons.fnt", BitmapFont.class);
 			fnt.setColor(0, 0, 0, 1);
 			TextBounds bnds;
-			batch.setProjectionMatrix(cam.combined);
+			batch.setProjectionMatrix(transform);
 			batch.begin();
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			//print hexagonal tile coordinates
@@ -433,14 +436,69 @@ public class WorldScene implements Scene {
 			batch.end();
 		}
 
-		batch.setProjectionMatrix(cam.combined);
+		batch.setProjectionMatrix(transform);
 		batch.begin();
 		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		staticChits.draw(batch);
 		drawEntities(batch);
-		//for (Entity ent : model.animatedEntities)
-			//ent.draw(batch);
 		batch.end();
+
+		//begin positioning and shaping the fog
+		if (outerStencil == 0)
+			Gdx.gl20.glEnable(GL20.GL_STENCIL_TEST);
+		//enable stencil drawing and disable graphics drawing
+		Gdx.gl20.glStencilMask(0xFF);
+		Gdx.gl20.glDepthMask(false);
+		Gdx.gl20.glColorMask(false, false, false, false);
+		if (outerStencil == 0)
+			Gdx.gl20.glClear(GL20.GL_STENCIL_BUFFER_BIT);
+		//if (outerStencil == 0b01) then
+		//	if (0b11 & 0b01 == existing_stencil_buffer_val & 0b01) then
+		//		put 0b11 on stencil buffer at pixel
+		//	i.e. if existing_stencil_buffer_val at pixel is 1, then set it to 3
+		//else if (outerStencil == 0b00) then
+		//	if (0b10 & 0b00 == existing_stencil_buffer_val & 0b00) then
+		//		put 0b10 on stencil buffer at pixel
+		//i.e. set value at pixel to 2 regardless of existing_stencil_buffer_val
+		Gdx.gl20.glStencilFunc(GL20.GL_NOTEQUAL, 0x02 | outerStencil, outerStencil);
+		Gdx.gl20.glStencilOp(GL20.GL_REPLACE, GL20.GL_KEEP, GL20.GL_KEEP);
+		batch.setProjectionMatrix(transform);
+		batch.begin();
+		Gdx.gl20.glEnable(GL20.GL_BLEND);
+		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+		drawEntities(batch);
+		batch.end();
+		//enable graphics drawing and disable stencil drawing
+		Gdx.gl20.glColorMask(true, true, true, true);
+		Gdx.gl20.glDepthMask(true);
+		Gdx.gl20.glStencilMask(0x00);
+		//end positioning and shaping fog position
+
+		//begin drawing inside the fog
+		//if (0b10 & 0b10 == existing_stencil_buffer_val & 0b10) then
+		//	draw graphics at pixel
+		//i.e. if existing_stencil_buffer_val at pixel is 2 or 3, then draw it
+		Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, 0x02, 0x02);
+		shapeRenderer.setProjectionMatrix(transform);
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		Gdx.gl20.glEnable(GL20.GL_BLEND);
+		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+		shapeRenderer.setColor(0, 0, 0, 0.6f);
+		shapeRenderer.rect(
+			-model.getCamera().viewportWidth * (model.getCamera().zoom - 2) / 2,
+			//(-model.getCamera().viewportHeight * (model.getCamera().zoom - 2) / 2) + (model.getCamera().viewportHeight * model.getCamera().zoom) - (model.getCamera().position.y + Constants.HEIGHT - model.getCamera().viewportHeight),
+			model.getCamera().viewportHeight * model.getCamera().zoom / 2 - model.getCamera().position.y + Constants.HEIGHT,
+			model.getCamera().viewportWidth * model.getCamera().zoom,
+			-model.getCamera().viewportHeight * model.getCamera().zoom
+		);
+		shapeRenderer.end();
+		if (outerStencil == 0)
+			Gdx.gl20.glDisable(GL20.GL_STENCIL_TEST);
+		else
+			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, outerStencil, outerStencil);
+		//end drawing inside the fog
 	}
 
 	@Override
@@ -455,8 +513,22 @@ public class WorldScene implements Scene {
 		shapeRenderer.rect(0, 0, ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().viewportWidth, ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().viewportHeight);
 		shapeRenderer.end();
 
+		/*int width = Gdx.graphics.getWidth();
+		int height = Gdx.graphics.getHeight();
+		FrameBuffer fbo = new FrameBuffer(Format.RGBA8888, width, height, false);
+		TextureRegion fboRegion = new TextureRegion(fbo.getColorBufferTexture());
+		fboRegion.flip(false, true);
+		fbo.begin();
+		draw(batch, new Matrix4(), 0, 0, Constants.WIDTH, Constants.HEIGHT);
+		fbo.end();
+		batch.setTransformMatrix(model.getCamera().combined);
+		batch.begin();
+		Gdx.gl20.glViewport(model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		batch.draw(fboRegion, 0, 0, Constants.WIDTH * 2, Constants.HEIGHT * 2);
+		batch.end();*/
+
 		//draw on the canvas
-		draw(batch, model.getCamera(), model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight());
+		draw(batch, model.getCamera().combined, model.getViewportX(), model.getViewportY(), model.getViewportWidth(), model.getViewportHeight(), 0x00);
 
 		if (!model.loupe.hidden) {
 			Vector3 yDownCursor = model.parent.controller.getCursor(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY);
@@ -472,12 +544,16 @@ public class WorldScene implements Scene {
 	
 			//begin positioning and shaping the loupe
 			Gdx.gl20.glEnable(GL20.GL_STENCIL_TEST);
-			Gdx.gl20.glColorMask(false, false, false, false);
-			Gdx.gl20.glDepthMask(false);
-			Gdx.gl20.glStencilFunc(GL20.GL_NEVER, 1, 0xFF);
-			Gdx.gl20.glStencilOp(GL20.GL_REPLACE, GL20.GL_KEEP, GL20.GL_KEEP);
+			//enable stencil drawing and disable graphics drawing
 			Gdx.gl20.glStencilMask(0xFF);
+			Gdx.gl20.glDepthMask(false);
+			Gdx.gl20.glColorMask(false, false, false, false);
 			Gdx.gl20.glClear(GL20.GL_STENCIL_BUFFER_BIT);
+			//if (true) then
+			//	put 0b01 on stencil buffer at pixel
+			//i.e. set value at pixel to 1 regardless of existing_stencil_buffer_val
+			Gdx.gl20.glStencilFunc(GL20.GL_NEVER, 1, 0);
+			Gdx.gl20.glStencilOp(GL20.GL_REPLACE, GL20.GL_KEEP, GL20.GL_KEEP);
 			//ShapeRenderer has problems with Fill when using the default y-up coordinate system
 			shapeRenderer.setProjectionMatrix(ScaleDisplay.Y_DOWN_FULL_SCREEN_DISPLAY.getCamera().combined);
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -485,22 +561,26 @@ public class WorldScene implements Scene {
 			shapeRenderer.setColor(0, 0, 0, 1);
 			shapeRenderer.circle(yDownCursor.x, yDownCursor.y - Loupe.RADIUS - Loupe.STEM_HEIGHT, Loupe.RADIUS);
 			shapeRenderer.end();
+			//enable graphics drawing and disable stencil drawing
 			Gdx.gl20.glColorMask(true, true, true, true);
 			Gdx.gl20.glDepthMask(true);
 			Gdx.gl20.glStencilMask(0x00);
 			//end positioning and shaping loupe position
-	
+
 			//begin drawing inside the loupe
-			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, 0, 0xFF);
-			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, 1, 0xFF);
-			draw(batch, model.loupe.getCamera(), model.loupe.getViewportX(), model.loupe.getViewportY(), model.loupe.getViewportWidth(), model.loupe.getViewportHeight());
+			//if (0b01 & 0b01 == existing_stencil_buffer_val & 0b01) then
+			//	draw graphics at pixel
+			//i.e. if existing_stencil_buffer_val at pixel is 1 or 3, then draw it
+			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, 1, 1);
+			draw(batch, model.loupe.getCamera().combined, model.loupe.getViewportX(), model.loupe.getViewportY(), model.loupe.getViewportWidth(), model.loupe.getViewportHeight(), 1);
 			Vector3 cursor = model.parent.controller.getCursor(model);
-			shapeRenderer.setProjectionMatrix(model.loupe.getCamera().combined);
-			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-			Gdx.gl20.glViewport(model.loupe.getViewportX(), model.loupe.getViewportY(), model.loupe.getViewportWidth(), model.loupe.getViewportHeight());
-			shapeRenderer.setColor(0, 0, 0, 1);
-			shapeRenderer.rect(cursor.x - 25, cursor.y + 25, 50, -50);
-			shapeRenderer.end();
+			batch.setProjectionMatrix(model.loupe.getCamera().combined);
+			batch.begin();
+			Sprite hand = model.parent.sprites.get("cursor/select");
+			hand.setBounds(cursor.x - 18, cursor.y - 64, 50, 64);
+			hand.draw(batch);
+			hand.setColor(0.5f, 0, 0.5f, 0.8f);
+			batch.end();
 			Gdx.gl20.glDisable(GL20.GL_STENCIL_TEST);
 			//end drawing inside the loupe
 		}
@@ -522,7 +602,7 @@ public class WorldScene implements Scene {
 
 	@Override
 	public void swappedOut(boolean transition) {
-		
+		Gdx.input.setCursorCatched(false);
 	}
 
 	@Override
@@ -536,6 +616,7 @@ public class WorldScene implements Scene {
 		//doesn't get a fresh screenshot of our app and will show an older scene
 		//when animating to home or recents screen
 		ContinuousRendererUtil.instance.doShortContinuousRender();
+		Gdx.input.setCursorCatched(scene == null);
 
 		this.subScene = scene;
 	}

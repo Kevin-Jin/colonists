@@ -199,11 +199,11 @@ public class WorldModel extends ScaleDisplay {
 
 		public void update(float tDelta) {
 			if (!Gdx.input.isButtonPressed(Buttons.LEFT)) {
-				hidden = true;
+				hidden |= true;
 				return;
 			}
 
-			hidden = false;
+			hidden |= false;
 			//center the loupe on the cursor
 			Vector3 cursor = parent.controller.getCursor(WorldModel.this);
 			cam.position.set(Constants.WIDTH, Constants.HEIGHT / 2, 0);
