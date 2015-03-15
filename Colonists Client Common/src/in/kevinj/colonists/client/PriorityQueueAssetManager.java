@@ -5,10 +5,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.AssetLoader;
+import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.async.ThreadUtils;
 
@@ -47,12 +53,55 @@ public class PriorityQueueAssetManager extends AssetManager {
 		}
 	}
 
+	private static class ShaderParameter extends AssetLoaderParameters<ShaderProgram> {
+
+	}
+
+	private static class ShaderLoader extends AsynchronousAssetLoader<ShaderProgram, ShaderParameter> {
+		private ShaderProgram shader;
+		private String vertProgram;
+		private String fragProgram;
+
+		public ShaderLoader(FileHandleResolver resolver) {
+			super(resolver);
+		}
+
+		@Override
+		public void loadAsync(AssetManager manager, String fileName, FileHandle file, ShaderParameter parameter) {
+			String vertPath = fileName.substring(0, fileName.indexOf("+"));
+			String fragPath = fileName.substring(fileName.indexOf("+") + 1, fileName.length());
+
+			FileHandle vertFile = Gdx.files.internal(vertPath);
+			FileHandle fragFile = Gdx.files.internal(fragPath);
+
+			if (vertFile.exists() && fragFile.exists()) {
+				vertProgram = vertFile.readString();
+				fragProgram = fragFile.readString();
+			}
+		}
+
+		@Override
+		public ShaderProgram loadSync(AssetManager manager, String fileName, FileHandle file, ShaderParameter parameter) {
+			ShaderProgram.pedantic = false;
+			shader = new ShaderProgram(vertProgram, fragProgram);
+			return shader;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, ShaderParameter parameter) {
+			return null;
+		}
+	}
+
 	private final Map<Integer, PriorityList> queuedToLoad;
 	private final Map<String, PriorityList> fileNameToPriority;
 
 	public PriorityQueueAssetManager() {
 		queuedToLoad = new TreeMap<Integer, PriorityList>();
 		fileNameToPriority = new HashMap<String, PriorityList>();
+
+		setLoader(ShaderProgram.class, new ShaderLoader(new InternalFileHandleResolver()));
 	}
 
 	/**

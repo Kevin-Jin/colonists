@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
@@ -122,6 +123,7 @@ public class Model extends ScaleDisplay {
 		// asynchronous load all other assets
 		assets.queueOrMove("fonts/buttons.fnt", BitmapFont.class, null, 1);
 		assets.queueOrMove("images/sprites/common.pack.atlas", TextureAtlas.class, null, 1);
+		assets.queueOrMove("shaders/vertex/spritebatch_default.vert+shaders/fragment/spritebatch_alphatest.frag", ShaderProgram.class, null, 1);
 		for (Scene scene : scenes.values())
 			for (PriorityQueueAssetManager.LoadEntry entry : scene.getAssetDependencies())
 				assets.queueOrMove(entry.fileName, entry.type, entry.parameter, scene == currentScene ? 2 : 3);

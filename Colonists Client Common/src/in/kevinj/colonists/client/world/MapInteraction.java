@@ -58,7 +58,7 @@ public class MapInteraction {
 		if (x < 0 || x >= model.mapBoundsColumns || y < 0 || y >= model.mapBoundsRows)
 			return null;
 
-		return new WorldModel.TileCoordinate(x, y);
+		return WorldModel.TileCoordinate.valueOf(x, y);
 	}
 
 	private WorldModel.EntityCoordinate getVertex(Vector3 cursor, WorldModel.TileCoordinate tile) {
@@ -90,7 +90,7 @@ public class MapInteraction {
 			else if (withinY > trapezoidHeight + trapezoidHeight / rightTriangleOffset * (withinX - halfWidth))
 				yHundredths += 50;
 		}
-		return new WorldModel.EntityCoordinate(x, xHundredths, y, yHundredths);
+		return WorldModel.EntityCoordinate.valueOf(x, xHundredths, y, yHundredths);
 	}
 
 	private WorldModel.EntityCoordinate getEdge(Vector3 cursor, WorldModel.TileCoordinate tile, WorldModel.EntityCoordinate vertex) {
@@ -108,41 +108,41 @@ public class MapInteraction {
 		if (tile.x == vertex.x) {
 			if (vertex.y != tile.y) //left up
 				if (withinY > trapezoidHeight - trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else if (vertex.yHundredths != 0) //left middle
 				if (withinY > trapezoidHeight)
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else //left down
 				if (withinY > trapezoidHeight + trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 		} else {
 			if (vertex.y != tile.y + 1) //right down
 				if (withinY > trapezoidHeight - trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else if (vertex.yHundredths != 50) //right middle
 				if (withinY > trapezoidHeight)
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else //right up
 				if (withinY > trapezoidHeight + trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 				else
-					otherVertex = new WorldModel.EntityCoordinate(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 		}
 
 		//get the midpoint
 		int xHundreds = (vertex.x * 100 + vertex.xHundredths + otherVertex.x * 100 + otherVertex.xHundredths) / 2;
 		int yHundreds = (vertex.y * 100 + vertex.yHundredths + otherVertex.y * 100 + otherVertex.yHundredths) / 2;
-		return new WorldModel.EntityCoordinate(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
+		return WorldModel.EntityCoordinate.valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 	}
 
 	public WorldModel.TileCoordinate getSelectedTile(boolean onUp) {

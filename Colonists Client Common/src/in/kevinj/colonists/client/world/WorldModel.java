@@ -2,18 +2,22 @@ package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Button;
+import in.kevinj.colonists.client.GraphUtil;
 import in.kevinj.colonists.client.Model;
 import in.kevinj.colonists.client.ScaleDisplay;
 import in.kevinj.colonists.client.TrainerProperties;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -21,9 +25,11 @@ import com.badlogic.gdx.math.Vector3;
 
 public class WorldModel extends ScaleDisplay {
 	public static class TileCoordinate implements Comparable<TileCoordinate> {
+		private static Map<Short, TileCoordinate> cache = Collections.synchronizedMap(new HashMap<Short, TileCoordinate>());
+
 		public byte x, y;
 
-		public TileCoordinate(int x, int y) {
+		private TileCoordinate(int x, int y) {
 			this.x = (byte) x;
 			this.y = (byte) y;
 		}
@@ -41,19 +47,33 @@ public class WorldModel extends ScaleDisplay {
 		public boolean equals(Object b) {
 			if (b instanceof TileCoordinate) {
 				TileCoordinate other = (TileCoordinate) b;
-				return other.x == this.x && other.y == this.y;
+				return other == this || other.x == this.x && other.y == this.y;
 			}
 			return false;
 		}
 
+		private static int hashCode(int x, int y) {
+			return (x & 0xFF) << 8 | y & 0xFF;
+		}
+
 		@Override
 		public int hashCode() {
-			return (this.x & 0xFF) << 8 | this.y & 0xFF;
+			return hashCode(x, y);
 		}
 
 		@Override
 		public String toString() {
 			return "TileCoordinate[" + x + "," + y + "," + getZ() + "]";
+		}
+
+		public static TileCoordinate valueOf(int x, int y) {
+			Short key = Short.valueOf((short) hashCode(x, y));
+			TileCoordinate value = cache.get(key);
+			if (value == null) {
+				value = new TileCoordinate(x, y);
+				cache.put(key, value);
+			}
+			return value;
 		}
 	}
 
@@ -67,24 +87,20 @@ public class WorldModel extends ScaleDisplay {
 	 */
 	public static class EntityCoordinate implements Comparable<EntityCoordinate> {
 		private static final DecimalFormat FMT = new DecimalFormat("0.00");
+	
+		private static Map<Integer, EntityCoordinate> cache = Collections.synchronizedMap(new HashMap<Integer, EntityCoordinate>());
 
 		public final byte x, y;
-		/**
-		 * 0 corresponds to leftmost vertex, 1 corresponds to bottom left edge,
-		 * 2 corresponds to bottom left vertex, and so on...
-		 */
 		public final byte xHundredths, yHundredths;
 
-		public EntityCoordinate(int x, int xHundredths, int y, int yHundredths) {
-			byte[] xNorm = normalize(x, xHundredths);
-			byte[] yNorm = normalize(y, yHundredths);
+		private EntityCoordinate(byte[] xNorm, byte[] yNorm) {
 			this.x = xNorm[0];
 			this.xHundredths = xNorm[1];
 			this.y = yNorm[0];
 			this.yHundredths = yNorm[1];
 		}
 
-		private byte[] normalize(int a, int aHundredths) {
+		private static byte[] normalize(int a, int aHundredths) {
 			if (aHundredths >= 0 && aHundredths < 100)
 				return new byte[] { (byte) a, (byte) aHundredths };
 
@@ -97,15 +113,23 @@ public class WorldModel extends ScaleDisplay {
 			return new byte[] { (byte) a, (byte) aHundredths };
 		}
 
+		public int xHundreds() {
+			return x * 100 + xHundredths;
+		}
+
+		public int yHundreds() {
+			return y * 100 + yHundredths;
+		}
+
 		public boolean isEdge() {
 			return xHundredths == 50 || yHundredths == 25 || yHundredths == 75;
 		}
 
 		public List<TileCoordinate> adjacentTiles() {
 			List<TileCoordinate> list = new ArrayList<TileCoordinate>(3);
-			list.add(new TileCoordinate(x, (y * 100 + xHundredths - 50) / 100));
-			list.add(new TileCoordinate(x - 1, y - 1));
-			list.add(new TileCoordinate((x * 100 - xHundredths) / 100, y));
+			list.add(TileCoordinate.valueOf(x, (y * 100 + xHundredths - 50) / 100));
+			list.add(TileCoordinate.valueOf(x - 1, y - 1));
+			list.add(TileCoordinate.valueOf((x * 100 - xHundredths) / 100, y));
 			return list;
 		}
 
@@ -114,22 +138,22 @@ public class WorldModel extends ScaleDisplay {
 			if (isEdge()) {
 				list = new ArrayList<EntityCoordinate>(4);
 				//up [yHundredths == 25]/down [yHundredths == 75] left
-				list.add(new EntityCoordinate(x, xHundredths - 50, y, 25));
+				list.add(valueOf(x, xHundredths - 50, y, 25));
 				//up right [yHundredths == 25]/left [yHundredths == 75]
-				list.add(new EntityCoordinate(x, 2 * xHundredths, y, yHundredths + 50));
+				list.add(valueOf(x, 2 * xHundredths, y, yHundredths + 50));
 				//down [yHundredths == 25]/up [yHundredths == 75] right
-				list.add(new EntityCoordinate(x, xHundredths + 50, y, 2 * yHundredths - 25));
+				list.add(valueOf(x, xHundredths + 50, y, 2 * yHundredths - 25));
 				//down left [yHundredths == 25]/right [yHundredths == 75]
-				list.add(new EntityCoordinate(x, 0, y, yHundredths - 50));
+				list.add(valueOf(x, 0, y, yHundredths - 50));
 			} else {
 				list = new ArrayList<EntityCoordinate>(3);
 				int right = -(int) Math.signum(yHundredths - 25);
 				//down left [yHundredths == 0]/right [yHundredths == 50]
-				list.add(new EntityCoordinate(x, 0, y, yHundredths - 25));
+				list.add(valueOf(x, 0, y, yHundredths - 25));
 				//right [yHundredths == 0]/left [yHundredths == 50]
-				list.add(new EntityCoordinate(x, xHundredths + 50 * right, y, yHundredths + 25 * right));
+				list.add(valueOf(x, xHundredths + 50 * right, y, yHundredths + 25 * right));
 				//up left [yHundredths == 0]/right [yHundredths == 50]
-				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths + 25));
+				list.add(valueOf(x, xHundredths, y, yHundredths + 25));
 			}
 			return list;
 		}
@@ -138,19 +162,30 @@ public class WorldModel extends ScaleDisplay {
 			List<EntityCoordinate> list;
 			if (isEdge()) {
 				list = new ArrayList<EntityCoordinate>(2);
-				list.add(new EntityCoordinate(x, (xHundredths - 50) / 100 * 100, y, yHundredths - 25));
-				list.add(new EntityCoordinate(x, (xHundredths + 50) / 100 * 100, y, yHundredths + 25));
+				list.add(valueOf(x, (xHundredths - 50) / 100 * 100, y, yHundredths - 25));
+				list.add(valueOf(x, (xHundredths + 50) / 100 * 100, y, yHundredths + 25));
 			} else {
 				list = new ArrayList<EntityCoordinate>(3);
 				int right = -(int) Math.signum(yHundredths - 25);
 				//right [yHundredths == 0]/left [yHundredths == 50]
-				list.add(new EntityCoordinate(x + right, xHundredths, y, yHundredths + 50 * right));
+				list.add(valueOf(x + right, xHundredths, y, yHundredths + 50 * right));
 				//up
-				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths + 50));
+				list.add(valueOf(x, xHundredths, y, yHundredths + 50));
 				//down
-				list.add(new EntityCoordinate(x, xHundredths, y, yHundredths - 50));
+				list.add(valueOf(x, xHundredths, y, yHundredths - 50));
 			}
 			return list;
+		}
+
+		public boolean inBounds() {
+			if (isEdge())
+				return x >= 1 && xHundreds() <= 600 && yHundreds() >= 125 && yHundreds() <= 625
+						&& (x > 3 || yHundreds() <= xHundreds() + 275)
+						&& (x <= 3 || yHundreds() >= xHundreds() - 225);
+			else
+				return x >= 1 && x <= 6 && y >= 1 && y <= 6
+						&& (x > 3 || yHundreds() <= xHundreds() + 300)
+						&& (x <= 3 || yHundreds() > xHundreds() - 300);
 		}
 
 		@Override
@@ -162,19 +197,65 @@ public class WorldModel extends ScaleDisplay {
 		public boolean equals(Object b) {
 			if (b instanceof EntityCoordinate) {
 				EntityCoordinate other = (EntityCoordinate) b;
-				return other.x == this.x && other.xHundredths == this.xHundredths && other.y == this.y && other.yHundredths == this.yHundredths;
+				return other == this || other.x == this.x && other.xHundredths == this.xHundredths && other.y == this.y && other.yHundredths == this.yHundredths;
 			}
 			return false;
 		}
 
+		private static int hashCode(int x, int xHundredths, int y, int yHundredths) {
+			return (x & 0xFF) << 24 | (xHundredths & 0xFF) << 16 | (y & 0xFF) << 8 | yHundredths & 0xFF;
+		}
+
 		@Override
 		public int hashCode() {
-			return (this.x & 0xFF) << 24 | (this.xHundredths & 0xFF) << 16 | (this.y & 0xFF) << 8 | this.yHundredths & 0xFF;
+			return hashCode(x, xHundredths, y, yHundredths);
 		}
 
 		@Override
 		public String toString() {
 			return "EntityCoordinate[" + FMT.format(x + xHundredths / 100f) +"," + FMT.format(y + yHundredths / 100f) + "]";
+		}
+
+		public static EntityCoordinate edge(EntityCoordinate vertex1, EntityCoordinate vertex2) {
+			//edge is the midpoint, assuming the vertices are adjacent
+			if (vertex1 == null || vertex2 == null || vertex1.isEdge() || vertex2.isEdge() || !vertex1.adjacentVertices().contains(vertex2))
+				return null;
+			int xHundreds = (vertex1.xHundreds() + vertex2.xHundreds()) / 2;
+			int yHundreds = (vertex1.yHundreds() + vertex2.yHundreds()) / 2;
+			EntityCoordinate edge = valueOf(xHundreds, yHundreds);
+			assert edge.isEdge();
+			return edge;
+		}
+
+		public static EntityCoordinate[] vertices(EntityCoordinate edge) {
+			if (edge == null || !edge.isEdge())
+				return null;
+			EntityCoordinate vertex1, vertex2;
+			if (edge.xHundredths == 50) {
+				vertex1 = valueOf(edge.xHundreds() - 50, edge.yHundreds() - 25);
+				vertex2 = valueOf(edge.xHundreds() + 50, edge.yHundreds() + 25);
+			} else {
+				vertex1 = valueOf(edge.xHundreds(), edge.yHundreds() - 25);
+				vertex2 = valueOf(edge.xHundreds(), edge.yHundreds() + 25);
+			}
+			assert !vertex1.isEdge() && !vertex2.isEdge();
+			return new EntityCoordinate[] { vertex1, vertex2 };
+		}
+
+		public static EntityCoordinate valueOf(int x, int xHundredths, int y, int yHundredths) {
+			byte[] xNorm = normalize(x, xHundredths);
+			byte[] yNorm = normalize(y, yHundredths);
+			Integer key = Integer.valueOf(hashCode(xNorm[0], xNorm[1], yNorm[0], yNorm[1]));
+			EntityCoordinate value = cache.get(key);
+			if (value == null) {
+				value = new EntityCoordinate(xNorm, yNorm);
+				cache.put(key, value);
+			}
+			return value;
+		}
+
+		public static EntityCoordinate valueOf(int xHundreds, int yHundreds) {
+			return valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 		}
 	}
 
@@ -251,11 +332,13 @@ public class WorldModel extends ScaleDisplay {
 
 	public int mapBoundsColumns, mapBoundsRows;
 	public final MapTile[][] resources;
-	public final Map<EntityCoordinate, Entity> grid;
 	public final List<Entity> animatedEntities;
 	public TileCoordinate highwayman;
 	public TileCoordinate highwaymanCandidate;
 	public EntityCoordinate villageCandidate, metroCandidate, roadCandidate;
+	private final Map<EntityCoordinate, Entity> grid;
+	//TODO: this should be per-player
+	private Set<EntityCoordinate> availableMoves;
 
 	private final Runnable BATTLE_BUTTON;
 	public final Button actionButton;
@@ -276,18 +359,9 @@ public class WorldModel extends ScaleDisplay {
 
 		grid = new HashMap<EntityCoordinate, Entity>();
 		//road tests
-		grid.put(new EntityCoordinate(1, 0, 2, 75), avatar);
-		grid.put(new EntityCoordinate(1, 0, 2, 25), avatar);
-		grid.put(new EntityCoordinate(2, 0, 2, 75), avatar);
-		grid.put(new EntityCoordinate(2, 0, 2, 25), avatar);
-		grid.put(new EntityCoordinate(2, 50, 2, 25), avatar);
-		grid.put(new EntityCoordinate(3, 0, 2, 25), avatar);
-		grid.put(new EntityCoordinate(3, 50, 2, 25), avatar);
-		grid.put(new EntityCoordinate(4, 0, 2, 25), avatar);
-		grid.put(new EntityCoordinate(4, 0, 2, 75), avatar);
+		grid.put(EntityCoordinate.valueOf(1, 0, 2, 75), avatar);
 		//house tests
-		grid.put(new EntityCoordinate(1, 0, 3, 0), avatar);
-		grid.put(new EntityCoordinate(2, 0, 2, 50), avatar);
+		grid.put(EntityCoordinate.valueOf(1, 0, 3, 0), avatar);
 		animatedEntities = new ArrayList<Entity>();
 
 		BATTLE_BUTTON = new Runnable() {
@@ -299,7 +373,28 @@ public class WorldModel extends ScaleDisplay {
 		};
 		actionButton = new Button(model, null, null, 10, 296, 256, 128, "ui/button/regular", "ui/button/pressed", 255, 255, 255, 127, 255, 0, 0, 127);
 
+		availableMovesCleanUpdate();
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+	}
+
+	private Set<EntityCoordinate> availableMovesCleanUpdate() {
+		//TODO: keep separate records for each player's roads and settlements
+		//outside of grid so that we don't need to waste time here
+		Set<EntityCoordinate> currentPlayerSettlements = new HashSet<EntityCoordinate>();
+		Set<EntityCoordinate> currentPlayerRoads = new HashSet<EntityCoordinate>();
+		Set<EntityCoordinate> otherPlayerEnts = new HashSet<EntityCoordinate>();
+		for (Map.Entry<EntityCoordinate, Entity> entry: grid.entrySet()) {
+			//TODO: check player that entity belongs to -> otherPlayerEnts
+			EntityCoordinate coord = entry.getKey();
+			if (coord.isEdge())
+				currentPlayerRoads.add(coord);
+			else
+				currentPlayerSettlements.add(coord);
+		}
+		currentPlayerSettlements = Collections.unmodifiableSet(currentPlayerSettlements);
+		currentPlayerRoads = Collections.unmodifiableSet(currentPlayerRoads);
+		otherPlayerEnts = Collections.unmodifiableSet(otherPlayerEnts);
+		return availableMoves = GraphUtil.dfsForAvailable(currentPlayerSettlements, currentPlayerRoads, otherPlayerEnts);
 	}
 
 	@Override
@@ -348,7 +443,7 @@ public class WorldModel extends ScaleDisplay {
 			for (int i = 0; i < Math.max(1, 6 * rad); i++) {
 				resources[y][x] = tiles.poll();
 				if (resources[y][x].isResource() && resources[y][x].getResourceType() == MapTile.ResourceType.WASTELAND)
-					highwayman = new TileCoordinate(x, y);
+					highwayman = TileCoordinate.valueOf(x, y);
 				if (y == 3 - rad) {
 					if (x == 3) y++;
 					x++;
@@ -377,6 +472,83 @@ public class WorldModel extends ScaleDisplay {
 		}
 	}
 
+	public Map<EntityCoordinate, Entity> getGrid() {
+		return Collections.unmodifiableMap(grid);
+	}
+
+	public Entity addToGrid(EntityCoordinate loc, Entity ent) {
+		Entity old = grid.put(loc, ent);
+		//incremental update available moves
+		availableMoves.remove(loc);
+		if (loc.isEdge()) {
+			EntityCoordinate[] vertices = EntityCoordinate.vertices(loc);
+			for (EntityCoordinate neighbor : vertices)
+				if (!grid.containsKey(neighbor) && neighbor.inBounds())
+					availableMoves.add(neighbor);
+		} else {
+			for (EntityCoordinate edge : loc.adjacentEdges())
+				if (!grid.containsKey(edge) && edge.inBounds())
+					availableMoves.add(edge);
+		}
+		assert availableMoves.equals(availableMovesCleanUpdate());
+		return old;
+	}
+
+	public Entity removeFromGrid(EntityCoordinate loc) {
+		Entity old = grid.remove(loc);
+		if (old == null) return null; //no changes made
+		//incremental update available moves
+		if (loc.isEdge()) {
+			boolean connected = false, bridge;
+			for (EntityCoordinate neighbor : EntityCoordinate.vertices(loc)) {
+				if (grid.containsKey(neighbor)) {
+					connected = true; //TODO: connected = (grid.get(neighbor) is our own settlement)
+					continue;
+				}
+
+				bridge = true;
+				for (EntityCoordinate otherEdge : neighbor.adjacentEdges()) {
+					if (grid.containsKey(otherEdge)) { //TODO: if (grid.containsKey(otherEdge) && grid.get(otherEdge) is our own road)
+						bridge = false;
+						break;
+					}
+				}
+
+				//if the empty vertex is not connected to any of our other edges,
+				//there is no longer any way to reach the vertex
+				if (bridge)
+					availableMoves.remove(neighbor);
+			}
+			if (connected)
+				availableMoves.add(loc);
+		} else {
+			boolean connected = false, articulationPoint;
+			for (EntityCoordinate edge : loc.adjacentEdges()) {
+				if (grid.containsKey(edge)) {
+					connected = true; //TODO: connected = (grid.get(edge) is our own road)
+					continue;
+				}
+
+				articulationPoint = true;
+				for (EntityCoordinate otherVertex : edge.adjacentVertices()) {
+					if (grid.containsKey(otherVertex)) { //TODO: if (grid.containsKey(otherVertex) && grid.get(otherVertex) is our own settlement)
+						articulationPoint = false;
+						break;
+					}
+				}
+
+				//if the empty edge is not connected to any of our other vertices,
+				//there is no longer any way to reach the edge
+				if (articulationPoint)
+					availableMoves.remove(edge);
+			}
+			if (connected)
+				availableMoves.add(loc);
+		}
+		assert availableMoves.equals(availableMovesCleanUpdate());
+		return old;
+	}
+
 	public MapTile getTile(TileCoordinate coord) {
 		if (coord == null) return null;
 		return resources[coord.y][coord.x];
@@ -386,6 +558,10 @@ public class WorldModel extends ScaleDisplay {
 		//if (loc.row < 0 || loc.col < 0 || loc.row >= mapBoundsRows || loc.col >= mapBoundsColumns)
 			return null;
 		//return grid[loc.row][loc.col];
+	}
+
+	public Set<EntityCoordinate> getAvailableMoves() {
+		return availableMoves;
 	}
 
 	public void updateActionButtonBehavior() {

@@ -28,6 +28,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteCache;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -61,6 +62,9 @@ public class WorldScene implements Scene {
 	private int staticTilesCacheId;
 	private int tileWidth, tileHeight;
 	private BitmapFontCache staticChits;
+
+	private float fogTransparency;
+	private boolean isUpdatingFog;
 
 	public WorldScene(Model m) {
 		this.model = new WorldModel(m);
@@ -161,7 +165,7 @@ public class WorldScene implements Scene {
 			}
 		}
 
-		Gdx.input.setCursorCatched(true);
+		Gdx.input.setCursorCatched(subScene == null);
 	}
 
 	private void setEdgeSpritePosition(Sprite road, WorldModel.EntityCoordinate coord) {
@@ -209,7 +213,7 @@ public class WorldScene implements Scene {
 		Sprite village = model.parent.sprites.get("map/village");
 		Sprite metro = model.parent.sprites.get("map/metro");
 		Sprite highwayman = model.parent.sprites.get("map/highwayman");
-		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.grid.entrySet()) {
+		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.getGrid().entrySet()) {
 			WorldModel.EntityCoordinate coord = entities.getKey();
 			if (coord.isEdge()) {
 				//draw road
@@ -230,7 +234,7 @@ public class WorldScene implements Scene {
 
 		if (model.roadCandidate != null) {
 			setEdgeSpritePosition(road, model.roadCandidate);
-			if (model.grid.containsKey(model.roadCandidate))
+			if (!model.getAvailableMoves().contains(model.roadCandidate))
 				road.setColor(1, 0, 0, 0.8f);
 			else
 				road.setColor(0, 1, 0, 0.8f);
@@ -238,7 +242,7 @@ public class WorldScene implements Scene {
 		}
 		if (model.metroCandidate != null) {
 			setVertexSpritePosition(metro, model.metroCandidate);
-			if (model.grid.containsKey(model.metroCandidate))
+			if (!model.getAvailableMoves().contains(model.metroCandidate))
 				metro.setColor(1, 0, 0, 0.6f);
 			else
 				metro.setColor(0, 1, 0, 0.6f);
@@ -246,7 +250,7 @@ public class WorldScene implements Scene {
 		}
 		if (model.villageCandidate != null) {
 			setVertexSpritePosition(village, model.villageCandidate);
-			if (model.grid.containsKey(model.villageCandidate))
+			if (!model.getAvailableMoves().contains(model.villageCandidate))
 				village.setColor(1, 0, 0, 0.6f);
 			else
 				village.setColor(0, 1, 0, 0.6f);
@@ -302,6 +306,35 @@ public class WorldScene implements Scene {
 		menuButton.update(tDelta);
 		model.loupe.hidden = (subScene != null);
 		model.loupe.update(tDelta);
+		if (!model.loupe.hidden) {
+			if (fogTransparency != 0.5f) {
+				if (!isUpdatingFog) {
+					ContinuousRendererUtil.instance.startContinuousRender();
+					isUpdatingFog = true;
+				} else {
+					fogTransparency = Math.min(0.5f, fogTransparency + 3f * tDelta);
+				}
+			} else {
+				if (isUpdatingFog) {
+					ContinuousRendererUtil.instance.endContinuousRender();
+					isUpdatingFog = false;
+				}
+			}
+		} else {
+			if (fogTransparency != 0f) {
+				if (!isUpdatingFog) {
+					ContinuousRendererUtil.instance.startContinuousRender();
+					isUpdatingFog = true;
+				} else {
+					fogTransparency = Math.max(0f, fogTransparency - 3f * tDelta);
+				}
+			} else {
+				if (isUpdatingFog) {
+					ContinuousRendererUtil.instance.endContinuousRender();
+					isUpdatingFog = false;
+				}
+			}
+		}
 		model.controller.hidden = (subScene != null);
 		model.controller.update(tDelta);
 		if (model.controller.getSelectedTile(false) != null) {
@@ -315,16 +348,18 @@ public class WorldScene implements Scene {
 			model.metroCandidate = model.controller.getSelectedVertex(false);
 		} else {
 			if (model.controller.getSelectedVertex(true) != null)
-				if (model.grid.remove(model.controller.getSelectedVertex(true)) == null)
-					model.grid.put(model.controller.getSelectedVertex(true), model.avatar);
+				if (model.removeFromGrid(model.controller.getSelectedVertex(true)) == null)
+					if (model.getAvailableMoves().contains(model.controller.getSelectedVertex(true)))
+						model.addToGrid(model.controller.getSelectedVertex(true), model.avatar);
 			model.metroCandidate = null;
 		}
 		if (model.controller.getSelectedEdge(false) != null) {
 			model.roadCandidate = model.controller.getSelectedEdge(false);
 		} else {
 			if (model.controller.getSelectedEdge(true) != null)
-				if (model.grid.remove(model.controller.getSelectedEdge(true)) == null)
-					model.grid.put(model.controller.getSelectedEdge(true), model.avatar);
+				if (model.removeFromGrid(model.controller.getSelectedEdge(true)) == null)
+					if (model.getAvailableMoves().contains(model.controller.getSelectedEdge(true)))
+						model.addToGrid(model.controller.getSelectedEdge(true), model.avatar);
 			model.roadCandidate = null;
 		}
 		//for (Entity ent : model.animatedEntities)
@@ -443,62 +478,85 @@ public class WorldScene implements Scene {
 		drawEntities(batch);
 		batch.end();
 
-		//begin positioning and shaping the fog
-		if (outerStencil == 0)
-			Gdx.gl20.glEnable(GL20.GL_STENCIL_TEST);
-		//enable stencil drawing and disable graphics drawing
-		Gdx.gl20.glStencilMask(0xFF);
-		Gdx.gl20.glDepthMask(false);
-		Gdx.gl20.glColorMask(false, false, false, false);
-		if (outerStencil == 0)
-			Gdx.gl20.glClear(GL20.GL_STENCIL_BUFFER_BIT);
-		//if (outerStencil == 0b01) then
-		//	if (0b11 & 0b01 == existing_stencil_buffer_val & 0b01) then
-		//		put 0b11 on stencil buffer at pixel
-		//	i.e. if existing_stencil_buffer_val at pixel is 1, then set it to 3
-		//else if (outerStencil == 0b00) then
-		//	if (0b10 & 0b00 == existing_stencil_buffer_val & 0b00) then
-		//		put 0b10 on stencil buffer at pixel
-		//i.e. set value at pixel to 2 regardless of existing_stencil_buffer_val
-		Gdx.gl20.glStencilFunc(GL20.GL_NOTEQUAL, 0x02 | outerStencil, outerStencil);
-		Gdx.gl20.glStencilOp(GL20.GL_REPLACE, GL20.GL_KEEP, GL20.GL_KEEP);
-		batch.setProjectionMatrix(transform);
-		batch.begin();
-		Gdx.gl20.glEnable(GL20.GL_BLEND);
-		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		drawEntities(batch);
-		batch.end();
-		//enable graphics drawing and disable stencil drawing
-		Gdx.gl20.glColorMask(true, true, true, true);
-		Gdx.gl20.glDepthMask(true);
-		Gdx.gl20.glStencilMask(0x00);
-		//end positioning and shaping fog position
-
-		//begin drawing inside the fog
-		//if (0b10 & 0b10 == existing_stencil_buffer_val & 0b10) then
-		//	draw graphics at pixel
-		//i.e. if existing_stencil_buffer_val at pixel is 2 or 3, then draw it
-		Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, 0x02, 0x02);
-		shapeRenderer.setProjectionMatrix(transform);
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		Gdx.gl20.glEnable(GL20.GL_BLEND);
-		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		shapeRenderer.setColor(0, 0, 0, 0.6f);
-		shapeRenderer.rect(
-			-model.getCamera().viewportWidth * (model.getCamera().zoom - 2) / 2,
-			//(-model.getCamera().viewportHeight * (model.getCamera().zoom - 2) / 2) + (model.getCamera().viewportHeight * model.getCamera().zoom) - (model.getCamera().position.y + Constants.HEIGHT - model.getCamera().viewportHeight),
-			model.getCamera().viewportHeight * model.getCamera().zoom / 2 - model.getCamera().position.y + Constants.HEIGHT,
-			model.getCamera().viewportWidth * model.getCamera().zoom,
-			-model.getCamera().viewportHeight * model.getCamera().zoom
-		);
-		shapeRenderer.end();
-		if (outerStencil == 0)
-			Gdx.gl20.glDisable(GL20.GL_STENCIL_TEST);
-		else
-			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, outerStencil, outerStencil);
-		//end drawing inside the fog
+		//draw fog on invalid regions when selecting a region
+		if (fogTransparency != 0) {
+			//begin positioning and shaping the fog
+			if (outerStencil == 0)
+				Gdx.gl20.glEnable(GL20.GL_STENCIL_TEST);
+			//enable stencil drawing and disable graphics drawing
+			Gdx.gl20.glStencilMask(0xFF);
+			Gdx.gl20.glDepthMask(false);
+			Gdx.gl20.glColorMask(false, false, false, false);
+			if (outerStencil == 0)
+				Gdx.gl20.glClear(GL20.GL_STENCIL_BUFFER_BIT);
+			//if (outerStencil == 0b01) then
+			//	if (0b11 & 0b01 == existing_stencil_buffer_val & 0b01) then
+			//		put 0b11 on stencil buffer at pixel
+			//	i.e. if existing_stencil_buffer_val at pixel is 1, then set it to 3
+			//else if (outerStencil == 0b00) then
+			//	if (0b10 & 0b00 == existing_stencil_buffer_val & 0b00) then
+			//		put 0b10 on stencil buffer at pixel
+			//	i.e. set value at pixel to 2 regardless of existing_stencil_buffer_val
+			Gdx.gl20.glStencilFunc(GL20.GL_NOTEQUAL, 0x02 | outerStencil, outerStencil);
+			Gdx.gl20.glStencilOp(GL20.GL_REPLACE, GL20.GL_KEEP, GL20.GL_KEEP);
+			batch.setProjectionMatrix(transform);
+			batch.begin();
+			//FIXME: nothing works. texture where alpha == 0 still writes 2 to depth buffer
+			//Gdx.gl20.glEnable(GL20.GL_BLEND);
+			//Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+			batch.setShader(model.parent.assets.get("shaders/vertex/spritebatch_default.vert+shaders/fragment/spritebatch_alphatest.frag", ShaderProgram.class));
+			Sprite road = model.parent.sprites.get("map/road");
+			Sprite village = model.parent.sprites.get("map/village");
+			for (WorldModel.EntityCoordinate coord : model.getAvailableMoves()) {
+				if (coord.isEdge()) {
+					setEdgeSpritePosition(road, coord);
+					road.setColor(1, 0.5f, 1, 1);
+					road.draw(batch);
+				} else {
+					setVertexSpritePosition(village, coord);
+					village.setColor(1, 0.5f, 1, 1);
+					village.draw(batch);
+				}
+			}
+			batch.setShader(null);
+			batch.end();
+			//enable graphics drawing and disable stencil drawing
+			Gdx.gl20.glColorMask(true, true, true, true);
+			Gdx.gl20.glDepthMask(true);
+			Gdx.gl20.glStencilMask(0x00);
+			//end positioning and shaping fog position
+	
+			//begin drawing inside the fog
+			//if (outerStencil == 0b01) then
+			//	if (0b01 & 0b11 == existing_stencil_buffer_val & 0b11) then
+			//		draw graphics at pixel
+			//	i.e. if existing_stencil_buffer_val at pixel is 1, then draw it
+			//else if (outerStencil == 0b00) then
+			//	if (0b00 & 0b10 == existing_stencil_buffer_val & 0b10) then
+			//		draw graphics at pixel
+			//	i.e. if existing_stencil_buffer_val at pixel is 0, then draw it
+			Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, outerStencil, 0x02 | outerStencil);
+			shapeRenderer.setProjectionMatrix(transform);
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			Gdx.gl20.glEnable(GL20.GL_BLEND);
+			Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+			shapeRenderer.setColor(0, 0, 0, fogTransparency);
+			shapeRenderer.rect(
+				-model.getCamera().viewportWidth * (model.getCamera().zoom - 2) / 2,
+				//(-model.getCamera().viewportHeight * (model.getCamera().zoom - 2) / 2) + (model.getCamera().viewportHeight * model.getCamera().zoom) - (model.getCamera().position.y + Constants.HEIGHT - model.getCamera().viewportHeight),
+				model.getCamera().viewportHeight * model.getCamera().zoom / 2 - model.getCamera().position.y + Constants.HEIGHT,
+				model.getCamera().viewportWidth * model.getCamera().zoom,
+				-model.getCamera().viewportHeight * model.getCamera().zoom
+			);
+			shapeRenderer.end();
+			if (outerStencil == 0)
+				Gdx.gl20.glDisable(GL20.GL_STENCIL_TEST);
+			else
+				Gdx.gl20.glStencilFunc(GL20.GL_EQUAL, outerStencil, outerStencil);
+			//end drawing inside the fog
+		}
 	}
 
 	@Override
