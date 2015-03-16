@@ -127,6 +127,7 @@ public class WorldScene implements Scene {
 		MapTile tile;
 		model.controller.tileHeight = tileHeight = (int) textureToUse.getHeight();
 		model.controller.tileWidth = tileWidth = (int) textureToUse.getWidth();
+		model.controller.settlementRadius = (int) (model.parent.sprites.get("map/metro").getHeight() / 2);
 
 		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
 		staticTiles.beginCache();
@@ -169,43 +170,26 @@ public class WorldScene implements Scene {
 	}
 
 	private void setEdgeSpritePosition(Sprite road, WorldModel.EntityCoordinate coord) {
-		if (coord.xHundredths == 50) {
-			//horizontal
-			road.setPosition(
-				tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2,
-				tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x - road.getHeight() / 2
-			);
-			road.setRotation(0);
-		} else if (coord.yHundredths == 25) {
-			//negative slope
-			road.setPosition(
-				tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2 + road.getHeight() / 2,
-				tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x
-			);
-			road.setRotation(120);
-		} else if (coord.yHundredths == 75) {
-			//positive slope
-			road.setPosition(
-				tileWidth / 4 * 3 * coord.x,
-				tileHeight * (coord.y + 1) - tileHeight / 2 * (coord.x - 1) - road.getHeight()
-			);
-			road.setRotation(60);
+		int[] info = coord.getEdgeXYR(tileWidth, tileHeight);
+		switch (info[2]) {
+			case 0:
+				info[1] -= road.getHeight() / 2;
+				break;
+			case 60:
+				info[1] -= road.getHeight();
+				break;
+			case 120:
+				info[0] += road.getHeight() / 2;
+				break;
 		}
+		road.setPosition(info[0], info[1]);
+		road.setRotation(info[2]);
 		road.setOrigin(0, 0);
 	}
 
 	private void setVertexSpritePosition(Sprite sprite, WorldModel.EntityCoordinate coord) {
-		if (coord.yHundredths == 50) {
-			sprite.setPosition(
-				tileWidth / 4 * 3 * coord.x - sprite.getWidth() / 2,
-				tileHeight * (coord.y + 1) - tileHeight / 2 * (coord.x - 1) - sprite.getHeight() / 2
-			);
-		} else if (coord.yHundredths == 0) {
-			sprite.setPosition(
-				tileWidth / 4 * 3 * coord.x + tileWidth / 4 * 3 - tileWidth / 2 - sprite.getWidth() / 2,
-				tileHeight * (coord.y + 1) - tileHeight / 2 * coord.x - sprite.getHeight() / 2
-			);
-		}
+		int[] center = coord.getVertexCenter(tileWidth, tileHeight);
+		sprite.setPosition(center[0] - sprite.getWidth() / 2, center[1] - sprite.getHeight() / 2);
 	}
 
 	private void drawEntities(SpriteBatch batch) {

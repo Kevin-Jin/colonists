@@ -188,6 +188,53 @@ public class WorldModel extends ScaleDisplay {
 						&& (x <= 3 || yHundreds() > xHundreds() - 300);
 		}
 
+		public int[] getVertexCenter(int tileWidth, int tileHeight) {
+			if (isEdge()) return null;
+
+			if (yHundredths == 50) {
+				return new int[] {
+					tileWidth / 4 * 3 * x,
+					tileHeight * (y + 1) - tileHeight / 2 * (x - 1)
+				};
+			} else if (yHundredths == 0) {
+				return new int[] {
+					tileWidth / 4 * 3 * x + tileWidth / 4 * 3 - tileWidth / 2,
+					tileHeight * (y + 1) - tileHeight / 2 * x
+				};
+			} else {
+				return null;
+			}
+		}
+
+		public int[] getEdgeXYR(int tileWidth, int tileHeight) {
+			if (!isEdge()) return null;
+
+			if (xHundredths == 50) {
+				//horizontal
+				return new int[] {
+					tileWidth / 4 * 3 * x + tileWidth / 4 * 3 - tileWidth / 2,
+					tileHeight * (y + 1) - tileHeight / 2 * x,
+					0
+				};
+			} else if (yHundredths == 25) {
+				//negative slope
+				return new int[] {
+					tileWidth / 4 * 3 * x + tileWidth / 4 * 3 - tileWidth / 2,
+					tileHeight * (y + 1) - tileHeight / 2 * x,
+					120
+				};
+			} else if (yHundredths == 75) {
+				//positive slope
+				return new int[] {
+					tileWidth / 4 * 3 * x,
+					tileHeight * (y + 1) - tileHeight / 2 * (x - 1),
+					60
+				};
+			} else {
+				return null;
+			}
+		}
+
 		@Override
 		public int compareTo(EntityCoordinate other) {
 			return this.hashCode() - other.hashCode();

@@ -12,7 +12,7 @@ public class MapInteraction {
 	private final WorldModel model;
 
 	public boolean hidden;
-	public int tileWidth, tileHeight;
+	public int tileWidth, tileHeight, settlementRadius;
 
 	private boolean down;
 	private WorldModel.TileCoordinate tileTarget;
@@ -57,6 +57,13 @@ public class MapInteraction {
 		}
 		if (x < 0 || x >= model.mapBoundsColumns || y < 0 || y >= model.mapBoundsRows)
 			return null;
+		if (x < 3) {
+			if (y > x + 3)
+				return null;
+		} else {
+			if (y < x - 3)
+				return null;
+		}
 
 		return WorldModel.TileCoordinate.valueOf(x, y);
 	}
@@ -192,6 +199,38 @@ public class MapInteraction {
 			vertexTarget = getVertex(cursor, tileTarget);
 			//get midpoint coordinates for roads
 			edgeTarget = getEdge(cursor, tileTarget, vertexTarget);
+
+			//disambiguate selection. if cursor is close enough to vertex,
+			//then select vertex. otherwise, select if cursor is close to edge,
+			//then select edge. otherwise, select tile.
+			if (vertexTarget != null) {
+				//get the distance from between point (settlement) and point (cursor)
+				int[] center = vertexTarget.getVertexCenter(tileWidth, tileHeight);
+				double a = cursor.x - center[0];
+				double b = cursor.y - center[1];
+				double dis = Math.sqrt(a * a + b * b);
+				if (dis > settlementRadius) {
+					vertexTarget = null;
+				} else {
+					tileTarget = null;
+					edgeTarget = null;
+				}
+			}
+			if (edgeTarget != null) {
+				//get the perpendicular distance between line (road) and point (cursor), given line in point slope form
+				int[] info = edgeTarget.getEdgeXYR(tileWidth, tileHeight);
+				double slope = Math.tan(info[2] * Math.PI / 180);
+				//y - y_1 = m * (x - x_1) <=> m * x + -1 * y + (y_1 - m * x_1) = 0
+				double a = slope;
+				double b = -1;
+				double c = info[1] - slope * info[0];
+				//a * a > 0 and b * b = 1, so no possibility of / by 0
+				double dis = Math.abs(a * cursor.x + b * cursor.y + c) / Math.sqrt(a * a + b * b);
+				if (dis > 32)
+					edgeTarget = null;
+				else
+					tileTarget = null;
+			}
 		}
 	}
 }
