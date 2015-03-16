@@ -7,8 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Coordinate {
-	public static class PositiveSpace implements Comparable<Coordinate.PositiveSpace> {
+public abstract class Coordinate {
+	public enum CoordinateType {
+		TILE, VERTEX, EDGE
+	}
+
+	public static class PositiveSpace extends Coordinate implements Comparable<Coordinate.PositiveSpace> {
 		private static Map<Short, Coordinate.PositiveSpace> cache = Collections.synchronizedMap(new HashMap<Short, Coordinate.PositiveSpace>());
 	
 		public byte x, y;
@@ -69,7 +73,7 @@ public class Coordinate {
 	 * of the triangle. Edges are referenced by the midpoint of the two
 	 * vertices they connect.
 	 */
-	public static class NegativeSpace implements Comparable<Coordinate.NegativeSpace> {
+	public static class NegativeSpace extends Coordinate implements Comparable<Coordinate.NegativeSpace> {
 		private static final DecimalFormat FMT = new DecimalFormat("0.00");
 	
 		private static Map<Integer, Coordinate.NegativeSpace> cache = Collections.synchronizedMap(new HashMap<Integer, Coordinate.NegativeSpace>());

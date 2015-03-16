@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -69,20 +70,20 @@ public class WorldScene implements Scene {
 	private float fogTransparency;
 	private boolean isUpdatingFog;
 
-	public WorldScene(Model m) {
-		this.model = new WorldModel(m);
+	public WorldScene(WorldModel m) {
+		this.model = m;
 
 		subScenes = new EnumMap<WorldSubSceneType, Scene>(WorldSubSceneType.class);
-		subScenes.put(WorldSubSceneType.IN_GAME_MENU, new InGameMenuScene(m, this));
-		subScenes.put(WorldSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m, "Are you sure you want to return to the menu?", Model.SceneType.MAIN_MENU));
+		subScenes.put(WorldSubSceneType.IN_GAME_MENU, new InGameMenuScene(m.parent, this));
+		subScenes.put(WorldSubSceneType.CONFIRM_FLEE_POPUP, new ConfirmPopupScene(m.parent, "Are you sure you want to return to the menu?", Model.SceneType.MAIN_MENU));
 
-		backButton = new Button(m, null, new Runnable() {
+		backButton = new Button(m.parent, null, new Runnable() {
 			@Override
 			public void run() {
 				confirmBack();
 			}
 		}, 1172, 576, 108, 144, "ui/worldScene/back", "ui/worldScene/selectedBack", 255, 255, 255, 255, -1, -1, -1, -1);
-		menuButton = new Button(m, null, new Runnable() {
+		menuButton = new Button(m.parent, null, new Runnable() {
 			@Override
 			public void run() {
 				openPopupMenu();
@@ -181,15 +182,14 @@ public class WorldScene implements Scene {
 		Gdx.input.setCursorCatched(subScene == null);
 	}
 
-	private void drawEntities(SpriteBatch batch) {
+	private void drawEntities(SpriteBatch batch, Set<Coordinate.NegativeSpace> availableMoves) {
 		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entities : model.getGrid().entrySet())
 			entities.getValue().draw(batch);
-		//this.highwayman.position = model.highwayman;
 		model.highwayman.draw(batch);
 
 		if (model.roadCandidate != null) {
 			Entity.NegativeSpace highlightRoad;
-			if (!model.getAvailableMoves().contains(model.roadCandidate))
+			if (!availableMoves.contains(model.roadCandidate))
 				highlightRoad = redHighlightRoad;
 			else
 				highlightRoad = greenHighlightRoad;
@@ -198,7 +198,7 @@ public class WorldScene implements Scene {
 		}
 		if (model.metroCandidate != null) {
 			Entity.NegativeSpace highlightMetro;
-			if (!model.getAvailableMoves().contains(model.metroCandidate))
+			if (!availableMoves.contains(model.metroCandidate))
 				highlightMetro = redHighlightMetro;
 			else
 				highlightMetro = greenHighlightMetro;
@@ -207,7 +207,7 @@ public class WorldScene implements Scene {
 		}
 		if (model.villageCandidate != null) {
 			Entity.NegativeSpace highlightVillage;
-			if (!model.getAvailableMoves().contains(model.villageCandidate))
+			if (!availableMoves.contains(model.villageCandidate))
 				highlightVillage = redHighlightVillage;
 			else
 				highlightVillage = greenHighlightVillage;
@@ -291,31 +291,10 @@ public class WorldScene implements Scene {
 		}
 		model.controller.hidden = (subScene != null);
 		model.controller.update(tDelta);
-		if (model.controller.getSelectedTile(false) != null) {
-			model.highwaymanCandidate = model.controller.getSelectedTile(false);
-		} else {
-			if (model.controller.getSelectedTile(true) != null)
-				model.highwayman.position = model.controller.getSelectedTile(true);
-			model.highwaymanCandidate = null;
-		}
-		if (model.controller.getSelectedVertex(false) != null) {
-			model.metroCandidate = model.controller.getSelectedVertex(false);
-		} else {
-			if (model.controller.getSelectedVertex(true) != null)
-				if (model.removeFromGrid(model.controller.getSelectedVertex(true)) == null)
-					if (model.getAvailableMoves().contains(model.controller.getSelectedVertex(true)))
-						model.addToGrid(model.controller.getSelectedVertex(true), Math.random() < 0.5 ? new Entity.Metro(model, 0) : new Entity.Village(model, 0));
-			model.metroCandidate = null;
-		}
-		if (model.controller.getSelectedEdge(false) != null) {
-			model.roadCandidate = model.controller.getSelectedEdge(false);
-		} else {
-			if (model.controller.getSelectedEdge(true) != null)
-				if (model.removeFromGrid(model.controller.getSelectedEdge(true)) == null)
-					if (model.getAvailableMoves().contains(model.controller.getSelectedEdge(true)))
-						model.addToGrid(model.controller.getSelectedEdge(true), new Entity.Road(model, 0));
-			model.roadCandidate = null;
-		}
+		PlayerAction move;
+		for (int i = 0; i < 4; i++)
+			while ((move = model.getPlayer(i).getNextMove()) != null)
+				move.update(tDelta);
 		for (Entity ent : model.getGrid().values())
 			ent.update(tDelta);
 
@@ -422,11 +401,12 @@ public class WorldScene implements Scene {
 			batch.end();
 		}
 
+		Set<Coordinate.NegativeSpace> availableMoves = model.getPlayer(model.getCurrentPlayerTurn()).availableMoves;
 		batch.setProjectionMatrix(transform);
 		batch.begin();
 		Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		staticChits.draw(batch);
-		drawEntities(batch);
+		drawEntities(batch, availableMoves);
 		batch.end();
 
 		//draw fog on invalid regions when selecting a region
@@ -457,7 +437,7 @@ public class WorldScene implements Scene {
 			//Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			batch.setShader(model.parent.assets.get("shaders/vertex/spritebatch_default.vert+shaders/fragment/spritebatch_alphatest.frag", ShaderProgram.class));
-			for (Coordinate.NegativeSpace coord : model.getAvailableMoves()) {
+			for (Coordinate.NegativeSpace coord : availableMoves) {
 				if (coord.isEdge()) {
 					greenHighlightRoad.position = coord;
 					greenHighlightRoad.draw(batch);

@@ -27,13 +27,13 @@ public abstract class ConnectStatusPopupModel {
 		error = true;
 	}
 
-	public NetworkPlayerBattleOpponent update(float tDelta) {
+	public NetworkPlayer update(float tDelta) {
 		if (session != null) {
 			Session.PacketReader reader = session.read();
 			if (reader == null)
 				return null;
 
-			NetworkPlayerBattleOpponent op;
+			NetworkPlayer op;
 			try {
 				if (reader.getInt() != Constants.FILE_SIGNATURE) {
 					session.close();
@@ -47,7 +47,7 @@ public abstract class ConnectStatusPopupModel {
 					session = null;
 					return null;
 				}
-				op = new NetworkPlayerBattleOpponent(reader.getLengthPrefixedAsciiString(), session, parent.battleModel);
+				op = new NetworkPlayer(reader.getLengthPrefixedAsciiString(), session, parent.worldModel);
 			} finally {
 				reader.close();
 			}

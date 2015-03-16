@@ -1,14 +1,19 @@
 package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.client.AiPlayer;
 import in.kevinj.colonists.client.GraphUtil;
+import in.kevinj.colonists.client.LocalPlayer;
 import in.kevinj.colonists.client.Model;
+import in.kevinj.colonists.client.NetworkPlayer;
+import in.kevinj.colonists.client.PendingPlayer;
+import in.kevinj.colonists.client.Player;
 import in.kevinj.colonists.client.ScaleDisplay;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
@@ -95,8 +100,10 @@ public class WorldModel extends ScaleDisplay {
 	public Coordinate.PositiveSpace highwaymanCandidate;
 	public Coordinate.NegativeSpace villageCandidate, metroCandidate, roadCandidate;
 	private final Map<Coordinate.NegativeSpace, Entity.NegativeSpace> grid;
-	//TODO: this should be per-player
-	private final Set<Coordinate.NegativeSpace> availableMoves;
+
+	private final Player[] players;
+	public final int self;
+	private int currentPlayerTurn;
 
 	private int screenWidth, screenHeight;
 
@@ -112,33 +119,34 @@ public class WorldModel extends ScaleDisplay {
 		initializeMap();
 
 		grid = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
-		availableMoves = availableMovesCleanUpdate();
+		players = new Player[4];
+		self = 0;
+		List<Set<Coordinate.NegativeSpace>> initialAvailableMoves = availableMovesCleanUpdate();
+		for (int i = 0; i < 4; i++)
+			if (i == self)
+				players[i] = new LocalPlayer(null, this, initialAvailableMoves.get(i));
+			else
+				players[i] = new PendingPlayer(null, this, initialAvailableMoves.get(i));
 		//road tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new Entity.Road(this, 0));
+		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new Entity.Road(this, currentPlayerTurn));
 		//house tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new Entity.Metro(this, 0));
+		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new Entity.Metro(this, currentPlayerTurn));
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
-	private Set<Coordinate.NegativeSpace> availableMovesCleanUpdate() {
-		//TODO: keep separate records for each player's roads and settlements
-		//outside of grid so that we don't need to waste time here
-		Set<Coordinate.NegativeSpace> currentPlayerSettlements = new HashSet<Coordinate.NegativeSpace>();
-		Set<Coordinate.NegativeSpace> currentPlayerRoads = new HashSet<Coordinate.NegativeSpace>();
-		Set<Coordinate.NegativeSpace> otherPlayerEnts = new HashSet<Coordinate.NegativeSpace>();
+	private List<Set<Coordinate.NegativeSpace>> availableMovesCleanUpdate() {
+		Map<Coordinate.NegativeSpace, Entity.NegativeSpace> currentPlayerSettlements = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
+		Map<Coordinate.NegativeSpace, Entity.NegativeSpace> currentPlayerRoads = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
 		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entry: grid.entrySet()) {
-			//TODO: check player that entity belongs to -> otherPlayerEnts
-			Coordinate.NegativeSpace coord = entry.getKey();
-			if (coord.isEdge())
-				currentPlayerRoads.add(coord);
+			if (entry.getKey().isEdge())
+				currentPlayerRoads.put(entry.getKey(), entry.getValue());
 			else
-				currentPlayerSettlements.add(coord);
+				currentPlayerSettlements.put(entry.getKey(), entry.getValue());
 		}
-		currentPlayerSettlements = Collections.unmodifiableSet(currentPlayerSettlements);
-		currentPlayerRoads = Collections.unmodifiableSet(currentPlayerRoads);
-		otherPlayerEnts = Collections.unmodifiableSet(otherPlayerEnts);
-		return GraphUtil.dfsForAvailable(currentPlayerSettlements, currentPlayerRoads, otherPlayerEnts);
+		currentPlayerSettlements = Collections.unmodifiableMap(currentPlayerSettlements);
+		currentPlayerRoads = Collections.unmodifiableMap(currentPlayerRoads);
+		return GraphUtil.dfsForAvailable(currentPlayerSettlements, currentPlayerRoads);
 	}
 
 	@Override
@@ -216,6 +224,20 @@ public class WorldModel extends ScaleDisplay {
 		}
 	}
 
+	private void init() {
+		
+	}
+
+	public void initLocal(AiPlayer op) {
+		init();
+		setPlayer(-1, op);
+	}
+
+	public void initRemote(NetworkPlayer op, boolean swapTurnsAtEnd) {
+		init();
+		setPlayer(-1, op);
+	}
+
 	public Map<Coordinate.NegativeSpace, Entity.NegativeSpace> getGrid() {
 		return Collections.unmodifiableMap(grid);
 	}
@@ -227,18 +249,19 @@ public class WorldModel extends ScaleDisplay {
 		ent.position = loc;
 
 		//incremental update available moves
-		availableMoves.remove(loc);
+		//TODO: update availableMoves for all players
+		players[currentPlayerTurn].availableMoves.remove(loc);
 		if (loc.isEdge()) {
 			Coordinate.NegativeSpace[] vertices = Coordinate.NegativeSpace.vertices(loc);
 			for (Coordinate.NegativeSpace neighbor : vertices)
 				if (!grid.containsKey(neighbor) && neighbor.inBounds())
-					availableMoves.add(neighbor);
+					players[currentPlayerTurn].availableMoves.add(neighbor);
 		} else {
 			for (Coordinate.NegativeSpace edge : loc.adjacentEdges())
 				if (!grid.containsKey(edge) && edge.inBounds())
-					availableMoves.add(edge);
+					players[currentPlayerTurn].availableMoves.add(edge);
 		}
-		assert availableMoves.equals(availableMovesCleanUpdate());
+		assert players[currentPlayerTurn].availableMoves.equals(availableMovesCleanUpdate().get(currentPlayerTurn));
 		return old;
 	}
 
@@ -250,6 +273,7 @@ public class WorldModel extends ScaleDisplay {
 			old.position = null;
 
 		//incremental update available moves
+		//TODO: update availableMoves for all players
 		if (loc.isEdge()) {
 			boolean connected = false, bridge;
 			for (Coordinate.NegativeSpace neighbor : Coordinate.NegativeSpace.vertices(loc)) {
@@ -269,10 +293,10 @@ public class WorldModel extends ScaleDisplay {
 				//if the empty vertex is not connected to any of our other edges,
 				//there is no longer any way to reach the vertex
 				if (bridge)
-					availableMoves.remove(neighbor);
+					players[currentPlayerTurn].availableMoves.remove(neighbor);
 			}
 			if (connected)
-				availableMoves.add(loc);
+				players[currentPlayerTurn].availableMoves.add(loc);
 		} else {
 			boolean connected = false, articulationPoint;
 			for (Coordinate.NegativeSpace edge : loc.adjacentEdges()) {
@@ -292,12 +316,12 @@ public class WorldModel extends ScaleDisplay {
 				//if the empty edge is not connected to any of our other vertices,
 				//there is no longer any way to reach the edge
 				if (articulationPoint)
-					availableMoves.remove(edge);
+					players[currentPlayerTurn].availableMoves.remove(edge);
 			}
 			if (connected)
-				availableMoves.add(loc);
+				players[currentPlayerTurn].availableMoves.add(loc);
 		}
-		assert availableMoves.equals(availableMovesCleanUpdate());
+		assert players[currentPlayerTurn].availableMoves.equals(availableMovesCleanUpdate().get(currentPlayerTurn));
 		return old;
 	}
 
@@ -306,7 +330,18 @@ public class WorldModel extends ScaleDisplay {
 		return resources[coord.y][coord.x];
 	}
 
-	public Set<Coordinate.NegativeSpace> getAvailableMoves() {
-		return Collections.unmodifiableSet(availableMoves);
+	public Player getPlayer(int i) {
+		return players[i];
+	}
+
+	public void setPlayer(int i, Player newP) {
+		Player oldP = players[i];
+		if (oldP instanceof PendingPlayer)
+			((PendingPlayer) oldP).transferTo(newP);
+		players[i] = newP;
+	}
+
+	public int getCurrentPlayerTurn() {
+		return currentPlayerTurn;
 	}
 }

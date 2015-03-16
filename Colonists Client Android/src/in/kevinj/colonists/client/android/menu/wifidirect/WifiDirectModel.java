@@ -17,7 +17,7 @@ import android.os.Handler;
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.NioSession;
 import in.kevinj.colonists.client.ConnectStatusPopupModel;
-import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
+import in.kevinj.colonists.client.NetworkPlayer;
 import in.kevinj.colonists.client.android.AndroidModel;
 
 import com.badlogic.gdx.Gdx;
@@ -84,8 +84,8 @@ public class WifiDirectModel extends ConnectStatusPopupModel {
 	}
 
 	@Override
-	public NetworkPlayerBattleOpponent update(float tDelta) {
-		NetworkPlayerBattleOpponent op = super.update(tDelta);
+	public NetworkPlayer update(float tDelta) {
+		NetworkPlayer op = super.update(tDelta);
 		if (op == null && session == null && state == null && !scanning && shouldScan) {
 			mainThreadHandler.post(new Runnable() {
 				@Override

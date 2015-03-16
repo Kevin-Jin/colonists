@@ -1,7 +1,7 @@
 package in.kevinj.colonists.client;
 
 import in.kevinj.colonists.Constants;
-import in.kevinj.colonists.client.world.BattleModel;
+import in.kevinj.colonists.client.world.WorldModel;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import com.badlogic.gdx.utils.Json;
 
 public class Model extends ScaleDisplay {
 	public enum SceneType {
-		LOAD_SCREEN, MAIN_MENU, WORLD, BATTLE
+		LOAD_SCREEN, MAIN_MENU, WORLD
 	}
 
 	public final ControllerHelper controller;
@@ -36,7 +36,7 @@ public class Model extends ScaleDisplay {
 	public Scene sceneToShow;
 	private Scene currentScene;
 	private boolean paused;
-	public BattleModel battleModel;
+	public WorldModel worldModel;
 
 	private int loadingStep;
 	private float remainingLoadTime;
@@ -95,15 +95,14 @@ public class Model extends ScaleDisplay {
 	}
 
 	public void onStart() {
-		battleModel = new BattleModel(this);
+		worldModel = new WorldModel(this);
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		// initialize scene instances
 		SceneFactory sceneFactory = createSceneFactory();
 		scenes.put(SceneType.LOAD_SCREEN, sceneFactory.makeLoadingScene(this));
 		scenes.put(SceneType.MAIN_MENU, sceneFactory.makeMainMenuScene(this));
-		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(this));
-		scenes.put(SceneType.BATTLE, sceneFactory.makeBattleScene(battleModel));
+		scenes.put(SceneType.WORLD, sceneFactory.makeWorldScene(worldModel));
 		scenes.putAll(sceneFactory.additionalScenes());
 		sceneToShow = scenes.get(SceneType.LOAD_SCREEN);
 		currentScene = scenes.get(SceneType.MAIN_MENU);

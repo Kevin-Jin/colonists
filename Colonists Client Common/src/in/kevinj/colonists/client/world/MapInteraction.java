@@ -151,30 +151,14 @@ public class MapInteraction {
 		return Coordinate.NegativeSpace.valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 	}
 
-	public Coordinate.PositiveSpace getSelectedTile(boolean onUp) {
-		if (!onUp ^ down)
-			return null;
-
-		return tileTarget;
-	}
-
-	public Coordinate.NegativeSpace getSelectedVertex(boolean onUp) {
-		if (!onUp ^ down)
-			return null;
-
-		return vertexTarget;
-	}
-
-	public Coordinate.NegativeSpace getSelectedEdge(boolean onUp) {
-		if (!onUp ^ down)
-			return null;
-
-		return edgeTarget;
-	}
-
 	private void unsetTargets() {
 		tileTarget = null;
 		vertexTarget = edgeTarget = null;
+	}
+
+	private void sendMove(PlayerAction move) {
+		for (int i = 0; i < 4; i++)
+			model.getPlayer(i).sendMove(move);
 	}
 
 	public void update(float tDelta) {
@@ -183,15 +167,36 @@ public class MapInteraction {
 			return;
 		}
 
+		if (!model.getPlayer(model.getCurrentPlayerTurn()).isPlayable())
+			return;
+
 		Vector3 cursor = model.parent.controller.getCursor(model);
 		boolean wasDown = down;
 		down = Gdx.input.isButtonPressed(Buttons.LEFT);
 		if (!down) {
-			if (!wasDown)
+			if (!wasDown) {
 				unsetTargets();
-			else //make sure Android doesn't show old frames when animating to home/recents screen
+			} else {
+				//make sure Android doesn't show old frames when animating to home/recents screen
 				ContinuousRendererUtil.instance.doShortContinuousRender();
+
+				if (tileTarget != null) {
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
+					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.TILE, tileTarget));
+				}
+				if (vertexTarget != null) {
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
+					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
+				}
+				if (edgeTarget != null) {
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
+					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
+				}
+			}
 		} else {
+			Coordinate.PositiveSpace oldTileTarget = tileTarget;
+			Coordinate.NegativeSpace oldVertexTarget = vertexTarget, oldEdgeTarget = edgeTarget;
+
 			//get tile coordinates for highwayman
 			tileTarget = getTile(cursor);
 			//get triangle coordinates for villages, metros
@@ -230,6 +235,19 @@ public class MapInteraction {
 				else
 					tileTarget = null;
 			}
+
+			if (oldTileTarget != null && !oldTileTarget.equals(tileTarget))
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
+			if (oldVertexTarget != null && !oldVertexTarget.equals(vertexTarget))
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
+			if (oldEdgeTarget != null && !oldEdgeTarget.equals(edgeTarget))
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
+			if (tileTarget != null && !tileTarget.equals(oldTileTarget))
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.TILE, tileTarget));
+			if (vertexTarget != null && !vertexTarget.equals(oldVertexTarget))
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
+			if (edgeTarget != null && !edgeTarget.equals(oldEdgeTarget))
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
 		}
 	}
 }

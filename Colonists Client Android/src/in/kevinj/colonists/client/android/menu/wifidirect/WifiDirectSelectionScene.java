@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
+import in.kevinj.colonists.client.NetworkPlayer;
 import in.kevinj.colonists.client.Scene;
 import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
@@ -62,7 +62,7 @@ public class WifiDirectSelectionScene implements Scene {
 
 	@Override
 	public void update(float tDelta) {
-		NetworkPlayerBattleOpponent op = model.update(tDelta);
+		NetworkPlayer op = model.update(tDelta);
 		if (op != null) {
 			op.onFlee = new Runnable() {
 				@Override
@@ -73,8 +73,8 @@ public class WifiDirectSelectionScene implements Scene {
 
 			swappedOut(true);
 			model.parent.sceneToShow.setSubscene(null);
-			model.parent.battleModel.initRemote(op, !model.isHost);
-			model.parent.swapScene(model.parent.scenes.get(Model.SceneType.BATTLE));
+			model.parent.worldModel.initRemote(op, !model.isHost);
+			model.parent.swapScene(model.parent.scenes.get(Model.SceneType.WORLD));
 			return;
 		}
 

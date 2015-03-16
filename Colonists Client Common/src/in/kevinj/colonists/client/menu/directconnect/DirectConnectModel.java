@@ -8,7 +8,7 @@ import in.kevinj.colonists.Constants;
 import in.kevinj.colonists.NioSession;
 import in.kevinj.colonists.client.ConnectStatusPopupModel;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayerBattleOpponent;
+import in.kevinj.colonists.client.NetworkPlayer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -43,7 +43,7 @@ public class DirectConnectModel extends ConnectStatusPopupModel implements Input
 	}
 
 	@Override
-	public NetworkPlayerBattleOpponent update(float tDelta) {
+	public NetworkPlayer update(float tDelta) {
 		Vector3 cursor = parent.controller.getCursor(null);
 		int leftX = (Constants.WIDTH - 970) / 2, bottomY = (Constants.HEIGHT - 300) / 2;
 		// in case user hid soft keyboard
