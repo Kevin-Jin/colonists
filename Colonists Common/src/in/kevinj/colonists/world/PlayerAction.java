@@ -1,4 +1,4 @@
-package in.kevinj.colonists.client.world;
+package in.kevinj.colonists.world;
 
 import java.util.Set;
 
@@ -7,7 +7,7 @@ public abstract class PlayerAction {
 		private final Coordinate.CoordinateType type;
 		private final Coordinate coord;
 
-		public BeginConsiderMove(WorldModel m, Coordinate.CoordinateType type, Coordinate coord) {
+		public BeginConsiderMove(GameMap<?> m, Coordinate.CoordinateType type, Coordinate coord) {
 			super(m);
 			this.type = type;
 			this.coord = coord;
@@ -17,13 +17,13 @@ public abstract class PlayerAction {
 		public void update(float tDelta) {
 			switch (type) {
 				case TILE:
-					model.highwaymanCandidate = (Coordinate.PositiveSpace) coord;
+					model.setHighwaymanCandidate((Coordinate.PositiveSpace) coord);
 					break;
 				case VERTEX:
-					model.metroCandidate = (Coordinate.NegativeSpace) coord;
+					model.setMetroCandidate((Coordinate.NegativeSpace) coord);
 					break;
 				case EDGE:
-					model.roadCandidate = (Coordinate.NegativeSpace) coord;
+					model.setRoadCandidate((Coordinate.NegativeSpace) coord);
 					break;
 			}
 		}
@@ -32,7 +32,7 @@ public abstract class PlayerAction {
 	public static class EndConsiderMove extends PlayerAction {
 		private final Coordinate.CoordinateType type;
 
-		public EndConsiderMove(WorldModel m, Coordinate.CoordinateType type) {
+		public EndConsiderMove(GameMap<?> m, Coordinate.CoordinateType type) {
 			super(m);
 			this.type = type;
 		}
@@ -41,52 +41,60 @@ public abstract class PlayerAction {
 		public void update(float tDelta) {
 			switch (type) {
 				case TILE:
-					model.highwaymanCandidate = null;
+					model.setHighwaymanCandidate(null);
 					break;
 				case VERTEX:
-					model.metroCandidate = null;
+					model.setMetroCandidate(null);
 					break;
 				case EDGE:
-					model.roadCandidate = null;
+					model.setRoadCandidate(null);
 					break;
 			}
 		}
 	}
 
-	public static class CommitMove extends PlayerAction {
+	public static abstract class CommitMove<M extends GameMap<E>, E extends Entity.NegativeSpace> extends PlayerAction {
+		protected M model;
 		private final Coordinate.CoordinateType type;
 		private final Coordinate coord;
 
-		protected CommitMove(WorldModel m, Coordinate.CoordinateType type, Coordinate coord) {
+		public CommitMove(M m, Coordinate.CoordinateType type, Coordinate coord) {
 			super(m);
+			this.model = m;
 			this.type = type;
 			this.coord = coord;
 		}
+
+		protected abstract E createMetro(M model, int player);
+
+		protected abstract E createVillage(M model, int player);
+
+		protected abstract E createRoad(M model, int player);
 
 		@Override
 		public void update(float tDelta) {
 			Set<Coordinate.NegativeSpace> availableMoves = model.getPlayer(model.getCurrentPlayerTurn()).availableMoves;
 			switch (type) {
 				case TILE:
-					model.highwayman.position = (Coordinate.PositiveSpace) coord;
+					model.getHighwayman().setPosition((Coordinate.PositiveSpace) coord);
 					break;
 				case VERTEX:
 					if (model.removeFromGrid((Coordinate.NegativeSpace) coord) == null)
 						if (availableMoves.contains((Coordinate.NegativeSpace) coord))
-							model.addToGrid((Coordinate.NegativeSpace) coord, Math.random() < 0.5 ? new Entity.Metro(model, model.getCurrentPlayerTurn()) : new Entity.Village(model, model.getCurrentPlayerTurn()));
+							model.addToGrid((Coordinate.NegativeSpace) coord, Math.random() < 0.5 ? createMetro(model, model.getCurrentPlayerTurn()) : createVillage(model, model.getCurrentPlayerTurn()));
 					break;
 				case EDGE:
 					if (model.removeFromGrid((Coordinate.NegativeSpace) coord) == null)
 						if (availableMoves.contains((Coordinate.NegativeSpace) coord))
-							model.addToGrid((Coordinate.NegativeSpace) coord, new Entity.Road(model, model.getCurrentPlayerTurn()));
+							model.addToGrid((Coordinate.NegativeSpace) coord, createRoad(model, model.getCurrentPlayerTurn()));
 					break;
 			}
 		}
 	}
 
-	protected WorldModel model;
+	protected GameMap<?> model;
 
-	protected PlayerAction(WorldModel model) {
+	protected PlayerAction(GameMap<?> model) {
 		this.model = model;
 	}
 

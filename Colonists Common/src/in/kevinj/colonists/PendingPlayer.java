@@ -1,14 +1,13 @@
-package in.kevinj.colonists.client;
+package in.kevinj.colonists;
 
-import in.kevinj.colonists.client.world.Coordinate;
-import in.kevinj.colonists.client.world.PlayerAction;
-import in.kevinj.colonists.client.world.WorldModel;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.PlayerAction;
 
 import java.util.Set;
 
 public class PendingPlayer extends Player {
-	public PendingPlayer(String name, WorldModel worldModel, Set<Coordinate.NegativeSpace> availableMoves) {
-		super(name, worldModel, availableMoves);
+	public PendingPlayer(String name, Set<Coordinate.NegativeSpace> availableMoves) {
+		super(name, availableMoves);
 	}
 
 	@Override

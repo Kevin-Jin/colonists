@@ -1,6 +1,13 @@
 package in.kevinj.colonists.client.android.menu.wifidirect;
 
+import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.NetworkPlayer;
+import in.kevinj.colonists.NioSession;
+import in.kevinj.colonists.client.ConnectStatusPopupModel;
+import in.kevinj.colonists.client.android.AndroidModel;
+
 import java.net.InetSocketAddress;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,12 +20,6 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.os.Handler;
-
-import in.kevinj.colonists.Constants;
-import in.kevinj.colonists.NioSession;
-import in.kevinj.colonists.client.ConnectStatusPopupModel;
-import in.kevinj.colonists.client.NetworkPlayer;
-import in.kevinj.colonists.client.android.AndroidModel;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;

@@ -1,6 +1,7 @@
 package in.kevinj.colonists.client;
 
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.NetworkPlayer;
 import in.kevinj.colonists.NioSession;
 import in.kevinj.colonists.Session;
 
@@ -47,7 +48,7 @@ public abstract class ConnectStatusPopupModel {
 					session = null;
 					return null;
 				}
-				op = new NetworkPlayer(reader.getLengthPrefixedAsciiString(), session, parent.worldModel);
+				op = new NetworkPlayer(reader.getLengthPrefixedAsciiString(), session);
 			} finally {
 				reader.close();
 			}

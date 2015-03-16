@@ -1,6 +1,7 @@
 package in.kevinj.colonists.client;
 
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.TrainerProperties;
 import in.kevinj.colonists.client.world.WorldModel;
 
 import java.util.EnumMap;

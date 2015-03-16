@@ -1,16 +1,18 @@
 package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.client.ViewComponent;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.Entity;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public abstract class Entity implements ViewComponent {
+public abstract class GraphicalEntity implements Entity, ViewComponent {
 	protected final WorldModel model;
 	private final String sprite;
 	protected Sprite spriteLoaded;
 
-	public Entity(WorldModel model, String sprite) {
+	public GraphicalEntity(WorldModel model, String sprite) {
 		this.model = model;
 		this.sprite = sprite;
 	}
@@ -31,15 +33,25 @@ public abstract class Entity implements ViewComponent {
 		spriteLoaded.draw(batch);
 	}
 
-	public static abstract class PositiveSpace extends Entity {
+	public static abstract class PositiveSpace extends GraphicalEntity implements Entity.PositiveSpace {
 		public Coordinate.PositiveSpace position;
 
 		public PositiveSpace(WorldModel model, String sprite) {
 			super(model, sprite);
 		}
+
+		@Override
+		public Coordinate.PositiveSpace getPosition() {
+			return position;
+		}
+
+		@Override
+		public void setPosition(Coordinate.PositiveSpace coord) {
+			position = coord;
+		}
 	}
 
-	public static class Highwayman extends PositiveSpace {
+	public static class Highwayman extends PositiveSpace implements Entity.Highwayman {
 		private final float[] color;
 
 		public Highwayman(WorldModel model) {
@@ -62,7 +74,7 @@ public abstract class Entity implements ViewComponent {
 		}
 	}
 
-	public static abstract class NegativeSpace extends Entity {
+	public static abstract class NegativeSpace extends GraphicalEntity implements Entity.NegativeSpace {
 		private static final float[][] PLAYER_COLORS = {
 			{ 1, 0.5f, 1, 1 },
 			{ },
@@ -85,9 +97,24 @@ public abstract class Entity implements ViewComponent {
 			float[] color = PLAYER_COLORS[player];
 			spriteLoaded.setColor(color[0], color[1], color[2], color[3]);
 		}
+
+		@Override
+		public int getPlayer() {
+			return player;
+		}
+
+		@Override
+		public Coordinate.NegativeSpace getPosition() {
+			return position;
+		}
+
+		@Override
+		public void setPosition(Coordinate.NegativeSpace coord) {
+			position = coord;
+		}
 	}
 
-	public static class Road extends NegativeSpace {
+	public static class Road extends NegativeSpace implements Entity.Road {
 		public Road(WorldModel model, int player) {
 			super(model, player, "map/road");
 		}
@@ -118,7 +145,7 @@ public abstract class Entity implements ViewComponent {
 		}
 	}
 
-	private static abstract class Settlement extends NegativeSpace {
+	private static abstract class Settlement extends NegativeSpace implements Entity.Settlement {
 		public Settlement(WorldModel model, int player, String sprite) {
 			super(model, player, sprite);
 		}
@@ -132,7 +159,7 @@ public abstract class Entity implements ViewComponent {
 		}
 	}
 
-	public static class Village extends Settlement {
+	public static class Village extends Settlement implements Entity.Village {
 		public Village(WorldModel model, int player) {
 			super(model, player, "map/village");
 		}
@@ -142,7 +169,7 @@ public abstract class Entity implements ViewComponent {
 		}
 	}
 
-	public static class Metro extends Settlement {
+	public static class Metro extends Settlement implements Entity.Metro {
 		public Metro(WorldModel model, int player) {
 			super(model, player, "map/metro");
 		}

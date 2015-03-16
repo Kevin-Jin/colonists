@@ -1,14 +1,13 @@
-package in.kevinj.colonists.client;
+package in.kevinj.colonists;
 
-import in.kevinj.colonists.client.world.Coordinate;
-import in.kevinj.colonists.client.world.PlayerAction;
-import in.kevinj.colonists.client.world.WorldModel;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.PlayerAction;
 
 import java.util.HashSet;
 
 public class AiPlayer extends Player {
-	public AiPlayer(String name, WorldModel model) {
-		super(name, model, new HashSet<Coordinate.NegativeSpace>());
+	public AiPlayer(String name) {
+		super(name, new HashSet<Coordinate.NegativeSpace>());
 	}
 
 	@Override

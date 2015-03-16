@@ -1,8 +1,8 @@
 package in.kevinj.colonists.client.menu.directconnect;
 
+import in.kevinj.colonists.NetworkPlayer;
 import in.kevinj.colonists.client.ContinuousRendererUtil;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayer;
 import in.kevinj.colonists.client.PopupScene;
 import in.kevinj.colonists.client.Scene;
 

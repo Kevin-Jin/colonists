@@ -1,4 +1,4 @@
-package in.kevinj.colonists.client.world;
+package in.kevinj.colonists.world;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;

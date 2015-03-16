@@ -1,9 +1,9 @@
 package in.kevinj.colonists.client.menu.lobby;
 
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.NetworkPlayer;
 import in.kevinj.colonists.client.Button;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayer;
 import in.kevinj.colonists.client.PopupScene;
 import in.kevinj.colonists.client.Scene;
 

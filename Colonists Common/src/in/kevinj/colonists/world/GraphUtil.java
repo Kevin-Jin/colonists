@@ -1,7 +1,4 @@
-package in.kevinj.colonists.client;
-
-import in.kevinj.colonists.client.world.Coordinate;
-import in.kevinj.colonists.client.world.Entity;
+package in.kevinj.colonists.world;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +63,7 @@ public class GraphUtil {
 					//this is part of our real visit. avoid a second loop over adjacent vertices in visit() by placing our logic here instead
 					if (!edges.containsKey(edge) && edge.inBounds())
 						//player who owns the neighboring vertex has access to this empty edge
-						available.get(stackEntry.getValue().player).add(edge);
+						available.get(stackEntry.getValue().getPlayer()).add(edge);
 
 					Entity.NegativeSpace neighborEnt = vertices.get(neighbor);
 					if (neighborEnt != null) {
@@ -81,7 +78,7 @@ public class GraphUtil {
 						Entity.NegativeSpace edgeEnt = edges.get(edge);
 						if (edgeEnt != null && neighbor.inBounds())
 							//player who owns the neighboring edge has access to this empty vertex
-							available.get(edgeEnt.player).add(neighbor);
+							available.get(edgeEnt.getPlayer()).add(neighbor);
 					}
 				}
 			}
@@ -90,7 +87,7 @@ public class GraphUtil {
 			for (Coordinate.NegativeSpace neighbor : Coordinate.NegativeSpace.vertices(edgeEntry.getKey()))
 				if (!vertices.containsKey(neighbor) && neighbor.inBounds())
 					//player who owns the neighboring edge has access to this empty vertex
-					available.get(edgeEntry.getValue().player).add(neighbor);
+					available.get(edgeEntry.getValue().getPlayer()).add(neighbor);
 
 		return available;
 	}

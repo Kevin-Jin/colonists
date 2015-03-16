@@ -1,29 +1,28 @@
 package in.kevinj.colonists.client.world;
 
+import in.kevinj.colonists.AiPlayer;
 import in.kevinj.colonists.Constants;
-import in.kevinj.colonists.client.AiPlayer;
-import in.kevinj.colonists.client.GraphUtil;
-import in.kevinj.colonists.client.LocalPlayer;
+import in.kevinj.colonists.LocalPlayer;
+import in.kevinj.colonists.NetworkPlayer;
+import in.kevinj.colonists.PendingPlayer;
+import in.kevinj.colonists.Player;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayer;
-import in.kevinj.colonists.client.PendingPlayer;
-import in.kevinj.colonists.client.Player;
 import in.kevinj.colonists.client.ScaleDisplay;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.GameMap;
+import in.kevinj.colonists.world.MapTile;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.math.Vector3;
 
-public class WorldModel extends ScaleDisplay {
+public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.NegativeSpace> {
 	public final class Loupe extends ScaleDisplay {
 		public static final int RADIUS = 128;
 		public static final int STEM_HEIGHT = 64;
@@ -96,10 +95,10 @@ public class WorldModel extends ScaleDisplay {
 	public int tileWidth, tileHeight, settlementRadius;
 	public int mapBoundsColumns, mapBoundsRows;
 	public final MapTile[][] resources;
-	public final Entity.PositiveSpace highwayman;
+	public final GraphicalEntity.PositiveSpace highwayman;
 	public Coordinate.PositiveSpace highwaymanCandidate;
 	public Coordinate.NegativeSpace villageCandidate, metroCandidate, roadCandidate;
-	private final Map<Coordinate.NegativeSpace, Entity.NegativeSpace> grid;
+	private final Map<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace> grid;
 
 	private final Player[] players;
 	public final int self;
@@ -115,38 +114,24 @@ public class WorldModel extends ScaleDisplay {
 		mapBoundsColumns = MAP_VIEW_COLUMNS;
 		mapBoundsRows = MAP_VIEW_ROWS;
 		resources = new MapTile[mapBoundsRows][mapBoundsColumns];
-		highwayman = new Entity.Highwayman(this);
-		initializeMap();
+		highwayman = new GraphicalEntity.Highwayman(this);
+		GameMap.Helper.initializeMap(resources, highwayman);
 
-		grid = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
+		grid = new HashMap<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace>();
 		players = new Player[4];
 		self = 0;
-		List<Set<Coordinate.NegativeSpace>> initialAvailableMoves = availableMovesCleanUpdate();
+		List<Set<Coordinate.NegativeSpace>> initialAvailableMoves = GameMap.Helper.availableMovesCleanUpdate(this);
 		for (int i = 0; i < 4; i++)
 			if (i == self)
-				players[i] = new LocalPlayer(null, this, initialAvailableMoves.get(i));
+				players[i] = new LocalPlayer(null, initialAvailableMoves.get(i));
 			else
-				players[i] = new PendingPlayer(null, this, initialAvailableMoves.get(i));
+				players[i] = new PendingPlayer(null, initialAvailableMoves.get(i));
 		//road tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new Entity.Road(this, currentPlayerTurn));
+		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new GraphicalEntity.Road(this, currentPlayerTurn));
 		//house tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new Entity.Metro(this, currentPlayerTurn));
+		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new GraphicalEntity.Metro(this, currentPlayerTurn));
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-	}
-
-	private List<Set<Coordinate.NegativeSpace>> availableMovesCleanUpdate() {
-		Map<Coordinate.NegativeSpace, Entity.NegativeSpace> currentPlayerSettlements = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
-		Map<Coordinate.NegativeSpace, Entity.NegativeSpace> currentPlayerRoads = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>();
-		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entry: grid.entrySet()) {
-			if (entry.getKey().isEdge())
-				currentPlayerRoads.put(entry.getKey(), entry.getValue());
-			else
-				currentPlayerSettlements.put(entry.getKey(), entry.getValue());
-		}
-		currentPlayerSettlements = Collections.unmodifiableMap(currentPlayerSettlements);
-		currentPlayerRoads = Collections.unmodifiableMap(currentPlayerRoads);
-		return GraphUtil.dfsForAvailable(currentPlayerSettlements, currentPlayerRoads);
 	}
 
 	@Override
@@ -169,61 +154,6 @@ public class WorldModel extends ScaleDisplay {
 		return screenHeight;
 	}
 
-	private void initializeMap() {
-		Random r = new Random();
-
-		//keystone water tiles only touch a resource tile on one edge (i.e.
-		//corner in the hexagon that the map makes). these keystones exist at
-		//(0, 0), (0, 3), (3, 0), (3, 6), (6, 3), (6, 6). pick a
-		//random one as a reference point to make PortTile.getRandomPorts()
-		//easier to implement.
-		int keystone = r.nextInt(6);
-		int x, y, rot;
-		switch (keystone) {
-			case 0:	x = 3;	y = 0;	rot = 0;	break;
-			case 1:	x = 6;	y = 3;	rot = 60;	break;
-			case 2:	x = 6;	y = 6;	rot = 120;	break;
-			case 3:	x = 3;	y = 6;	rot = 180;	break;
-			case 4:	x = 0;	y = 3;	rot = 240;	break;
-			case 5:	x = 0;	y = 0;	rot = 300;	break;
-			default:	throw new AssertionError("Wrong keystone ID");
-		}
-		Queue<MapTile> tiles = new LinkedList<MapTile>();
-		MapTile.PortTile.getRandomPorts(r, rot, tiles);
-		MapTile.ResourceTile.getRandomResources(r, tiles);
-		for (int rad = 3; rad >= 0; --rad) {
-			for (int i = 0; i < Math.max(1, 6 * rad); i++) {
-				resources[y][x] = tiles.poll();
-				if (resources[y][x].isResource() && resources[y][x].getResourceType() == MapTile.ResourceType.WASTELAND)
-					highwayman.position = Coordinate.PositiveSpace.valueOf(x, y);
-				if (y == 3 - rad) {
-					if (x == 3) y++;
-					x++;
-				} else if (y == 3 + rad) {
-					if (x == 3) y--;
-					x--;
-				} else if (x > 3) {
-					if (x != 3 + rad) x++;
-					y++;
-				} else if (x < 3) {
-					if (x != 3 - rad) x--;
-					y--;
-				}
-			}
-			if (y == 3 - rad) {
-				if (x != 3) x++;
-				y++;
-			} else if (y == 3 + rad) {
-				if (x != 3) x--;
-				y--;
-			} else if (x == 3 - rad) {
-				x++;
-			} else if (x == 3 + rad) {
-				x--;
-			}
-		}
-	}
-
 	private void init() {
 		
 	}
@@ -238,90 +168,29 @@ public class WorldModel extends ScaleDisplay {
 		setPlayer(-1, op);
 	}
 
-	public Map<Coordinate.NegativeSpace, Entity.NegativeSpace> getGrid() {
+	@Override
+	public Map<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace> getGrid() {
 		return Collections.unmodifiableMap(grid);
 	}
 
-	public Entity addToGrid(Coordinate.NegativeSpace loc, Entity.NegativeSpace ent) {
-		Entity.NegativeSpace old = grid.put(loc, ent);
+	@Override
+	public GraphicalEntity.NegativeSpace addToGrid(Coordinate.NegativeSpace loc, GraphicalEntity.NegativeSpace ent) {
+		GraphicalEntity.NegativeSpace old = grid.put(loc, ent);
 		if (old != null)
-			old.position = null;
-		ent.position = loc;
-
-		//incremental update available moves
-		//TODO: update availableMoves for all players
-		players[currentPlayerTurn].availableMoves.remove(loc);
-		if (loc.isEdge()) {
-			Coordinate.NegativeSpace[] vertices = Coordinate.NegativeSpace.vertices(loc);
-			for (Coordinate.NegativeSpace neighbor : vertices)
-				if (!grid.containsKey(neighbor) && neighbor.inBounds())
-					players[currentPlayerTurn].availableMoves.add(neighbor);
-		} else {
-			for (Coordinate.NegativeSpace edge : loc.adjacentEdges())
-				if (!grid.containsKey(edge) && edge.inBounds())
-					players[currentPlayerTurn].availableMoves.add(edge);
-		}
-		assert players[currentPlayerTurn].availableMoves.equals(availableMovesCleanUpdate().get(currentPlayerTurn));
+			old.setPosition(null);
+		ent.setPosition(loc);
+		GameMap.Helper.incrementUpdateAfterAddToGrid(this, loc, ent);
 		return old;
 	}
 
-	public Entity removeFromGrid(Coordinate.NegativeSpace loc) {
-		Entity.NegativeSpace old = grid.remove(loc);
+	@Override
+	public GraphicalEntity removeFromGrid(Coordinate.NegativeSpace loc) {
+		GraphicalEntity.NegativeSpace old = grid.remove(loc);
 		if (old == null)
 			return null; //no changes made
 		else
-			old.position = null;
-
-		//incremental update available moves
-		//TODO: update availableMoves for all players
-		if (loc.isEdge()) {
-			boolean connected = false, bridge;
-			for (Coordinate.NegativeSpace neighbor : Coordinate.NegativeSpace.vertices(loc)) {
-				if (grid.containsKey(neighbor)) {
-					connected = true; //TODO: connected = (grid.get(neighbor) is our own settlement)
-					continue;
-				}
-
-				bridge = true;
-				for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
-					if (grid.containsKey(otherEdge)) { //TODO: if (grid.containsKey(otherEdge) && grid.get(otherEdge) is our own road)
-						bridge = false;
-						break;
-					}
-				}
-
-				//if the empty vertex is not connected to any of our other edges,
-				//there is no longer any way to reach the vertex
-				if (bridge)
-					players[currentPlayerTurn].availableMoves.remove(neighbor);
-			}
-			if (connected)
-				players[currentPlayerTurn].availableMoves.add(loc);
-		} else {
-			boolean connected = false, articulationPoint;
-			for (Coordinate.NegativeSpace edge : loc.adjacentEdges()) {
-				if (grid.containsKey(edge)) {
-					connected = true; //TODO: connected = (grid.get(edge) is our own road)
-					continue;
-				}
-
-				articulationPoint = true;
-				for (Coordinate.NegativeSpace otherVertex : edge.adjacentVertices()) {
-					if (grid.containsKey(otherVertex)) { //TODO: if (grid.containsKey(otherVertex) && grid.get(otherVertex) is our own settlement)
-						articulationPoint = false;
-						break;
-					}
-				}
-
-				//if the empty edge is not connected to any of our other vertices,
-				//there is no longer any way to reach the edge
-				if (articulationPoint)
-					players[currentPlayerTurn].availableMoves.remove(edge);
-			}
-			if (connected)
-				players[currentPlayerTurn].availableMoves.add(loc);
-		}
-		assert players[currentPlayerTurn].availableMoves.equals(availableMovesCleanUpdate().get(currentPlayerTurn));
+			old.setPosition(null);
+		GameMap.Helper.incrementUpdateAfterRemoveFromGrid(this, loc);
 		return old;
 	}
 
@@ -330,6 +199,7 @@ public class WorldModel extends ScaleDisplay {
 		return resources[coord.y][coord.x];
 	}
 
+	@Override
 	public Player getPlayer(int i) {
 		return players[i];
 	}
@@ -341,7 +211,33 @@ public class WorldModel extends ScaleDisplay {
 		players[i] = newP;
 	}
 
+	@Override
 	public int getCurrentPlayerTurn() {
 		return currentPlayerTurn;
+	}
+
+	@Override
+	public GraphicalEntity.PositiveSpace getHighwayman() {
+		return highwayman;
+	}
+
+	@Override
+	public void setHighwaymanCandidate(Coordinate.PositiveSpace coord) {
+		highwaymanCandidate = coord;
+	}
+
+	@Override
+	public void setRoadCandidate(Coordinate.NegativeSpace coord) {
+		roadCandidate = coord;
+	}
+
+	@Override
+	public void setMetroCandidate(Coordinate.NegativeSpace coord) {
+		metroCandidate = coord;
+	}
+
+	@Override
+	public void setVillageCandidate(Coordinate.NegativeSpace coord) {
+		villageCandidate = coord;
 	}
 }

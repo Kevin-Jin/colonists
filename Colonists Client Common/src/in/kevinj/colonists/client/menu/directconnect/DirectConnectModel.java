@@ -5,10 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.NetworkPlayer;
 import in.kevinj.colonists.NioSession;
 import in.kevinj.colonists.client.ConnectStatusPopupModel;
 import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;

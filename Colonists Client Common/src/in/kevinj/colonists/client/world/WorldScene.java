@@ -11,6 +11,9 @@ import in.kevinj.colonists.client.ScaleDisplay;
 import in.kevinj.colonists.client.Scene;
 import in.kevinj.colonists.client.world.WorldModel.Loupe;
 import in.kevinj.colonists.client.world.menu.InGameMenuScene;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.MapTile;
+import in.kevinj.colonists.world.PlayerAction;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,10 +58,10 @@ public class WorldScene implements Scene {
 
 	private Map<MapTile.ResourceType, Sprite> resourceTiles;
 	private Map<MapTile.PortType, Sprite> portTiles;
-	private final Entity.Village greenHighlightVillage, redHighlightVillage;
-	private final Entity.Metro greenHighlightMetro, redHighlightMetro;
-	private final Entity.Road greenHighlightRoad, redHighlightRoad;
-	private final Entity.Highwayman greenHighlightHighwayman, redHighlightHighwayman;
+	private final GraphicalEntity.Village greenHighlightVillage, redHighlightVillage;
+	private final GraphicalEntity.Metro greenHighlightMetro, redHighlightMetro;
+	private final GraphicalEntity.Road greenHighlightRoad, redHighlightRoad;
+	private final GraphicalEntity.Highwayman greenHighlightHighwayman, redHighlightHighwayman;
 
 	private final Button backButton, menuButton;
 
@@ -92,14 +95,14 @@ public class WorldScene implements Scene {
 
 		shapeRenderer = new ShapeRenderer();
 
-		greenHighlightVillage = new Entity.Village(model, true);
-		redHighlightVillage = new Entity.Village(model, false);
-		greenHighlightMetro = new Entity.Metro(model, true);
-		redHighlightMetro = new Entity.Metro(model, false);
-		greenHighlightRoad = new Entity.Road(model, true);
-		redHighlightRoad = new Entity.Road(model, false);
-		greenHighlightHighwayman = new Entity.Highwayman(model, true);
-		redHighlightHighwayman = new Entity.Highwayman(model, false);
+		greenHighlightVillage = new GraphicalEntity.Village(model, true);
+		redHighlightVillage = new GraphicalEntity.Village(model, false);
+		greenHighlightMetro = new GraphicalEntity.Metro(model, true);
+		redHighlightMetro = new GraphicalEntity.Metro(model, false);
+		greenHighlightRoad = new GraphicalEntity.Road(model, true);
+		redHighlightRoad = new GraphicalEntity.Road(model, false);
+		greenHighlightHighwayman = new GraphicalEntity.Highwayman(model, true);
+		redHighlightHighwayman = new GraphicalEntity.Highwayman(model, false);
 	}
 
 	@Override
@@ -183,12 +186,12 @@ public class WorldScene implements Scene {
 	}
 
 	private void drawEntities(SpriteBatch batch, Set<Coordinate.NegativeSpace> availableMoves) {
-		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entities : model.getGrid().entrySet())
+		for (Map.Entry<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace> entities : model.getGrid().entrySet())
 			entities.getValue().draw(batch);
 		model.highwayman.draw(batch);
 
 		if (model.roadCandidate != null) {
-			Entity.NegativeSpace highlightRoad;
+			GraphicalEntity.NegativeSpace highlightRoad;
 			if (!availableMoves.contains(model.roadCandidate))
 				highlightRoad = redHighlightRoad;
 			else
@@ -197,7 +200,7 @@ public class WorldScene implements Scene {
 			highlightRoad.draw(batch);
 		}
 		if (model.metroCandidate != null) {
-			Entity.NegativeSpace highlightMetro;
+			GraphicalEntity.NegativeSpace highlightMetro;
 			if (!availableMoves.contains(model.metroCandidate))
 				highlightMetro = redHighlightMetro;
 			else
@@ -206,7 +209,7 @@ public class WorldScene implements Scene {
 			highlightMetro.draw(batch);
 		}
 		if (model.villageCandidate != null) {
-			Entity.NegativeSpace highlightVillage;
+			GraphicalEntity.NegativeSpace highlightVillage;
 			if (!availableMoves.contains(model.villageCandidate))
 				highlightVillage = redHighlightVillage;
 			else
@@ -215,7 +218,7 @@ public class WorldScene implements Scene {
 			highlightVillage.draw(batch);
 		}
 		if (model.highwaymanCandidate != null) {
-			Entity.PositiveSpace highlightHighwayman;
+			GraphicalEntity.PositiveSpace highlightHighwayman;
 			if (model.highwayman.position.equals(model.highwaymanCandidate))
 				highlightHighwayman = redHighlightHighwayman;
 			else
@@ -295,7 +298,7 @@ public class WorldScene implements Scene {
 		for (int i = 0; i < 4; i++)
 			while ((move = model.getPlayer(i).getNextMove()) != null)
 				move.update(tDelta);
-		for (Entity ent : model.getGrid().values())
+		for (GraphicalEntity ent : model.getGrid().values())
 			ent.update(tDelta);
 
 		if (subScene == null) {

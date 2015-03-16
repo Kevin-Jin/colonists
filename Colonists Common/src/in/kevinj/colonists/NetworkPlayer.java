@@ -1,9 +1,7 @@
-package in.kevinj.colonists.client;
+package in.kevinj.colonists;
 
-import in.kevinj.colonists.Session;
-import in.kevinj.colonists.client.world.Coordinate;
-import in.kevinj.colonists.client.world.PlayerAction;
-import in.kevinj.colonists.client.world.WorldModel;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.PlayerAction;
 
 import java.util.HashSet;
 
@@ -12,8 +10,8 @@ public class NetworkPlayer extends Player {
 
 	public Runnable onFlee;
 
-	public NetworkPlayer(String name, Session ses, WorldModel model) {
-		super(name, model, new HashSet<Coordinate.NegativeSpace>());
+	public NetworkPlayer(String name, Session ses) {
+		super(name, new HashSet<Coordinate.NegativeSpace>());
 		this.ses = ses;
 	}
 

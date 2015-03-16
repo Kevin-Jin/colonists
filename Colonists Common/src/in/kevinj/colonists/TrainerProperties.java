@@ -1,6 +1,6 @@
-package in.kevinj.colonists.client;
+package in.kevinj.colonists;
 
-import in.kevinj.colonists.client.world.WorldModel;
+import in.kevinj.colonists.world.GameMap;
 
 //Players will trade request, use year of plenty, or attempt to rob a resource
 //on resources they want but are unlikely to obtain (i.e. few settlements near
@@ -79,8 +79,8 @@ public class TrainerProperties {
 		strategicFactor = 0;
 	}
 
-	public AiPlayer createInstance(WorldModel model) {
-		AiPlayer op = new AiPlayer(trainerName, model);
+	public AiPlayer createInstance(GameMap<?> model) {
+		AiPlayer op = new AiPlayer(trainerName);
 		return op;
 	}
 }

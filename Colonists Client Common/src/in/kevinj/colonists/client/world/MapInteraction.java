@@ -1,6 +1,8 @@
 package in.kevinj.colonists.client.world;
 
 import in.kevinj.colonists.client.ContinuousRendererUtil;
+import in.kevinj.colonists.world.Coordinate;
+import in.kevinj.colonists.world.PlayerAction;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
@@ -9,6 +11,27 @@ import com.badlogic.gdx.math.Vector3;
 //hexagons are interesting to work with
 //TODO: detect dragging, implement pinch/scrollwheel zooming
 public class MapInteraction {
+	private static class GraphicalCommitMove extends PlayerAction.CommitMove<WorldModel, GraphicalEntity.NegativeSpace> {
+		public GraphicalCommitMove(WorldModel m, Coordinate.CoordinateType type, Coordinate coord) {
+			super(m, type, coord);
+		}
+
+		@Override
+		protected GraphicalEntity.Metro createMetro(WorldModel model, int player) {
+			return new GraphicalEntity.Metro(model, player);
+		}
+
+		@Override
+		protected GraphicalEntity.Road createRoad(WorldModel model, int player) {
+			return new GraphicalEntity.Road(model, player);
+		}
+
+		@Override
+		protected GraphicalEntity.Village createVillage(WorldModel model, int player) {
+			return new GraphicalEntity.Village(model, player);
+		}
+	}
+
 	private final WorldModel model;
 
 	public boolean hidden;
@@ -182,15 +205,15 @@ public class MapInteraction {
 
 				if (tileTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
-					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.TILE, tileTarget));
+					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.TILE, tileTarget));
 				}
 				if (vertexTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
-					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
+					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
 				}
 				if (edgeTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
-					sendMove(new PlayerAction.CommitMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
+					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
 				}
 			}
 		} else {

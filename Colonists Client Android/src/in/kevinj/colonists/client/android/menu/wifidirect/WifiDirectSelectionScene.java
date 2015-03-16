@@ -1,13 +1,13 @@
 package in.kevinj.colonists.client.android.menu.wifidirect;
 
+import in.kevinj.colonists.Constants;
+import in.kevinj.colonists.NetworkPlayer;
+import in.kevinj.colonists.client.Model;
+import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
+import in.kevinj.colonists.client.Scene;
+
 import java.util.Collection;
 import java.util.Collections;
-
-import in.kevinj.colonists.Constants;
-import in.kevinj.colonists.client.Model;
-import in.kevinj.colonists.client.NetworkPlayer;
-import in.kevinj.colonists.client.Scene;
-import in.kevinj.colonists.client.PriorityQueueAssetManager.LoadEntry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
