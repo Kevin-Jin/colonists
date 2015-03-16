@@ -12,32 +12,31 @@ public class MapInteraction {
 	private final WorldModel model;
 
 	public boolean hidden;
-	public int tileWidth, tileHeight, settlementRadius;
 
 	private boolean down;
-	private WorldModel.TileCoordinate tileTarget;
-	private WorldModel.EntityCoordinate vertexTarget, edgeTarget;
+	private Coordinate.PositiveSpace tileTarget;
+	private Coordinate.NegativeSpace vertexTarget, edgeTarget;
 
 	public MapInteraction(WorldModel model) {
 		this.model = model;
 	}
 
-	private WorldModel.TileCoordinate getTile(Vector3 cursor) {
+	private Coordinate.PositiveSpace getTile(Vector3 cursor) {
 		if (cursor == null) return null;
 
-		double sideTriangleWidth = tileWidth / 4d;
-		double rightTriangleOffset = tileWidth - sideTriangleWidth; // == tileWidth / 4 * 3
-		double trapezoidHeight = tileHeight / 2d;
+		double sideTriangleWidth = model.tileWidth / 4d;
+		double rightTriangleOffset = model.tileWidth - sideTriangleWidth; // == model.tileWidth / 4 * 3
+		double trapezoidHeight = model.tileHeight / 2d;
 
 		int x = (int) (cursor.x / rightTriangleOffset);
-		double cursorY = cursor.y - (tileHeight - trapezoidHeight * x);
+		double cursorY = cursor.y - (model.tileHeight - trapezoidHeight * x);
 		if (cursor.x < 0 || cursorY < 0)
 			return null;
 
-		int y = (int) (cursorY / tileHeight);
+		int y = (int) (cursorY / model.tileHeight);
 
 		double withinX = cursor.x - x * rightTriangleOffset;
-		double withinY = cursorY - y * tileHeight;
+		double withinY = cursorY - y * model.tileHeight;
 		//areas that are ambiguous under the rectangular heuristic
 		if (withinX < sideTriangleWidth) {
 			if (withinY < trapezoidHeight) {
@@ -65,24 +64,24 @@ public class MapInteraction {
 				return null;
 		}
 
-		return WorldModel.TileCoordinate.valueOf(x, y);
+		return Coordinate.PositiveSpace.valueOf(x, y);
 	}
 
-	private WorldModel.EntityCoordinate getVertex(Vector3 cursor, WorldModel.TileCoordinate tile) {
+	private Coordinate.NegativeSpace getVertex(Vector3 cursor, Coordinate.PositiveSpace tile) {
 		if (cursor == null || tile == null) return null;
 
-		double sideTriangleWidth = tileWidth / 4d;
-		double rightTriangleOffset = tileWidth - sideTriangleWidth; // == tileWidth / 4 * 3
-		double trapezoidHeight = tileHeight / 2d;
-		double halfWidth = tileWidth / 2d;
+		double sideTriangleWidth = model.tileWidth / 4d;
+		double rightTriangleOffset = model.tileWidth - sideTriangleWidth; // == model.tileWidth / 4 * 3
+		double trapezoidHeight = model.tileHeight / 2d;
+		double halfWidth = model.tileWidth / 2d;
 
 		int x = tile.x;
 		int y = tile.y;
 		int xHundredths = 0;
 		int yHundredths = 0;
 		double withinX = cursor.x - x * rightTriangleOffset;
-		double cursorY = cursor.y - (tileHeight - trapezoidHeight * x);
-		double withinY = cursorY - y * tileHeight;
+		double cursorY = cursor.y - (model.tileHeight - trapezoidHeight * x);
+		double withinY = cursorY - y * model.tileHeight;
 		if (withinX > halfWidth) {
 			x++;
 			if (withinY > trapezoidHeight + trapezoidHeight / rightTriangleOffset * (withinX - halfWidth))
@@ -97,76 +96,76 @@ public class MapInteraction {
 			else if (withinY > trapezoidHeight + trapezoidHeight / rightTriangleOffset * (withinX - halfWidth))
 				yHundredths += 50;
 		}
-		return WorldModel.EntityCoordinate.valueOf(x, xHundredths, y, yHundredths);
+		return Coordinate.NegativeSpace.valueOf(x, xHundredths, y, yHundredths);
 	}
 
-	private WorldModel.EntityCoordinate getEdge(Vector3 cursor, WorldModel.TileCoordinate tile, WorldModel.EntityCoordinate vertex) {
+	private Coordinate.NegativeSpace getEdge(Vector3 cursor, Coordinate.PositiveSpace tile, Coordinate.NegativeSpace vertex) {
 		if (cursor == null || tile == null || vertex == null) return null;
 
-		double sideTriangleWidth = tileWidth / 4d;
-		double rightTriangleOffset = tileWidth - sideTriangleWidth; // == tileWidth / 4 * 3
-		double trapezoidHeight = tileHeight / 2d;
-		double halfWidth = tileWidth / 2d;
+		double sideTriangleWidth = model.tileWidth / 4d;
+		double rightTriangleOffset = model.tileWidth - sideTriangleWidth; // == model.tileWidth / 4 * 3
+		double trapezoidHeight = model.tileHeight / 2d;
+		double halfWidth = model.tileWidth / 2d;
 
-		WorldModel.EntityCoordinate otherVertex = null;
+		Coordinate.NegativeSpace otherVertex = null;
 		double withinX = cursor.x - tile.x * rightTriangleOffset;
-		double cursorY = cursor.y - (tileHeight - trapezoidHeight * tile.x);
-		double withinY = cursorY - tile.y * tileHeight;
+		double cursorY = cursor.y - (model.tileHeight - trapezoidHeight * tile.x);
+		double withinY = cursorY - tile.y * model.tileHeight;
 		if (tile.x == vertex.x) {
 			if (vertex.y != tile.y) //left up
 				if (withinY > trapezoidHeight - trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else if (vertex.yHundredths != 0) //left middle
 				if (withinY > trapezoidHeight)
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else //left down
 				if (withinY > trapezoidHeight + trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x + 1, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 		} else {
 			if (vertex.y != tile.y + 1) //right down
 				if (withinY > trapezoidHeight - trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else if (vertex.yHundredths != 50) //right middle
 				if (withinY > trapezoidHeight)
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths + 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 			else //right up
 				if (withinY > trapezoidHeight + trapezoidHeight / (halfWidth - sideTriangleWidth) * (withinX - halfWidth))
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x - 1, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 				else
-					otherVertex = WorldModel.EntityCoordinate.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
+					otherVertex = Coordinate.NegativeSpace.valueOf(vertex.x, vertex.xHundredths, vertex.y, vertex.yHundredths - 50);
 		}
 
 		//get the midpoint
 		int xHundreds = (vertex.x * 100 + vertex.xHundredths + otherVertex.x * 100 + otherVertex.xHundredths) / 2;
 		int yHundreds = (vertex.y * 100 + vertex.yHundredths + otherVertex.y * 100 + otherVertex.yHundredths) / 2;
-		return WorldModel.EntityCoordinate.valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
+		return Coordinate.NegativeSpace.valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 	}
 
-	public WorldModel.TileCoordinate getSelectedTile(boolean onUp) {
+	public Coordinate.PositiveSpace getSelectedTile(boolean onUp) {
 		if (!onUp ^ down)
 			return null;
 
 		return tileTarget;
 	}
 
-	public WorldModel.EntityCoordinate getSelectedVertex(boolean onUp) {
+	public Coordinate.NegativeSpace getSelectedVertex(boolean onUp) {
 		if (!onUp ^ down)
 			return null;
 
 		return vertexTarget;
 	}
 
-	public WorldModel.EntityCoordinate getSelectedEdge(boolean onUp) {
+	public Coordinate.NegativeSpace getSelectedEdge(boolean onUp) {
 		if (!onUp ^ down)
 			return null;
 
@@ -205,11 +204,11 @@ public class MapInteraction {
 			//then select edge. otherwise, select tile.
 			if (vertexTarget != null) {
 				//get the distance from between point (settlement) and point (cursor)
-				int[] center = vertexTarget.getVertexCenter(tileWidth, tileHeight);
+				int[] center = vertexTarget.getVertexCenter(model.tileWidth, model.tileHeight);
 				double a = cursor.x - center[0];
 				double b = cursor.y - center[1];
 				double dis = Math.sqrt(a * a + b * b);
-				if (dis > settlementRadius) {
+				if (dis > model.settlementRadius) {
 					vertexTarget = null;
 				} else {
 					tileTarget = null;
@@ -218,7 +217,7 @@ public class MapInteraction {
 			}
 			if (edgeTarget != null) {
 				//get the perpendicular distance between line (road) and point (cursor), given line in point slope form
-				int[] info = edgeTarget.getEdgeXYR(tileWidth, tileHeight);
+				int[] info = edgeTarget.getEdgeXYR(model.tileWidth, model.tileHeight);
 				double slope = Math.tan(info[2] * Math.PI / 180);
 				//y - y_1 = m * (x - x_1) <=> m * x + -1 * y + (y_1 - m * x_1) = 0
 				double a = slope;

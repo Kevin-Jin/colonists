@@ -54,13 +54,16 @@ public class WorldScene implements Scene {
 
 	private Map<MapTile.ResourceType, Sprite> resourceTiles;
 	private Map<MapTile.PortType, Sprite> portTiles;
+	private final Entity.Village greenHighlightVillage, redHighlightVillage;
+	private final Entity.Metro greenHighlightMetro, redHighlightMetro;
+	private final Entity.Road greenHighlightRoad, redHighlightRoad;
+	private final Entity.Highwayman greenHighlightHighwayman, redHighlightHighwayman;
 
 	private final Button backButton, menuButton;
 
 	private final ShapeRenderer shapeRenderer;
 	private SpriteCache staticTiles;
 	private int staticTilesCacheId;
-	private int tileWidth, tileHeight;
 	private BitmapFontCache staticChits;
 
 	private float fogTransparency;
@@ -87,6 +90,15 @@ public class WorldScene implements Scene {
 		}, 1172, 0, 108, 144, "ui/worldScene/more", "ui/worldScene/selectedMore", 255, 255, 255, 255, -1, -1, -1, -1);
 
 		shapeRenderer = new ShapeRenderer();
+
+		greenHighlightVillage = new Entity.Village(model, true);
+		redHighlightVillage = new Entity.Village(model, false);
+		greenHighlightMetro = new Entity.Metro(model, true);
+		redHighlightMetro = new Entity.Metro(model, false);
+		greenHighlightRoad = new Entity.Road(model, true);
+		redHighlightRoad = new Entity.Road(model, false);
+		greenHighlightHighwayman = new Entity.Highwayman(model, true);
+		redHighlightHighwayman = new Entity.Highwayman(model, false);
 	}
 
 	@Override
@@ -125,13 +137,13 @@ public class WorldScene implements Scene {
 		portTiles.put(MapTile.PortType.NONE, model.parent.sprites.get("map/portNone"));
 		Sprite textureToUse = resourceTiles.get(MapTile.ResourceType.WASTELAND);
 		MapTile tile;
-		model.controller.tileHeight = tileHeight = (int) textureToUse.getHeight();
-		model.controller.tileWidth = tileWidth = (int) textureToUse.getWidth();
-		model.controller.settlementRadius = (int) (model.parent.sprites.get("map/metro").getHeight() / 2);
+		model.tileHeight = (int) textureToUse.getHeight();
+		model.tileWidth = (int) textureToUse.getWidth();
+		model.settlementRadius = (int) (model.parent.sprites.get("map/metro").getHeight() / 2);
 
 		staticTiles = new SpriteCache(model.mapBoundsColumns * model.mapBoundsRows, false);
 		staticTiles.beginCache();
-		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+		for (int x = 0, offsetX = 0, offsetY = model.tileHeight; x < model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2) {
 			for (int y = 0; y < model.mapBoundsRows; y++) {
 				tile = model.resources[y][x];
 				if (tile == null) {
@@ -143,7 +155,7 @@ public class WorldScene implements Scene {
 					textureToUse.setRotation(tile.getRotation());
 				}
 
-				textureToUse.setBounds(offsetX, offsetY + tileHeight * y, tileWidth, tileHeight);
+				textureToUse.setBounds(offsetX, offsetY + model.tileHeight * y, model.tileWidth, model.tileHeight);
 				staticTiles.add(textureToUse);
 			}
 		}
@@ -153,7 +165,7 @@ public class WorldScene implements Scene {
 		staticChits = new BitmapFontCache(fnt);
 		String message;
 		TextBounds bnds;
-		for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+		for (int x = 0, offsetX = 0, offsetY = model.tileHeight; x < model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2) {
 			for (int y = 0; y < model.mapBoundsRows; y++) {
 				tile = model.resources[y][x];
 				if (tile == null || tile.getChit() == 0)
@@ -162,97 +174,55 @@ public class WorldScene implements Scene {
 				message = Integer.toString(tile.getChit());
 				bnds = fnt.getBounds(message);
 				staticChits.setColor(1, 0, 0, 1);
-				staticChits.addText(message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * y + bnds.height + 20);
+				staticChits.addText(message, offsetX + (model.tileWidth - bnds.width) / 2, offsetY + model.tileHeight * y + bnds.height + 20);
 			}
 		}
 
 		Gdx.input.setCursorCatched(subScene == null);
 	}
 
-	private void setEdgeSpritePosition(Sprite road, WorldModel.EntityCoordinate coord) {
-		int[] info = coord.getEdgeXYR(tileWidth, tileHeight);
-		switch (info[2]) {
-			case 0:
-				info[1] -= road.getHeight() / 2;
-				break;
-			case 60:
-				info[1] -= road.getHeight();
-				break;
-			case 120:
-				info[0] += road.getHeight() / 2;
-				break;
-		}
-		road.setPosition(info[0], info[1]);
-		road.setRotation(info[2]);
-		road.setOrigin(0, 0);
-	}
-
-	private void setVertexSpritePosition(Sprite sprite, WorldModel.EntityCoordinate coord) {
-		int[] center = coord.getVertexCenter(tileWidth, tileHeight);
-		sprite.setPosition(center[0] - sprite.getWidth() / 2, center[1] - sprite.getHeight() / 2);
-	}
-
 	private void drawEntities(SpriteBatch batch) {
-		Sprite road = model.parent.sprites.get("map/road");
-		Sprite village = model.parent.sprites.get("map/village");
-		Sprite metro = model.parent.sprites.get("map/metro");
-		Sprite highwayman = model.parent.sprites.get("map/highwayman");
-		for (Map.Entry<WorldModel.EntityCoordinate, Entity> entities : model.getGrid().entrySet()) {
-			WorldModel.EntityCoordinate coord = entities.getKey();
-			if (coord.isEdge()) {
-				//draw road
-				setEdgeSpritePosition(road, coord);
-				road.setColor(1, 0.5f, 1, 1);
-				road.draw(batch);
-			} else {
-				//draw house
-				Sprite sprite = Math.random() < 0.5 ? village : metro;
-				setVertexSpritePosition(sprite, coord);
-				sprite.setColor(1, 0.5f, 1, 1);
-				sprite.draw(batch);
-			}
-			highwayman.setPosition(tileWidth / 4 * 3 * model.highwayman.x + highwayman.getWidth() / 2, tileHeight * model.highwayman.y - tileHeight / 2 * model.highwayman.x + tileHeight + (tileHeight - highwayman.getHeight()) / 2);
-			highwayman.setColor(1, 1, 1, 1);
-			highwayman.draw(batch);
-		}
+		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entities : model.getGrid().entrySet())
+			entities.getValue().draw(batch);
+		//this.highwayman.position = model.highwayman;
+		model.highwayman.draw(batch);
 
 		if (model.roadCandidate != null) {
-			setEdgeSpritePosition(road, model.roadCandidate);
+			Entity.NegativeSpace highlightRoad;
 			if (!model.getAvailableMoves().contains(model.roadCandidate))
-				road.setColor(1, 0, 0, 0.8f);
+				highlightRoad = redHighlightRoad;
 			else
-				road.setColor(0, 1, 0, 0.8f);
-			road.draw(batch);
+				highlightRoad = greenHighlightRoad;
+			highlightRoad.position = model.roadCandidate;
+			highlightRoad.draw(batch);
 		}
 		if (model.metroCandidate != null) {
-			setVertexSpritePosition(metro, model.metroCandidate);
+			Entity.NegativeSpace highlightMetro;
 			if (!model.getAvailableMoves().contains(model.metroCandidate))
-				metro.setColor(1, 0, 0, 0.6f);
+				highlightMetro = redHighlightMetro;
 			else
-				metro.setColor(0, 1, 0, 0.6f);
-			metro.draw(batch);
+				highlightMetro = greenHighlightMetro;
+			highlightMetro.position = model.metroCandidate;
+			highlightMetro.draw(batch);
 		}
 		if (model.villageCandidate != null) {
-			setVertexSpritePosition(village, model.villageCandidate);
+			Entity.NegativeSpace highlightVillage;
 			if (!model.getAvailableMoves().contains(model.villageCandidate))
-				village.setColor(1, 0, 0, 0.6f);
+				highlightVillage = redHighlightVillage;
 			else
-				village.setColor(0, 1, 0, 0.6f);
-			village.draw(batch);
+				highlightVillage = greenHighlightVillage;
+			highlightVillage.position = model.villageCandidate;
+			highlightVillage.draw(batch);
 		}
 		if (model.highwaymanCandidate != null) {
-			highwayman.setPosition(tileWidth / 4 * 3 * model.highwaymanCandidate.x + highwayman.getWidth() / 2, tileHeight * model.highwaymanCandidate.y - tileHeight / 2 * model.highwaymanCandidate.x + tileHeight + (tileHeight - highwayman.getHeight()) / 2);
-			if (model.highwayman.equals(model.highwaymanCandidate))
-				highwayman.setColor(1, 0, 0, 0.6f);
+			Entity.PositiveSpace highlightHighwayman;
+			if (model.highwayman.position.equals(model.highwaymanCandidate))
+				highlightHighwayman = redHighlightHighwayman;
 			else
-				highwayman.setColor(0, 1, 0, 0.6f);
-			highwayman.draw(batch);
+				highlightHighwayman = greenHighlightHighwayman;
+			highlightHighwayman.position = model.highwaymanCandidate;
+			highlightHighwayman.draw(batch);
 		}
-
-		//TODO: black out map where we're not allowed to place a road, house, highwayman.
-		//use a stencil for this. draw valid roads, houses, and highwayman that can be
-		//placed in the stencil buffer and draw rectangle with color (0, 0, 0, 0.5f) on
-		//area not drawn in the stencil
 	}
 
 	@Override
@@ -325,7 +295,7 @@ public class WorldScene implements Scene {
 			model.highwaymanCandidate = model.controller.getSelectedTile(false);
 		} else {
 			if (model.controller.getSelectedTile(true) != null)
-				model.highwayman = model.controller.getSelectedTile(true);
+				model.highwayman.position = model.controller.getSelectedTile(true);
 			model.highwaymanCandidate = null;
 		}
 		if (model.controller.getSelectedVertex(false) != null) {
@@ -334,7 +304,7 @@ public class WorldScene implements Scene {
 			if (model.controller.getSelectedVertex(true) != null)
 				if (model.removeFromGrid(model.controller.getSelectedVertex(true)) == null)
 					if (model.getAvailableMoves().contains(model.controller.getSelectedVertex(true)))
-						model.addToGrid(model.controller.getSelectedVertex(true), model.avatar);
+						model.addToGrid(model.controller.getSelectedVertex(true), Math.random() < 0.5 ? new Entity.Metro(model, 0) : new Entity.Village(model, 0));
 			model.metroCandidate = null;
 		}
 		if (model.controller.getSelectedEdge(false) != null) {
@@ -343,14 +313,11 @@ public class WorldScene implements Scene {
 			if (model.controller.getSelectedEdge(true) != null)
 				if (model.removeFromGrid(model.controller.getSelectedEdge(true)) == null)
 					if (model.getAvailableMoves().contains(model.controller.getSelectedEdge(true)))
-						model.addToGrid(model.controller.getSelectedEdge(true), model.avatar);
+						model.addToGrid(model.controller.getSelectedEdge(true), new Entity.Road(model, 0));
 			model.roadCandidate = null;
 		}
-		//for (Entity ent : model.animatedEntities)
-			//ent.update(tDelta);
-		model.updateActionButtonBehavior();
-		if (model.actionButton.text != null)
-			model.actionButton.update(tDelta);
+		for (Entity ent : model.getGrid().values())
+			ent.update(tDelta);
 
 		if (subScene == null) {
 			if (model.parent.controller.wasBackPressed && !Gdx.input.isKeyPressed(Keys.ESCAPE) && !Gdx.input.isKeyPressed(Keys.BACK)) {
@@ -393,29 +360,29 @@ public class WorldScene implements Scene {
 			shapeRenderer.setColor(0, 0, 0, 1);
 			//outline vertices
 			if ((DEBUG_MODE & DEBUG_VERTICES) != 0)
-				for (int x = 0, offsetX = tileWidth / 2, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2)
+				for (int x = 0, offsetX = model.tileWidth / 2, offsetY = model.tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2)
 					for (int y = 0; y <= model.mapBoundsRows + 1; y++)
 						shapeRenderer.triangle(
-							offsetX,						offsetY + tileHeight * y,
-							offsetX,						offsetY + tileHeight * y + tileHeight,
-							offsetX - tileWidth / 4 * 3,	offsetY + tileHeight * y + tileHeight / 2
+							offsetX,						offsetY + model.tileHeight * y,
+							offsetX,						offsetY + model.tileHeight * y + model.tileHeight,
+							offsetX - model.tileWidth / 4 * 3,	offsetY + model.tileHeight * y + model.tileHeight / 2
 						);
-						//shapeRenderer.triangle(offsetX, offsetY + tileHeight * y + tileHeight / 2, offsetX, offsetY + tileHeight * y - tileHeight / 2, offsetX + tileWidth / 4 * 3, offsetY + tileHeight * y);
+						//shapeRenderer.triangle(offsetX, offsetY + model.tileHeight * y + model.tileHeight / 2, offsetX, offsetY + model.tileHeight * y - model.tileHeight / 2, offsetX + model.tileWidth / 4 * 3, offsetY + model.tileHeight * y);
 			//outline edges
 			if ((DEBUG_MODE & DEBUG_EDGES) != 0) {
-				for (int x = 0, offsetX = -tileWidth / 4 * 3, offsetY = tileHeight + tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+				for (int x = 0, offsetX = -model.tileWidth / 4 * 3, offsetY = model.tileHeight + model.tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2) {
 					for (int y = 0; y <= model.mapBoundsRows; y++) {
 						shapeRenderer.polygon(new float[] {
-							offsetX + tileWidth,							offsetY + tileHeight * y - (tileHeight + 1) / 2,
-							offsetX + tileWidth / 2,						offsetY + tileHeight * y - (tileHeight + 1) / 2,
-							offsetX + tileWidth / 4 * 3,					offsetY + tileHeight * y,
-							offsetX + tileWidth / 4 * 3 + tileWidth / 2,	offsetY + tileHeight * y
+							offsetX + model.tileWidth,							offsetY + model.tileHeight * y - (model.tileHeight + 1) / 2,
+							offsetX + model.tileWidth / 2,						offsetY + model.tileHeight * y - (model.tileHeight + 1) / 2,
+							offsetX + model.tileWidth / 4 * 3,					offsetY + model.tileHeight * y,
+							offsetX + model.tileWidth / 4 * 3 + model.tileWidth / 2,	offsetY + model.tileHeight * y
 						});
 						shapeRenderer.polygon(new float[] {
-							offsetX + tileWidth / 4 * 3,					offsetY + tileHeight * y,
-							offsetX + tileWidth / 2,						offsetY + tileHeight * y + tileHeight / 2,
-							offsetX + tileWidth,							offsetY + tileHeight * y + tileHeight / 2,
-							offsetX + tileWidth + tileWidth / 4,			offsetY + tileHeight * y
+							offsetX + model.tileWidth / 4 * 3,					offsetY + model.tileHeight * y,
+							offsetX + model.tileWidth / 2,						offsetY + model.tileHeight * y + model.tileHeight / 2,
+							offsetX + model.tileWidth,							offsetY + model.tileHeight * y + model.tileHeight / 2,
+							offsetX + model.tileWidth + model.tileWidth / 4,			offsetY + model.tileHeight * y
 						});
 					}
 				}
@@ -431,24 +398,24 @@ public class WorldScene implements Scene {
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			//print hexagonal tile coordinates
 			if ((DEBUG_MODE & DEBUG_TILES) != 0) {
-				for (int x = 0, offsetX = 0, offsetY = tileHeight; x < model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+				for (int x = 0, offsetX = 0, offsetY = model.tileHeight; x < model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2) {
 					for (int y = 0; y < model.mapBoundsRows; y++) {
 						message = "(" + x + ", " + y + ", " + (-x - y) + ")";
 						bnds = fnt.getBounds(message);
-						fnt.draw(batch, message, offsetX + (tileWidth - bnds.width) / 2, offsetY + tileHeight * (y + 1) - tileHeight / 2 + bnds.height / 2);
+						fnt.draw(batch, message, offsetX + (model.tileWidth - bnds.width) / 2, offsetY + model.tileHeight * (y + 1) - model.tileHeight / 2 + bnds.height / 2);
 					}
 				}
 			}
 			//print vertex coordinates
 			if ((DEBUG_MODE & DEBUG_VERTICES) != 0) {
-				for (int x = 0, offsetX = tileWidth / 2 - tileWidth / 4 * 3, offsetY = tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += tileWidth / 4 * 3, offsetY -= tileHeight / 2) {
+				for (int x = 0, offsetX = model.tileWidth / 2 - model.tileWidth / 4 * 3, offsetY = model.tileHeight / 2; x <= model.mapBoundsColumns; x++, offsetX += model.tileWidth / 4 * 3, offsetY -= model.tileHeight / 2) {
 					for (int y = 0; y <= model.mapBoundsRows + 1; y++) {
 						message = "(" + x + "," + y + ".5)";
 						bnds = fnt.getBounds(message);
-						fnt.draw(batch, message, offsetX, offsetY + tileHeight * (y + 1) + bnds.height / 2);
+						fnt.draw(batch, message, offsetX, offsetY + model.tileHeight * (y + 1) + bnds.height / 2);
 						message = "(" + (x - 1) + "," + y + ".0)";
 						bnds = fnt.getBounds(message);
-						fnt.draw(batch, message, offsetX - tileWidth / 4 * 3, offsetY + tileHeight * (y + 1) + bnds.height / 2);
+						fnt.draw(batch, message, offsetX - model.tileWidth / 4 * 3, offsetY + model.tileHeight * (y + 1) + bnds.height / 2);
 					}
 				}
 			}
@@ -490,17 +457,13 @@ public class WorldScene implements Scene {
 			//Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			batch.setShader(model.parent.assets.get("shaders/vertex/spritebatch_default.vert+shaders/fragment/spritebatch_alphatest.frag", ShaderProgram.class));
-			Sprite road = model.parent.sprites.get("map/road");
-			Sprite village = model.parent.sprites.get("map/village");
-			for (WorldModel.EntityCoordinate coord : model.getAvailableMoves()) {
+			for (Coordinate.NegativeSpace coord : model.getAvailableMoves()) {
 				if (coord.isEdge()) {
-					setEdgeSpritePosition(road, coord);
-					road.setColor(1, 0.5f, 1, 1);
-					road.draw(batch);
+					greenHighlightRoad.position = coord;
+					greenHighlightRoad.draw(batch);
 				} else {
-					setVertexSpritePosition(village, coord);
-					village.setColor(1, 0.5f, 1, 1);
-					village.draw(batch);
+					greenHighlightVillage.position = coord;
+					greenHighlightVillage.draw(batch);
 				}
 			}
 			batch.setShader(null);
