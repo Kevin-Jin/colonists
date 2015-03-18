@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector3;
 //TODO: detect dragging, implement pinch/scrollwheel zooming
 public class MapInteraction {
 	private static class GraphicalCommitMove extends PlayerAction.CommitMove<WorldModel, GraphicalEntity.NegativeSpace> {
-		public GraphicalCommitMove(WorldModel m, Coordinate.CoordinateType type, Coordinate coord) {
+		public GraphicalCommitMove(WorldModel m, GraphicalEntity.Type type, Coordinate coord) {
 			super(m, type, coord);
 		}
 
@@ -181,7 +181,8 @@ public class MapInteraction {
 
 	private void sendMove(PlayerAction move) {
 		for (int i = 0; i < WorldModel.NUM_PLAYERS; i++)
-			model.getPlayer(i).sendMove(move);
+			if (!model.getPlayer(i).isPlayable() || i == model.getCurrentPlayerTurn())
+				model.getPlayer(i).sendMove(move);
 	}
 
 	public void update(float tDelta) {
@@ -204,22 +205,28 @@ public class MapInteraction {
 				ContinuousRendererUtil.instance.doShortContinuousRender();
 
 				if (tileTarget != null) {
-					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.TILE));
 					//open up a box to choose actions in { "Place Highwayman" (knight card or roll 7) },
 					//gray out options whose conditions are not met
-					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.TILE, tileTarget));
+					sendMove(new GraphicalCommitMove(model, GraphicalEntity.Type.HIGHWAYMAN, tileTarget));
+					//TODO: add button to end turn, rather than have turn end after a single move attempt
+					sendMove(new PlayerAction.EndTurn(model));
 				}
 				if (vertexTarget != null) {
-					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.VERTEX));
 					//open up a box to choose actions in { "Place Village" (resource cards or initialize map), "Place Metro" (resource cards and existing village) }
 					//gray out options whose conditions are not met
-					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
+					sendMove(new GraphicalCommitMove(model, Math.random() < 0.5 ? GraphicalEntity.Type.METRO : GraphicalEntity.Type.VILLAGE, vertexTarget));
+					//TODO: add button to end turn, rather than have turn end after a single move attempt
+					sendMove(new PlayerAction.EndTurn(model));
 				}
 				if (edgeTarget != null) {
-					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
+					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.EDGE));
 					//open up a box to choose actions in { "Place Road" (resource cards or initialize map) }
 					//gray out options whose conditions are not met
-					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
+					sendMove(new GraphicalCommitMove(model, GraphicalEntity.Type.ROAD, edgeTarget));
+					//TODO: add button to end turn, rather than have turn end after a single move attempt
+					sendMove(new PlayerAction.EndTurn(model));
 				}
 			}
 		} else {
@@ -266,17 +273,17 @@ public class MapInteraction {
 			}
 
 			if (oldTileTarget != null && !oldTileTarget.equals(tileTarget))
-				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.TILE));
 			if (oldVertexTarget != null && !oldVertexTarget.equals(vertexTarget))
-				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.VERTEX));
 			if (oldEdgeTarget != null && !oldEdgeTarget.equals(edgeTarget))
-				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
+				sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.Type.EDGE));
 			if (tileTarget != null && !tileTarget.equals(oldTileTarget))
-				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.TILE, tileTarget));
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.Type.TILE, tileTarget));
 			if (vertexTarget != null && !vertexTarget.equals(oldVertexTarget))
-				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.Type.VERTEX, vertexTarget));
 			if (edgeTarget != null && !edgeTarget.equals(oldEdgeTarget))
-				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
+				sendMove(new PlayerAction.BeginConsiderMove(model, Coordinate.Type.EDGE, edgeTarget));
 		}
 	}
 }

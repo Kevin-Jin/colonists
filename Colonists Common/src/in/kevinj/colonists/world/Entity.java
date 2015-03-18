@@ -3,7 +3,12 @@ package in.kevinj.colonists.world;
 import in.kevinj.colonists.world.Coordinate;
 
 public interface Entity {
+	public enum Type {
+		HIGHWAYMAN, ROAD, VILLAGE, METRO
+	}
+
 	public void update(float tDelta);
+	public Type getType();
 
 	public interface PositiveSpace extends Entity {
 		public Coordinate.PositiveSpace getPosition();

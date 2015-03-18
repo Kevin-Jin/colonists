@@ -10,12 +10,18 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Coordinate {
-	public enum CoordinateType {
+	public enum Type {
 		TILE, VERTEX, EDGE
 	}
 
-	public static class PositiveSpace extends Coordinate implements Comparable<Coordinate.PositiveSpace> {
-		private static Map<Short, Coordinate.PositiveSpace> cache = Collections.synchronizedMap(new HashMap<Short, Coordinate.PositiveSpace>());
+	public abstract Type getType();
+	public abstract List<PositiveSpace> adjacentTiles();
+	public abstract List<NegativeSpace> adjacentEdges();
+	public abstract List<NegativeSpace> adjacentVertices();
+	public abstract boolean inBounds();
+
+	public static class PositiveSpace extends Coordinate implements Comparable<PositiveSpace> {
+		private static Map<Short, PositiveSpace> cache = Collections.synchronizedMap(new HashMap<Short, PositiveSpace>());
 	
 		public byte x, y;
 	
@@ -29,14 +35,14 @@ public abstract class Coordinate {
 		}
 	
 		@Override
-		public int compareTo(Coordinate.PositiveSpace other) {
+		public int compareTo(PositiveSpace other) {
 			return this.hashCode() - other.hashCode();
 		}
 	
 		@Override
 		public boolean equals(Object b) {
-			if (b instanceof Coordinate.PositiveSpace) {
-				Coordinate.PositiveSpace other = (Coordinate.PositiveSpace) b;
+			if (b instanceof PositiveSpace) {
+				PositiveSpace other = (PositiveSpace) b;
 				return other == this || other.x == this.x && other.y == this.y;
 			}
 			return false;
@@ -53,14 +59,56 @@ public abstract class Coordinate {
 	
 		@Override
 		public String toString() {
-			return "Coordinate.PositiveSpace[" + x + "," + y + "," + getZ() + "]";
+			return "PositiveSpace[" + x + "," + y + "," + getZ() + "]";
+		}
+
+		@Override
+		public Type getType() {
+			return Type.TILE;
+		}
+
+		@Override
+		public List<PositiveSpace> adjacentTiles() {
+			List<PositiveSpace> list = new ArrayList<PositiveSpace>(6);
+			list.add(valueOf(x + 0, y + 1));
+			list.add(valueOf(x + 1, y + 1));
+			list.add(valueOf(x + 1, y + 0));
+			list.add(valueOf(x + 0, y - 1));
+			list.add(valueOf(x - 1, y - 1));
+			list.add(valueOf(x - 1, y + 0));
+			return list;
+		}
+
+		@Override
+		public List<NegativeSpace> adjacentEdges() {
+			List<NegativeSpace> list = null;
+			return list;
+		}
+
+		@Override
+		public List<NegativeSpace> adjacentVertices() {
+			List<NegativeSpace> list = new ArrayList<NegativeSpace>(6);
+			list.add(NegativeSpace.valueOf(x * 100 + 0,		y * 100 + 100));
+			list.add(NegativeSpace.valueOf(x * 100 + 100,	y * 100 + 150));
+			list.add(NegativeSpace.valueOf(x * 100 + 100,	y * 100 + 100));
+			list.add(NegativeSpace.valueOf(x * 100 + 100,	y * 100 + 50));
+			list.add(NegativeSpace.valueOf(x * 100 + 0,		y * 100 + 0));
+			list.add(NegativeSpace.valueOf(x * 100 + 0,		y * 100 + 50));
+			return list;
+		}
+
+		@Override
+		public boolean inBounds() {
+			return x >= 1 && x <= 5 && y >= 1 && y <= 5
+					&& (x > 3 || y <= x + 2)
+					&& (x <= 3 || y >= x - 2);
 		}
 	
-		public static Coordinate.PositiveSpace valueOf(int x, int y) {
+		public static PositiveSpace valueOf(int x, int y) {
 			Short key = Short.valueOf((short) hashCode(x, y));
-			Coordinate.PositiveSpace value = cache.get(key);
+			PositiveSpace value = cache.get(key);
 			if (value == null) {
-				value = new Coordinate.PositiveSpace(x, y);
+				value = new PositiveSpace(x, y);
 				cache.put(key, value);
 			}
 			return value;
@@ -71,14 +119,14 @@ public abstract class Coordinate {
 	 * Takes advantage of the fact that regular triangles are the dual
 	 * polyhedron of regular hexagons. We use two triangles stacked on top of
 	 * each other for each x, y in the hexagonal grid to make it easier to
-	 * find adjacent resource Coordinate.Tiles. Vertices are referenced by the coordinates
+	 * find adjacent resource Tiles. Vertices are referenced by the coordinates
 	 * of the triangle. Edges are referenced by the midpoint of the two
 	 * vertices they connect.
 	 */
-	public static class NegativeSpace extends Coordinate implements Comparable<Coordinate.NegativeSpace> {
+	public static class NegativeSpace extends Coordinate implements Comparable<NegativeSpace> {
 		private static final DecimalFormat FMT = new DecimalFormat("0.00");
 	
-		private static Map<Integer, Coordinate.NegativeSpace> cache = Collections.synchronizedMap(new HashMap<Integer, Coordinate.NegativeSpace>());
+		private static Map<Integer, NegativeSpace> cache = Collections.synchronizedMap(new HashMap<Integer, NegativeSpace>());
 
 		public final byte x, y;
 		public final byte xHundredths, yHundredths;
@@ -111,22 +159,34 @@ public abstract class Coordinate {
 			return y * 100 + yHundredths;
 		}
 
-		public boolean isEdge() {
-			return xHundredths == 50 || yHundredths == 25 || yHundredths == 75;
+		@Override
+		public Type getType() {
+			if (xHundredths == 0 && yHundredths == 25 || xHundredths == 0 && yHundredths == 75 || xHundredths == 50 && yHundredths == 25)
+				return Type.EDGE;
+			if (xHundredths == 0 && yHundredths == 0 || xHundredths == 0 && yHundredths == 50)
+				return Type.VERTEX;
+			return null;
 		}
 
-		public List<Coordinate.PositiveSpace> adjacentTiles() {
-			List<Coordinate.PositiveSpace> list = new ArrayList<Coordinate.PositiveSpace>(3);
-			list.add(Coordinate.PositiveSpace.valueOf(x, (y * 100 + xHundredths - 50) / 100));
-			list.add(Coordinate.PositiveSpace.valueOf(x - 1, y - 1));
-			list.add(Coordinate.PositiveSpace.valueOf((x * 100 - xHundredths) / 100, y));
+		@Override
+		public List<PositiveSpace> adjacentTiles() {
+			List<PositiveSpace> list = null;
+			Type type = getType();
+			if (type == Type.VERTEX) {
+				list = new ArrayList<PositiveSpace>(3);
+				list.add(PositiveSpace.valueOf(x, (y * 100 + xHundredths - 50) / 100));
+				list.add(PositiveSpace.valueOf(x - 1, y - 1));
+				list.add(PositiveSpace.valueOf((x * 100 - xHundredths) / 100, y));
+			}
 			return list;
 		}
 
-		public List<Coordinate.NegativeSpace> adjacentEdges() {
-			List<Coordinate.NegativeSpace> list;
-			if (isEdge()) {
-				list = new ArrayList<Coordinate.NegativeSpace>(4);
+		@Override
+		public List<NegativeSpace> adjacentEdges() {
+			List<NegativeSpace> list = null;
+			Type type = getType();
+			if (type == Type.EDGE) {
+				list = new ArrayList<NegativeSpace>(4);
 				//up [yHundredths == 25]/down [yHundredths == 75] left
 				list.add(valueOf(x, xHundredths - 50, y, 25));
 				//up right [yHundredths == 25]/left [yHundredths == 75]
@@ -135,8 +195,8 @@ public abstract class Coordinate {
 				list.add(valueOf(x, xHundredths + 50, y, 2 * yHundredths - 25));
 				//down left [yHundredths == 25]/right [yHundredths == 75]
 				list.add(valueOf(x, 0, y, yHundredths - 50));
-			} else {
-				list = new ArrayList<Coordinate.NegativeSpace>(3);
+			} else if (type == Type.VERTEX) {
+				list = new ArrayList<NegativeSpace>(3);
 				int right = -(int) Math.signum(yHundredths - 25);
 				//down left [yHundredths == 0]/right [yHundredths == 50]
 				list.add(valueOf(x, 0, y, yHundredths - 25));
@@ -148,14 +208,16 @@ public abstract class Coordinate {
 			return list;
 		}
 
-		public List<Coordinate.NegativeSpace> adjacentVertices() {
-			List<Coordinate.NegativeSpace> list;
-			if (isEdge()) {
-				list = new ArrayList<Coordinate.NegativeSpace>(2);
+		@Override
+		public List<NegativeSpace> adjacentVertices() {
+			List<NegativeSpace> list = null;
+			Type type = getType();
+			if (type == Type.EDGE) {
+				list = new ArrayList<NegativeSpace>(2);
 				list.add(valueOf(x, (xHundredths - 50) / 100 * 100, y, yHundredths - 25));
 				list.add(valueOf(x, (xHundredths + 50) / 100 * 100, y, yHundredths + 25));
-			} else {
-				list = new ArrayList<Coordinate.NegativeSpace>(3);
+			} else if (type == Type.VERTEX) {
+				list = new ArrayList<NegativeSpace>(3);
 				int right = -(int) Math.signum(yHundredths - 25);
 				//right [yHundredths == 0]/left [yHundredths == 50]
 				list.add(valueOf(x + right, xHundredths, y, yHundredths + 50 * right));
@@ -167,19 +229,23 @@ public abstract class Coordinate {
 			return list;
 		}
 
+		@Override
 		public boolean inBounds() {
-			if (isEdge())
+			Type type = getType();
+			if (type == Type.EDGE)
 				return x >= 1 && xHundreds() <= 600 && yHundreds() >= 125 && yHundreds() <= 625
 						&& (x > 3 || yHundreds() <= xHundreds() + 275)
 						&& (x <= 3 || yHundreds() >= xHundreds() - 225);
-			else
+			else if (type == Type.VERTEX)
 				return x >= 1 && x <= 6 && y >= 1 && y <= 6
 						&& (x > 3 || yHundreds() <= xHundreds() + 300)
 						&& (x <= 3 || yHundreds() >= xHundreds() - 250);
+			else
+				return false;
 		}
 
-		public static Set<Coordinate.NegativeSpace> allVertices() {
-			Set<Coordinate.NegativeSpace> set = new HashSet<Coordinate.NegativeSpace>();
+		public static Set<NegativeSpace> allVertices() {
+			Set<NegativeSpace> set = new HashSet<NegativeSpace>();
 			for (int x = 100; x <= 300; x += 100)
 				for (int y = x + 300; y >= 100; y -= 50)
 					set.add(valueOf(x, y));
@@ -190,7 +256,7 @@ public abstract class Coordinate {
 		}
 
 		public int[] getVertexCenter(int tileWidth, int tileHeight) {
-			if (isEdge()) return null;
+			if (getType() != Type.VERTEX) return null;
 
 			if (yHundredths == 50) {
 				return new int[] {
@@ -208,7 +274,7 @@ public abstract class Coordinate {
 		}
 
 		public int[] getEdgeXYR(int tileWidth, int tileHeight) {
-			if (!isEdge()) return null;
+			if (getType() != Type.EDGE) return null;
 
 			if (xHundredths == 50) {
 				//horizontal
@@ -237,14 +303,14 @@ public abstract class Coordinate {
 		}
 
 		@Override
-		public int compareTo(Coordinate.NegativeSpace other) {
+		public int compareTo(NegativeSpace other) {
 			return this.hashCode() - other.hashCode();
 		}
 
 		@Override
 		public boolean equals(Object b) {
-			if (b instanceof Coordinate.NegativeSpace) {
-				Coordinate.NegativeSpace other = (Coordinate.NegativeSpace) b;
+			if (b instanceof NegativeSpace) {
+				NegativeSpace other = (NegativeSpace) b;
 				return other == this || other.x == this.x && other.xHundredths == this.xHundredths && other.y == this.y && other.yHundredths == this.yHundredths;
 			}
 			return false;
@@ -261,23 +327,23 @@ public abstract class Coordinate {
 
 		@Override
 		public String toString() {
-			return "Coordinate.NegativeSpace[" + FMT.format(x + xHundredths / 100f) +"," + FMT.format(y + yHundredths / 100f) + "]";
+			return "NegativeSpace[" + FMT.format(x + xHundredths / 100f) +"," + FMT.format(y + yHundredths / 100f) + "]";
 		}
 
-		public static Coordinate.NegativeSpace connection(Coordinate.NegativeSpace vertex1, Coordinate.NegativeSpace vertex2) {
+		public static NegativeSpace connection(NegativeSpace vertex1, NegativeSpace vertex2) {
 			//the edge linking the two vertices is the midpoint
-			if (vertex1 == null || vertex2 == null || vertex1.isEdge() || vertex2.isEdge() || !vertex1.adjacentVertices().contains(vertex2))
+			if (vertex1 == null || vertex2 == null || vertex1.getType() != Type.VERTEX || vertex2.getType() != Type.VERTEX || !vertex1.adjacentVertices().contains(vertex2))
 				return null;
 			int xHundreds = (vertex1.xHundreds() + vertex2.xHundreds()) / 2;
 			int yHundreds = (vertex1.yHundreds() + vertex2.yHundreds()) / 2;
-			Coordinate.NegativeSpace edge = valueOf(xHundreds, yHundreds);
-			assert edge.isEdge();
+			NegativeSpace edge = valueOf(xHundreds, yHundreds);
+			assert edge.getType() == Type.EDGE;
 			return edge;
 		}
 
-		public static Coordinate.NegativeSpace intersection(Coordinate.NegativeSpace edge1, Coordinate.NegativeSpace edge2) {
+		public static NegativeSpace intersection(NegativeSpace edge1, NegativeSpace edge2) {
 			//find the common vertex between the two edges
-			if (edge1 == null || edge2 == null || !edge1.isEdge() || !edge2.isEdge() || !edge1.adjacentEdges().contains(edge2))
+			if (edge1 == null || edge2 == null || edge1.getType() != Type.EDGE || edge2.getType() != Type.EDGE || !edge1.adjacentEdges().contains(edge2))
 				return null;
 			int xHundreds = (edge1.xHundredths == 0 ? edge1.xHundreds() : edge2.xHundreds());
 			int yHundreds = (edge1.yHundreds() + edge2.yHundreds()) / 2;
@@ -295,24 +361,24 @@ public abstract class Coordinate {
 						yHundreds -= 25;
 				}
 			}
-			Coordinate.NegativeSpace vertex = valueOf(xHundreds, yHundreds);
-			assert !vertex.isEdge();
+			NegativeSpace vertex = valueOf(xHundreds, yHundreds);
+			assert vertex.getType() == Type.VERTEX;
 			return vertex;
 		}
 
-		public static Coordinate.NegativeSpace valueOf(int x, int xHundredths, int y, int yHundredths) {
+		public static NegativeSpace valueOf(int x, int xHundredths, int y, int yHundredths) {
 			byte[] xNorm = normalize(x, xHundredths);
 			byte[] yNorm = normalize(y, yHundredths);
 			Integer key = Integer.valueOf(hashCode(xNorm[0], xNorm[1], yNorm[0], yNorm[1]));
-			Coordinate.NegativeSpace value = cache.get(key);
+			NegativeSpace value = cache.get(key);
 			if (value == null) {
-				value = new Coordinate.NegativeSpace(xNorm, yNorm);
+				value = new NegativeSpace(xNorm, yNorm);
 				cache.put(key, value);
 			}
 			return value;
 		}
 
-		public static Coordinate.NegativeSpace valueOf(int xHundreds, int yHundreds) {
+		public static NegativeSpace valueOf(int xHundreds, int yHundreds) {
 			return valueOf(xHundreds / 100, xHundreds % 100, yHundreds / 100, yHundreds % 100);
 		}
 	}

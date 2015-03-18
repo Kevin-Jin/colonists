@@ -441,7 +441,7 @@ public class WorldScene implements Scene {
 			Gdx.gl20.glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			batch.setShader(model.parent.assets.get("shaders/vertex/spritebatch_default.vert+shaders/fragment/spritebatch_alphatest.frag", ShaderProgram.class));
 			for (Coordinate.NegativeSpace coord : availableMoves) {
-				if (coord.isEdge()) {
+				if (coord.getType() == Coordinate.Type.EDGE) {
 					greenHighlightRoad.position = coord;
 					greenHighlightRoad.draw(batch);
 				} else {

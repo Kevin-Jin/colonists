@@ -126,11 +126,12 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		players = new Player[NUM_PLAYERS];
 		initializeGridStages = new int[NUM_PLAYERS];
 		self = 0;
-		for (int i = 0; i < NUM_PLAYERS; initializeGridStages[i]++, i++)
-			if (i == self)
-				players[i] = new LocalPlayer(null, new HashSet<Coordinate.NegativeSpace>(availableVertices));
-			else
-				players[i] = new PendingPlayer(null, new HashSet<Coordinate.NegativeSpace>(availableVertices));
+		for (int i = 0; i < NUM_PLAYERS; i++)
+			//if (i == self)
+				players[i] = new LocalPlayer(null, new HashSet<Coordinate.NegativeSpace>());
+			//else
+				//players[i] = new PendingPlayer(null, new HashSet<Coordinate.NegativeSpace>());
+		ensureInitialized(0);
 		//house tests
 //		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new GraphicalEntity.Metro(this, currentPlayerTurn));
 //		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 50), new GraphicalEntity.Metro(this, currentPlayerTurn));
@@ -176,6 +177,13 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		setPlayer(-1, op);
 	}
 
+	public final void ensureInitialized(int player) {
+		if (initializeGridStages[player] == 0) {
+			GameMap.Helper.initialAddToGrid(this, null, player, 0, availableVertices);
+			initializeGridStages[player]++;
+		}
+	}
+
 	@Override
 	public Map<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace> getGrid() {
 		return Collections.unmodifiableMap(grid);
@@ -187,10 +195,14 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		if (old != null)
 			old.setPosition(null);
 		ent.setPosition(loc);
-		if (GameMap.Helper.initialAddToGrid(this, loc, ent, initializeGridStages[ent.getPlayer()], availableVertices))
+		Integer deltaTurn;
+		if ((deltaTurn = GameMap.Helper.initialAddToGrid(this, loc, ent.getPlayer(), initializeGridStages[ent.getPlayer()], availableVertices)) != null) {
 			initializeGridStages[ent.getPlayer()]++;
-		else
+			currentPlayerTurn = ent.getPlayer() + deltaTurn.intValue();
+			ensureInitialized(currentPlayerTurn);
+		} else {
 			GameMap.Helper.incrementalUpdateAfterAddToGrid(this, loc, ent);
+		}
 		return old;
 	}
 
@@ -250,5 +262,11 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 	@Override
 	public void setVillageCandidate(Coordinate.NegativeSpace coord) {
 		villageCandidate = coord;
+	}
+
+	@Override
+	public void endTurn() {
+		if (initializeGridStages[currentPlayerTurn] > 4)
+			currentPlayerTurn = (currentPlayerTurn + 1) % NUM_PLAYERS;
 	}
 }

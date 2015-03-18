@@ -72,18 +72,23 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 			spriteLoaded.setColor(color[0], color[1], color[2], color[3]);
 			spriteLoaded.setPosition(model.tileWidth / 4 * 3 * position.x + spriteLoaded.getWidth() / 2, model.tileHeight * position.y - model.tileHeight / 2 * position.x + model.tileHeight + (model.tileHeight - spriteLoaded.getHeight()) / 2);
 		}
+
+		@Override
+		public Type getType() {
+			return Type.HIGHWAYMAN;
+		}
 	}
 
 	public static abstract class NegativeSpace extends GraphicalEntity implements Entity.NegativeSpace {
 		private static final float[][] PLAYER_COLORS = {
-			{ 1, 0.5f, 1, 1 },
-			{ },
-			{ },
-			{ },
-			{ },
-			{ },
-			{ 0, 1, 0, 0.8f },
-			{ 1, 0, 0, 0.8f }
+			{ 1.0f, 0.5f, 1.0f, 1.0f },
+			{ 0.5f, 1.0f, 1.0f, 1.0f },
+			{ 1.0f, 1.0f, 0.5f, 1.0f },
+			{ 0.5f, 0.5f, 1.0f, 1.0f },
+			{ 0.5f, 1.0f, 0.5f, 1.0f },
+			{ 1.0f, 0.5f, 0.5f, 1.0f },
+			{ 0.0f, 1.0f, 0.0f, 0.8f },
+			{ 1.0f, 0.0f, 0.0f, 0.8f }
 		};
 
 		public final int player;
@@ -145,6 +150,11 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 			spriteLoaded.setRotation(info[2]);
 			spriteLoaded.setOrigin(0, 0);
 		}
+
+		@Override
+		public Type getType() {
+			return Type.ROAD;
+		}
 	}
 
 	private static abstract class Settlement extends NegativeSpace implements Entity.Settlement {
@@ -169,6 +179,11 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 		public Village(WorldModel model, boolean greenHighlight) {
 			this(model, greenHighlight ? 6 : 7);
 		}
+
+		@Override
+		public Type getType() {
+			return Type.VILLAGE;
+		}
 	}
 
 	public static class Metro extends Settlement implements Entity.Metro {
@@ -178,6 +193,11 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 
 		public Metro(WorldModel model, boolean greenHighlight) {
 			this(model, greenHighlight ? 6 : 7);
+		}
+
+		@Override
+		public Type getType() {
+			return Type.METRO;
 		}
 	}
 }
