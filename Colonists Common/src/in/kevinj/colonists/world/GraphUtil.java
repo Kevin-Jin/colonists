@@ -1,6 +1,7 @@
 package in.kevinj.colonists.world;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,34 +38,38 @@ public class GraphUtil {
 		}
 	}
 
-	private static void and(Map<Coordinate.NegativeSpace, Set<Integer>> map, Coordinate.NegativeSpace key, int value) {
+	private static void and(Map<Coordinate.NegativeSpace, BitSet> map, Coordinate.NegativeSpace key, int value) {
 		if (value == -1) {
-			map.put(key, Collections.<Integer>emptySet());
+			BitSet validForPlayers = map.get(key);
+			if (validForPlayers == null)
+				map.put(key, new BitSet(GameMap.NUM_PLAYERS));
+			else
+				validForPlayers.clear();
 		} else {
-			Set<Integer> validForPlayers = map.get(key);
+			BitSet validForPlayers = map.get(key);
 			if (validForPlayers == null) {
-				validForPlayers = new HashSet<Integer>();
+				validForPlayers = new BitSet(GameMap.NUM_PLAYERS);
 				map.put(key, validForPlayers);
-				validForPlayers.add(Integer.valueOf(value));
+				validForPlayers.set(value);
 			} else if (!validForPlayers.isEmpty()) {
-				validForPlayers.add(Integer.valueOf(value));
+				validForPlayers.set(value);
 			}
 		}
 	}
 
 	private static List<Set<Coordinate.NegativeSpace>> makeEmptyList(List<Set<Coordinate.NegativeSpace>> existing) {
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < GameMap.NUM_PLAYERS; i++)
 			existing.set(i, Collections.<Coordinate.NegativeSpace>emptySet());
 		return existing;
 	}
 
 	public static List<Set<Coordinate.NegativeSpace>> searchForAvailable(Map<Coordinate.NegativeSpace, Entity.NegativeSpace> vertices, Map<Coordinate.NegativeSpace, Entity.NegativeSpace> edges) {
-		List<Set<Coordinate.NegativeSpace>> available = new ArrayList<Set<Coordinate.NegativeSpace>>(4);
-		for (int i = 0; i < 4; i++)
+		List<Set<Coordinate.NegativeSpace>> available = new ArrayList<Set<Coordinate.NegativeSpace>>(GameMap.NUM_PLAYERS);
+		for (int i = 0; i < GameMap.NUM_PLAYERS; i++)
 			available.add(new HashSet<Coordinate.NegativeSpace>());
 
-		//could use a BitSet too since integral values are in [0, 4]
-		Map<Coordinate.NegativeSpace, Set<Integer>> validVertices = new HashMap<Coordinate.NegativeSpace, Set<Integer>>();
+		//could use a BitSet too since integral values are in [0, 6]
+		Map<Coordinate.NegativeSpace, BitSet> validVertices = new HashMap<Coordinate.NegativeSpace, BitSet>();
 		Set<Coordinate.NegativeSpace> visitedEdges = new HashSet<Coordinate.NegativeSpace>();
 		Set<Coordinate.NegativeSpace> visitedVertices = new HashSet<Coordinate.NegativeSpace>();
 
@@ -151,10 +156,10 @@ public class GraphUtil {
 			//vertex without an adjacent edge
 			return makeEmptyList(available);
 
-		for (Map.Entry<Coordinate.NegativeSpace, Set<Integer>> validVertex : validVertices.entrySet())
+		for (Map.Entry<Coordinate.NegativeSpace, BitSet> validVertex : validVertices.entrySet())
 			if (validVertex.getKey().inBounds())
-				for (Integer player : validVertex.getValue())
-					available.get(player.intValue()).add(validVertex.getKey());
+				for (int player = validVertex.getValue().nextSetBit(0); player != -1; player = validVertex.getValue().nextSetBit(player + 1))
+					available.get(player).add(validVertex.getKey());
 
 		return available;
 	}

@@ -4,8 +4,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Coordinate {
 	public enum CoordinateType {
@@ -173,7 +175,18 @@ public abstract class Coordinate {
 			else
 				return x >= 1 && x <= 6 && y >= 1 && y <= 6
 						&& (x > 3 || yHundreds() <= xHundreds() + 300)
-						&& (x <= 3 || yHundreds() > xHundreds() - 300);
+						&& (x <= 3 || yHundreds() >= xHundreds() - 250);
+		}
+
+		public static Set<Coordinate.NegativeSpace> allVertices() {
+			Set<Coordinate.NegativeSpace> set = new HashSet<Coordinate.NegativeSpace>();
+			for (int x = 100; x <= 300; x += 100)
+				for (int y = x + 300; y >= 100; y -= 50)
+					set.add(valueOf(x, y));
+			for (int x = 400; x <= 600; x += 100)
+				for (int y = x - 250; y <= 650; y += 50)
+					set.add(valueOf(x, y));
+			return set;
 		}
 
 		public int[] getVertexCenter(int tileWidth, int tileHeight) {

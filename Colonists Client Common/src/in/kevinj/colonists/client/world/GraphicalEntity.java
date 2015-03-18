@@ -80,6 +80,8 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 			{ },
 			{ },
 			{ },
+			{ },
+			{ },
 			{ 0, 1, 0, 0.8f },
 			{ 1, 0, 0, 0.8f }
 		};
@@ -120,7 +122,7 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 		}
 
 		public Road(WorldModel model, boolean greenHighlight) {
-			this(model, greenHighlight ? 4 : 5);
+			this(model, greenHighlight ? 6 : 7);
 		}
 
 		@Override
@@ -165,7 +167,7 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 		}
 
 		public Village(WorldModel model, boolean greenHighlight) {
-			this(model, greenHighlight ? 4 : 5);
+			this(model, greenHighlight ? 6 : 7);
 		}
 	}
 
@@ -175,7 +177,7 @@ public abstract class GraphicalEntity implements Entity, ViewComponent {
 		}
 
 		public Metro(WorldModel model, boolean greenHighlight) {
-			this(model, greenHighlight ? 4 : 5);
+			this(model, greenHighlight ? 6 : 7);
 		}
 	}
 }

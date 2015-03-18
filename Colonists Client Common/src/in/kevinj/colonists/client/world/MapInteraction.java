@@ -180,7 +180,7 @@ public class MapInteraction {
 	}
 
 	private void sendMove(PlayerAction move) {
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < WorldModel.NUM_PLAYERS; i++)
 			model.getPlayer(i).sendMove(move);
 	}
 
@@ -205,14 +205,20 @@ public class MapInteraction {
 
 				if (tileTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.TILE));
+					//open up a box to choose actions in { "Place Highwayman" (knight card or roll 7) },
+					//gray out options whose conditions are not met
 					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.TILE, tileTarget));
 				}
 				if (vertexTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.VERTEX));
+					//open up a box to choose actions in { "Place Village" (resource cards or initialize map), "Place Metro" (resource cards and existing village) }
+					//gray out options whose conditions are not met
 					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.VERTEX, vertexTarget));
 				}
 				if (edgeTarget != null) {
 					sendMove(new PlayerAction.EndConsiderMove(model, Coordinate.CoordinateType.EDGE));
+					//open up a box to choose actions in { "Place Road" (resource cards or initialize map) }
+					//gray out options whose conditions are not met
 					sendMove(new GraphicalCommitMove(model, Coordinate.CoordinateType.EDGE, edgeTarget));
 				}
 			}

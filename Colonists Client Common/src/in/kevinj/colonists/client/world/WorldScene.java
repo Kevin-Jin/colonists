@@ -295,7 +295,7 @@ public class WorldScene implements Scene {
 		model.controller.hidden = (subScene != null);
 		model.controller.update(tDelta);
 		PlayerAction move;
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < WorldModel.NUM_PLAYERS; i++)
 			while ((move = model.getPlayer(i).getNextMove()) != null)
 				move.update(tDelta);
 		for (GraphicalEntity ent : model.getGrid().values())

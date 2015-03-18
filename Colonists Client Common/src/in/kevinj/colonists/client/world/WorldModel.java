@@ -14,7 +14,7 @@ import in.kevinj.colonists.world.MapTile;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -100,6 +100,9 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 	public Coordinate.NegativeSpace villageCandidate, metroCandidate, roadCandidate;
 	private final Map<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace> grid;
 
+	private final int[] initializeGridStages;
+	private final Set<Coordinate.NegativeSpace> availableVertices;
+
 	private final Player[] players;
 	public final int self;
 	private int currentPlayerTurn;
@@ -118,20 +121,22 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		GameMap.Helper.initializeMap(resources, highwayman);
 
 		grid = new HashMap<Coordinate.NegativeSpace, GraphicalEntity.NegativeSpace>();
-		players = new Player[4];
+		availableVertices = Coordinate.NegativeSpace.allVertices();
+
+		players = new Player[NUM_PLAYERS];
+		initializeGridStages = new int[NUM_PLAYERS];
 		self = 0;
-		List<Set<Coordinate.NegativeSpace>> initialAvailableMoves = GameMap.Helper.availableMovesCleanUpdate(this);
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < NUM_PLAYERS; initializeGridStages[i]++, i++)
 			if (i == self)
-				players[i] = new LocalPlayer(null, initialAvailableMoves.get(i));
+				players[i] = new LocalPlayer(null, new HashSet<Coordinate.NegativeSpace>(availableVertices));
 			else
-				players[i] = new PendingPlayer(null, initialAvailableMoves.get(i));
+				players[i] = new PendingPlayer(null, new HashSet<Coordinate.NegativeSpace>(availableVertices));
 		//house tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new GraphicalEntity.Metro(this, currentPlayerTurn));
+//		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new GraphicalEntity.Metro(this, currentPlayerTurn));
 //		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 50), new GraphicalEntity.Metro(this, currentPlayerTurn));
 //		addToGrid(Coordinate.NegativeSpace.valueOf(2, 0, 2, 50), new GraphicalEntity.Metro(this, currentPlayerTurn));
 		//road tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new GraphicalEntity.Road(this, currentPlayerTurn));
+//		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new GraphicalEntity.Road(this, currentPlayerTurn));
 //		addToGrid(Coordinate.NegativeSpace.valueOf(2, 0, 2, 25), new GraphicalEntity.Road(this, currentPlayerTurn));
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -182,7 +187,10 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		if (old != null)
 			old.setPosition(null);
 		ent.setPosition(loc);
-		GameMap.Helper.incrementalUpdateAfterAddToGrid(this, loc, ent);
+		if (GameMap.Helper.initialAddToGrid(this, loc, ent, initializeGridStages[ent.getPlayer()], availableVertices))
+			initializeGridStages[ent.getPlayer()]++;
+		else
+			GameMap.Helper.incrementalUpdateAfterAddToGrid(this, loc, ent);
 		return old;
 	}
 

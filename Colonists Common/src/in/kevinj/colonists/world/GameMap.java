@@ -2,9 +2,9 @@ package in.kevinj.colonists.world;
 
 import in.kevinj.colonists.Player;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +14,8 @@ import java.util.Random;
 import java.util.Set;
 
 public interface GameMap<T extends Entity.NegativeSpace> {
+	public static final int NUM_PLAYERS = 1;
+
 	public Map<Coordinate.NegativeSpace, T> getGrid();
 	public T addToGrid(Coordinate.NegativeSpace loc, T ent);
 	public Entity removeFromGrid(Coordinate.NegativeSpace loc);
@@ -97,16 +99,52 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 
 		private static boolean isConsistent(GameMap<?> map) {
 			List<Set<Coordinate.NegativeSpace>> correctMoves = availableMovesCleanUpdate(map);
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < NUM_PLAYERS; i++)
 				if (!map.getPlayer(i).availableMoves.equals(correctMoves.get(i)))
 					return false;
 			return true;
 		}
 
+		public static boolean initialAddToGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace ent, int stage, Set<Coordinate.NegativeSpace> availableVertices) {
+			Map<Coordinate.NegativeSpace, ? extends Entity.NegativeSpace> grid = map.getGrid();
+			int playerNum = ent.getPlayer();
+			Player player = map.getPlayer(playerNum);
+			switch (stage) {
+				case 0: //before placing first village
+				case 2: //after placing first road
+					//assign to available the set of all empty, in-bounds, non-adjacent vertices in the map
+					player.availableMoves.clear();
+					player.availableMoves.addAll(availableVertices);
+					return true;
+				case 1: //after placing first village
+				case 3: //after placing second village
+					//assign to available the set of all empty, in-bounds edges leading out of loc
+					player.availableMoves.clear();
+					for (Coordinate.NegativeSpace edge : loc.adjacentEdges())
+						if (edge.inBounds() && !grid.containsKey(edge))
+							player.availableMoves.add(edge);
+					for (Coordinate.NegativeSpace vertex : loc.adjacentVertices())
+						availableVertices.remove(vertex);
+					availableVertices.remove(loc);
+					return true;
+				case 4: //after placing second road
+					player.availableMoves.clear();
+					if (playerNum == NUM_PLAYERS - 1) {
+						//after everyone's placed their villages and roads
+						List<Set<Coordinate.NegativeSpace>> initialAvailableMoves = availableMovesCleanUpdate(map);
+						for (int i = 0; i < NUM_PLAYERS; i++)
+							map.getPlayer(i).availableMoves.addAll(initialAvailableMoves.get(i));
+					}
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		public static void incrementalUpdateAfterAddToGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace added) {
 			Map<Coordinate.NegativeSpace, ? extends Entity.NegativeSpace> grid = map.getGrid();
 			Entity.NegativeSpace tmp;
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < NUM_PLAYERS; i++)
 				map.getPlayer(i).availableMoves.remove(loc);
 			boolean isOrphaned = true, isSettlementError = false;
 			if (loc.isEdge()) {
@@ -141,12 +179,12 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 				for (Coordinate.NegativeSpace neighbor : loc.adjacentVertices())
 					if (grid.containsKey(neighbor))
 						isSettlementError = true;
-					else for (int i = 0; i < 4; i++)
+					else for (int i = 0; i < NUM_PLAYERS; i++)
 						map.getPlayer(i).availableMoves.remove(neighbor);
 			}
 			if (isOrphaned || isSettlementError)
 				//graph is invalid
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < NUM_PLAYERS; i++)
 					map.getPlayer(i).availableMoves.clear();
 			assert isConsistent(map);
 		}
@@ -154,13 +192,13 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 		public static void incrementalUpdateAfterRemoveFromGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace removed) {
 			Map<Coordinate.NegativeSpace, ? extends Entity.NegativeSpace> grid = map.getGrid();
 			Entity.NegativeSpace tmp, neighborEnt;
-			//could use a BitSet too since integral values are in [0, 4]
-			Set<Integer> connectedTo = new HashSet<Integer>();
+			BitSet connectedTo = new BitSet(NUM_PLAYERS);
+			boolean isOrphaned = false;
 			if (loc.isEdge()) {
 				//deleted an edge. invalidate any moves to orphaned unoccupied
 				//"vertices"/"edges" and clear all moves if any occupied
 				//"vertices"/"edges" are orphaned. add opened up move to edge.
-				boolean isCutEdge, isOrphaned = false;
+				boolean isCutEdge;
 				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentEdges().iterator(); !isOrphaned && iter.hasNext(); ) {
 					Coordinate.NegativeSpace neighbor = iter.next();
 					neighborEnt = grid.get(neighbor);
@@ -183,7 +221,7 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 					if (neighborEnt != null) {
 						//can't build a road through another user's settlement
 						if ((tmp = grid.get(Coordinate.NegativeSpace.intersection(neighbor, loc))) == null || neighborEnt.getPlayer() == tmp.getPlayer())
-							connectedTo.add(neighborEnt.getPlayer());
+							connectedTo.set(neighborEnt.getPlayer());
 						if (isCutEdge)
 							//road is not connected to any of our vertices or other edges:
 							//we have an orphaned road
@@ -208,7 +246,7 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 					}
 					//if neighboring vertex is not connected, then we have an orphaned edge
 					if (neighborEnt != null) {
-						connectedTo.add(neighborEnt.getPlayer());
+						connectedTo.set(neighborEnt.getPlayer());
 						if (isCutEdge)
 							//settlement is not connected to any of our edges:
 							//we have an orphaned settlement
@@ -222,15 +260,15 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 				}
 				if (isOrphaned)
 					//graph is invalid
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < NUM_PLAYERS; i++)
 						map.getPlayer(i).availableMoves.clear();
-				else for (Integer player : connectedTo)
+				else for (int player = connectedTo.nextSetBit(0); player != -1; player = connectedTo.nextSetBit(player + 1))
 					//the removed edge can be reached from player's own "edges"/"vertices"
-					map.getPlayer(player.intValue()).availableMoves.add(loc);
+					map.getPlayer(player).availableMoves.add(loc);
 			} else {
 				//deleted a vertex. clear all moves if any occupied "edges" are
 				//orphaned. add opened up moves to vertices
-				boolean isCutVertex, isOrphaned = false;
+				boolean isCutVertex;
 				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentEdges().iterator(); !isOrphaned && iter.hasNext(); ) {
 					Coordinate.NegativeSpace neighbor = iter.next();
 					neighborEnt = grid.get(neighbor);
@@ -255,28 +293,28 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 					}
 					//if neighboring edge is not connected, then we have an orphaned edge
 					if (neighborEnt != null) {
-						connectedTo.add(neighborEnt.getPlayer());
+						connectedTo.set(neighborEnt.getPlayer());
 						if (isCutVertex)
 							isOrphaned = true;
 					}
 					//if vertex is removed, neighboring edge must either be orphaned
-					//or connected to another of our edges, so availbleMoves not changed
+					//or connected to another of our edges, so availableMoves not changed
 				}
 				if (isOrphaned)
 					//graph is invalid
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < NUM_PLAYERS; i++)
 						map.getPlayer(i).availableMoves.clear();
-				else for (Integer player : connectedTo)
+				else for (int player = connectedTo.nextSetBit(0); player != -1; player = connectedTo.nextSetBit(player + 1))
 					//the removed vertex can be reached from player's own "edges"
-					map.getPlayer(player.intValue()).availableMoves.add(loc);
+					map.getPlayer(player).availableMoves.add(loc);
 				//elimination of one vertex may open up adjacent vertices
 				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentVertices().iterator(); !isOrphaned && iter.hasNext(); ) {
 					Coordinate.NegativeSpace neighbor = iter.next();
-					connectedTo = new HashSet<Integer>();
+					connectedTo.clear();
 					//get set of players with edges neighboring the neighboring vertex
 					for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
 						if ((tmp = grid.get(otherEdge)) != null) {
-							connectedTo.add(tmp.getPlayer());
+							connectedTo.set(tmp.getPlayer());
 							break;
 						}
 					}
@@ -287,8 +325,8 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 							break;
 						}
 					}
-					for (Integer player : connectedTo)
-						map.getPlayer(player.intValue()).availableMoves.add(neighbor);
+					for (int player = connectedTo.nextSetBit(0); player != -1; player = connectedTo.nextSetBit(player + 1))
+						map.getPlayer(player).availableMoves.add(neighbor);
 				}
 			}
 			assert isConsistent(map);
