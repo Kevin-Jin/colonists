@@ -4,6 +4,8 @@ import in.kevinj.colonists.Player;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -90,79 +92,206 @@ public interface GameMap<T extends Entity.NegativeSpace> {
 			}
 			currentPlayerSettlements = Collections.unmodifiableMap(currentPlayerSettlements);
 			currentPlayerRoads = Collections.unmodifiableMap(currentPlayerRoads);
-			return GraphUtil.dfsForAvailable(currentPlayerSettlements, currentPlayerRoads);
+			return GraphUtil.searchForAvailable(currentPlayerSettlements, currentPlayerRoads);
 		}
 
-		public static void incrementUpdateAfterAddToGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace ent) {
-			//incremental update available moves
-			//TODO: update availableMoves for all players
+		private static boolean isConsistent(GameMap<?> map) {
+			List<Set<Coordinate.NegativeSpace>> correctMoves = availableMovesCleanUpdate(map);
+			for (int i = 0; i < 4; i++)
+				if (!map.getPlayer(i).availableMoves.equals(correctMoves.get(i)))
+					return false;
+			return true;
+		}
+
+		public static void incrementalUpdateAfterAddToGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace added) {
 			Map<Coordinate.NegativeSpace, ? extends Entity.NegativeSpace> grid = map.getGrid();
-			map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.remove(loc);
+			Entity.NegativeSpace tmp;
+			for (int i = 0; i < 4; i++)
+				map.getPlayer(i).availableMoves.remove(loc);
+			boolean isOrphaned = true, isSettlementError = false;
 			if (loc.isEdge()) {
-				Coordinate.NegativeSpace[] vertices = Coordinate.NegativeSpace.vertices(loc);
-				for (Coordinate.NegativeSpace neighbor : vertices)
-					if (!grid.containsKey(neighbor) && neighbor.inBounds())
-						map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.add(neighbor);
+				for (Coordinate.NegativeSpace neighbor : loc.adjacentEdges())
+					if (grid.containsKey(neighbor))
+						isOrphaned = false;
+					else if (neighbor.inBounds())
+						//can't build a road through another user's settlement
+						if ((tmp = grid.get(Coordinate.NegativeSpace.intersection(loc, neighbor))) == null || tmp.getPlayer() == added.getPlayer())
+							map.getPlayer(added.getPlayer()).availableMoves.add(neighbor);
+				for (Coordinate.NegativeSpace neighbor : loc.adjacentVertices()) {
+					if (grid.containsKey(neighbor)) {
+						isOrphaned = false;
+					} else if (neighbor.inBounds()) {
+						boolean good = true;
+						for (Coordinate.NegativeSpace neighborSquared : neighbor.adjacentVertices()) {
+							if (grid.containsKey(neighborSquared)) {
+								good = false;
+								break;
+							}
+						}
+						if (good)
+							map.getPlayer(added.getPlayer()).availableMoves.add(neighbor);
+					}
+				}
 			} else {
 				for (Coordinate.NegativeSpace edge : loc.adjacentEdges())
-					if (!grid.containsKey(edge) && edge.inBounds())
-						map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.add(edge);
+					if (grid.containsKey(edge))
+						isOrphaned = false;
+					else if (edge.inBounds())
+						map.getPlayer(added.getPlayer()).availableMoves.add(edge);
+				for (Coordinate.NegativeSpace neighbor : loc.adjacentVertices())
+					if (grid.containsKey(neighbor))
+						isSettlementError = true;
+					else for (int i = 0; i < 4; i++)
+						map.getPlayer(i).availableMoves.remove(neighbor);
 			}
-			assert map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.equals(availableMovesCleanUpdate(map).get(map.getCurrentPlayerTurn()));
+			if (isOrphaned || isSettlementError)
+				//graph is invalid
+				for (int i = 0; i < 4; i++)
+					map.getPlayer(i).availableMoves.clear();
+			assert isConsistent(map);
 		}
 
-		public static void incrementUpdateAfterRemoveFromGrid(GameMap<?> map, Coordinate.NegativeSpace loc) {
-			//incremental update available moves
-			//TODO: update availableMoves for all players
+		public static void incrementalUpdateAfterRemoveFromGrid(GameMap<?> map, Coordinate.NegativeSpace loc, Entity.NegativeSpace removed) {
 			Map<Coordinate.NegativeSpace, ? extends Entity.NegativeSpace> grid = map.getGrid();
+			Entity.NegativeSpace tmp, neighborEnt;
+			//could use a BitSet too since integral values are in [0, 4]
+			Set<Integer> connectedTo = new HashSet<Integer>();
 			if (loc.isEdge()) {
-				boolean connected = false, bridge;
-				for (Coordinate.NegativeSpace neighbor : Coordinate.NegativeSpace.vertices(loc)) {
-					if (grid.containsKey(neighbor)) {
-						connected = true; //TODO: connected = (grid.get(neighbor) is our own settlement)
-						continue;
-					}
-
-					bridge = true;
+				//deleted an edge. invalidate any moves to orphaned unoccupied
+				//"vertices"/"edges" and clear all moves if any occupied
+				//"vertices"/"edges" are orphaned. add opened up move to edge.
+				boolean isCutEdge, isOrphaned = false;
+				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentEdges().iterator(); !isOrphaned && iter.hasNext(); ) {
+					Coordinate.NegativeSpace neighbor = iter.next();
+					neighborEnt = grid.get(neighbor);
+					isCutEdge = true;
+					//check if neighboring edge is connected to our other edges
 					for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
-						if (grid.containsKey(otherEdge)) { //TODO: if (grid.containsKey(otherEdge) && grid.get(otherEdge) is our own road)
-							bridge = false;
+						if ((tmp = grid.get(otherEdge)) != null && tmp.getPlayer() == removed.getPlayer()) {
+							isCutEdge = false;
 							break;
 						}
 					}
-
-					//if the empty vertex is not connected to any of our other edges,
-					//there is no longer any way to reach the vertex
-					if (bridge)
-						map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.remove(neighbor);
+					//check if neighboring edge is connected to one of our vertices 
+					for (Coordinate.NegativeSpace otherVertex : neighbor.adjacentVertices()) {
+						if ((tmp = grid.get(otherVertex)) != null && tmp.getPlayer() == removed.getPlayer()) {
+							isCutEdge = false;
+							break;
+						}
+					}
+					//if neighboring edge is not connected, then we have an orphaned edge
+					if (neighborEnt != null) {
+						//can't build a road through another user's settlement
+						if ((tmp = grid.get(Coordinate.NegativeSpace.intersection(neighbor, loc))) == null || neighborEnt.getPlayer() == tmp.getPlayer())
+							connectedTo.add(neighborEnt.getPlayer());
+						if (isCutEdge)
+							//road is not connected to any of our vertices or other edges:
+							//we have an orphaned road
+							isOrphaned = true;
+					} else {
+						if (isCutEdge)
+							//empty edge is not connected to any of our vertices or other edges:
+							//there is no longer any way to reach the edge
+							map.getPlayer(removed.getPlayer()).availableMoves.remove(neighbor);
+					}
 				}
-				if (connected)
-					map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.add(loc);
+				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentVertices().iterator(); !isOrphaned && iter.hasNext(); ) {
+					Coordinate.NegativeSpace neighbor = iter.next();
+					neighborEnt = grid.get(neighbor);
+					isCutEdge = true;
+					//check if neighboring vertex is connected to our other edges
+					for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
+						if ((tmp = grid.get(otherEdge)) != null && tmp.getPlayer() == removed.getPlayer()) {
+							isCutEdge = false;
+							break;
+						}
+					}
+					//if neighboring vertex is not connected, then we have an orphaned edge
+					if (neighborEnt != null) {
+						connectedTo.add(neighborEnt.getPlayer());
+						if (isCutEdge)
+							//settlement is not connected to any of our edges:
+							//we have an orphaned settlement
+							isOrphaned = true;
+					} else {
+						if (isCutEdge)
+							//empty vertex is not connected to any of our edges:
+							//there is no longer any way to reach the vertex
+							map.getPlayer(removed.getPlayer()).availableMoves.remove(neighbor);
+					}
+				}
+				if (isOrphaned)
+					//graph is invalid
+					for (int i = 0; i < 4; i++)
+						map.getPlayer(i).availableMoves.clear();
+				else for (Integer player : connectedTo)
+					//the removed edge can be reached from player's own "edges"/"vertices"
+					map.getPlayer(player.intValue()).availableMoves.add(loc);
 			} else {
-				boolean connected = false, articulationPoint;
-				for (Coordinate.NegativeSpace edge : loc.adjacentEdges()) {
-					if (grid.containsKey(edge)) {
-						connected = true; //TODO: connected = (grid.get(edge) is our own road)
-						continue;
+				//deleted a vertex. clear all moves if any occupied "edges" are
+				//orphaned. add opened up moves to vertices
+				boolean isCutVertex, isOrphaned = false;
+				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentEdges().iterator(); !isOrphaned && iter.hasNext(); ) {
+					Coordinate.NegativeSpace neighbor = iter.next();
+					neighborEnt = grid.get(neighbor);
+					isCutVertex = true;
+					//check if neighboring edge is connected to our other edges
+					for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
+						if ((tmp = grid.get(otherEdge)) != null) {
+							if (tmp.getPlayer() == removed.getPlayer())
+								isCutVertex = false;
+							else if (neighborEnt == null)
+								//this settlement may be blocking some other
+								//player from extending his road
+								map.getPlayer(tmp.getPlayer()).availableMoves.add(neighbor);
+						}
 					}
-
-					articulationPoint = true;
-					for (Coordinate.NegativeSpace otherVertex : edge.adjacentVertices()) {
-						if (grid.containsKey(otherVertex)) { //TODO: if (grid.containsKey(otherVertex) && grid.get(otherVertex) is our own settlement)
-							articulationPoint = false;
+					//check if neighboring edge is connected to one of our vertices 
+					for (Coordinate.NegativeSpace otherVertex : neighbor.adjacentVertices()) {
+						if ((tmp = grid.get(otherVertex)) != null && tmp.getPlayer() == removed.getPlayer()) {
+							isCutVertex = false;
 							break;
 						}
 					}
-
-					//if the empty edge is not connected to any of our other vertices,
-					//there is no longer any way to reach the edge
-					if (articulationPoint)
-						map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.remove(edge);
+					//if neighboring edge is not connected, then we have an orphaned edge
+					if (neighborEnt != null) {
+						connectedTo.add(neighborEnt.getPlayer());
+						if (isCutVertex)
+							isOrphaned = true;
+					}
+					//if vertex is removed, neighboring edge must either be orphaned
+					//or connected to another of our edges, so availbleMoves not changed
 				}
-				if (connected)
-					map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.add(loc);
+				if (isOrphaned)
+					//graph is invalid
+					for (int i = 0; i < 4; i++)
+						map.getPlayer(i).availableMoves.clear();
+				else for (Integer player : connectedTo)
+					//the removed vertex can be reached from player's own "edges"
+					map.getPlayer(player.intValue()).availableMoves.add(loc);
+				//elimination of one vertex may open up adjacent vertices
+				for (Iterator<Coordinate.NegativeSpace> iter = loc.adjacentVertices().iterator(); !isOrphaned && iter.hasNext(); ) {
+					Coordinate.NegativeSpace neighbor = iter.next();
+					connectedTo = new HashSet<Integer>();
+					//get set of players with edges neighboring the neighboring vertex
+					for (Coordinate.NegativeSpace otherEdge : neighbor.adjacentEdges()) {
+						if ((tmp = grid.get(otherEdge)) != null) {
+							connectedTo.add(tmp.getPlayer());
+							break;
+						}
+					}
+					//if neighboring vertex is adjacent to another vertex, move is invalid
+					for (Coordinate.NegativeSpace otherVertex : neighbor.adjacentVertices()) {
+						if (grid.containsKey(otherVertex)) {
+							connectedTo.clear();
+							break;
+						}
+					}
+					for (Integer player : connectedTo)
+						map.getPlayer(player.intValue()).availableMoves.add(neighbor);
+				}
 			}
-			assert map.getPlayer(map.getCurrentPlayerTurn()).availableMoves.equals(GameMap.Helper.availableMovesCleanUpdate(map).get(map.getCurrentPlayerTurn()));
+			assert isConsistent(map);
 		}
 	}
 }

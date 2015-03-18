@@ -1,6 +1,7 @@
 package in.kevinj.colonists.world;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,58 +37,124 @@ public class GraphUtil {
 		}
 	}
 
-	//TODO: can't have a vertex within two edges of any other vertex. Maybe BFS is better suited for this since it visits nodes in increasing distance from "source"?
-	//TODO: flag for board initialization stage, i.e. no need for connecting edges when searching for available vertices
-	public static List<Set<Coordinate.NegativeSpace>> dfsForAvailable(Map<Coordinate.NegativeSpace, Entity.NegativeSpace> vertices, Map<Coordinate.NegativeSpace, Entity.NegativeSpace> edges) {
+	private static void and(Map<Coordinate.NegativeSpace, Set<Integer>> map, Coordinate.NegativeSpace key, int value) {
+		if (value == -1) {
+			map.put(key, Collections.<Integer>emptySet());
+		} else {
+			Set<Integer> validForPlayers = map.get(key);
+			if (validForPlayers == null) {
+				validForPlayers = new HashSet<Integer>();
+				map.put(key, validForPlayers);
+				validForPlayers.add(Integer.valueOf(value));
+			} else if (!validForPlayers.isEmpty()) {
+				validForPlayers.add(Integer.valueOf(value));
+			}
+		}
+	}
+
+	private static List<Set<Coordinate.NegativeSpace>> makeEmptyList(List<Set<Coordinate.NegativeSpace>> existing) {
+		for (int i = 0; i < 4; i++)
+			existing.set(i, Collections.<Coordinate.NegativeSpace>emptySet());
+		return existing;
+	}
+
+	public static List<Set<Coordinate.NegativeSpace>> searchForAvailable(Map<Coordinate.NegativeSpace, Entity.NegativeSpace> vertices, Map<Coordinate.NegativeSpace, Entity.NegativeSpace> edges) {
 		List<Set<Coordinate.NegativeSpace>> available = new ArrayList<Set<Coordinate.NegativeSpace>>(4);
 		for (int i = 0; i < 4; i++)
 			available.add(new HashSet<Coordinate.NegativeSpace>());
 
+		//could use a BitSet too since integral values are in [0, 4]
+		Map<Coordinate.NegativeSpace, Set<Integer>> validVertices = new HashMap<Coordinate.NegativeSpace, Set<Integer>>();
+		Set<Coordinate.NegativeSpace> visitedEdges = new HashSet<Coordinate.NegativeSpace>();
 		Set<Coordinate.NegativeSpace> visitedVertices = new HashSet<Coordinate.NegativeSpace>();
-		Map<Coordinate.NegativeSpace, Entity.NegativeSpace> orphanedEdges = new HashMap<Coordinate.NegativeSpace, Entity.NegativeSpace>(edges);
+
+		//highly confusing, but we're performing a depth first search on a graph
+		//whose vertices are our map's "edges" and whose edges are our map's
+		//"edges" and "vertices"
 		Stack<Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace>> s = new Stack<Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace>>();
-		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> entry : vertices.entrySet()) {
-			Coordinate.NegativeSpace vertex = entry.getKey();
-			if (visitedVertices.contains(vertex))
+		Entity.NegativeSpace tmp;
+		//graph can be disconnected, so loop over all of our map's "edges" to
+		//get our roots
+		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> sourceEdgeEntry : edges.entrySet()) {
+			Coordinate.NegativeSpace edge = sourceEdgeEntry.getKey();
+			if (visitedEdges.contains(edge))
 				continue;
 
-			visitedVertices.add(vertex);
-//			visit(vertex);
-			s.push(entry);
-			while (!s.isEmpty()) {
-				Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> stackEntry = s.pop();
-				vertex = stackEntry.getKey();
-				for (Coordinate.NegativeSpace neighbor : vertex.adjacentVertices()) {
-					Coordinate.NegativeSpace edge = Coordinate.NegativeSpace.edge(vertex, neighbor);
-					orphanedEdges.remove(edge);
-					//this is part of our real visit. avoid a second loop over adjacent vertices in visit() by placing our logic here instead
-					if (!edges.containsKey(edge) && edge.inBounds())
-						//player who owns the neighboring vertex has access to this empty edge
-						available.get(stackEntry.getValue().getPlayer()).add(edge);
+			visitedEdges.add(edge);
+			s.push(sourceEdgeEntry);
 
-					Entity.NegativeSpace neighborEnt = vertices.get(neighbor);
-					if (neighborEnt != null) {
-						//traverse "children"
-						if (!visitedVertices.contains(neighbor)) {
-							visitedVertices.add(neighbor);
-//							visit(neighbor);
-							s.push(new SimpleEntry<Coordinate.NegativeSpace, Entity.NegativeSpace>(neighbor, neighborEnt));
+			while (!s.isEmpty()) {
+				Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> edgeEntry = s.pop();
+				edge = edgeEntry.getKey();
+				int player = edgeEntry.getValue().getPlayer();
+
+				List<Coordinate.NegativeSpace> adjVertices = edge.adjacentVertices();
+				assert adjVertices.size() == 2;
+				boolean vertex0 = vertices.containsKey(adjVertices.get(0));
+				boolean vertex1 = vertices.containsKey(adjVertices.get(1));
+				if (vertex0 && vertex1) {
+					//settlement next to another settlement
+					return makeEmptyList(available);
+				} else if (vertex0 || vertex1) {
+					//if one "vertex" contains a settlement, neither "vertex"
+					//can accommodate another settlement
+					and(validVertices, adjVertices.get(0), -1);
+					and(validVertices, adjVertices.get(1), -1);
+					//keep track of settlement-containing "vertices" we visited
+					if (vertex0)
+						visitedVertices.add(adjVertices.get(0));
+					else
+						visitedVertices.add(adjVertices.get(1));
+				} else {
+					//neither "vertex" contains a settlement. tentatively say
+					//both "vertices" can accommodate a settlement until we are
+					//proved wrong by a second visit on the "vertex"
+					and(validVertices, adjVertices.get(0), player);
+					and(validVertices, adjVertices.get(1), player);
+				}
+
+				boolean isOrphaned = true;
+				for (Coordinate.NegativeSpace neighborEdge : edge.adjacentEdges()) {
+					Entity.NegativeSpace neighborEnt = edges.get(neighborEdge);
+					isOrphaned = isOrphaned && (neighborEnt == null);
+					if (neighborEnt == null) {
+						if (neighborEdge.inBounds())
+							//can't build a road through another user's settlement
+							if ((tmp = vertices.get(Coordinate.NegativeSpace.intersection(edge, neighborEdge))) == null || tmp.getPlayer() == player)
+								available.get(player).add(neighborEdge);
+
+						adjVertices = neighborEdge.adjacentVertices();
+						assert adjVertices.size() == 2;
+						vertex0 = vertices.containsKey(adjVertices.get(0));
+						vertex1 = vertices.containsKey(adjVertices.get(1));
+						if (vertex0 && vertex1) {
+							//settlement next to another settlement
+							return makeEmptyList(available);
+						} else if (vertex0 || vertex1) {
+							//if one "vertex" contains a settlement, neither
+							//"vertex" can accommodate another settlement
+							and(validVertices, adjVertices.get(0), -1);
+							and(validVertices, adjVertices.get(1), -1);
 						}
-					} else {
-						//this is part of our real visit. avoid a second loop over adjacent vertices in visit() by placing our logic here instead
-						Entity.NegativeSpace edgeEnt = edges.get(edge);
-						if (edgeEnt != null && neighbor.inBounds())
-							//player who owns the neighboring edge has access to this empty vertex
-							available.get(edgeEnt.getPlayer()).add(neighbor);
+						isOrphaned = isOrphaned && !vertices.containsKey(Coordinate.NegativeSpace.intersection(neighborEdge, edge));
+					} else if (!visitedEdges.contains(neighborEdge)) {
+						visitedEdges.add(neighborEdge);
+						s.push(new SimpleEntry<Coordinate.NegativeSpace, Entity.NegativeSpace>(neighborEdge, neighborEnt));
 					}
 				}
+				if (isOrphaned)
+					//edge without an adjacent edge or vertex
+					return makeEmptyList(available);
 			}
 		}
-		for (Map.Entry<Coordinate.NegativeSpace, Entity.NegativeSpace> edgeEntry : orphanedEdges.entrySet())
-			for (Coordinate.NegativeSpace neighbor : Coordinate.NegativeSpace.vertices(edgeEntry.getKey()))
-				if (!vertices.containsKey(neighbor) && neighbor.inBounds())
-					//player who owns the neighboring edge has access to this empty vertex
-					available.get(edgeEntry.getValue().getPlayer()).add(neighbor);
+		if (visitedVertices.size() < vertices.size())
+			//vertex without an adjacent edge
+			return makeEmptyList(available);
+
+		for (Map.Entry<Coordinate.NegativeSpace, Set<Integer>> validVertex : validVertices.entrySet())
+			if (validVertex.getKey().inBounds())
+				for (Integer player : validVertex.getValue())
+					available.get(player.intValue()).add(validVertex.getKey());
 
 		return available;
 	}

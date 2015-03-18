@@ -126,10 +126,13 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 				players[i] = new LocalPlayer(null, initialAvailableMoves.get(i));
 			else
 				players[i] = new PendingPlayer(null, initialAvailableMoves.get(i));
-		//road tests
-		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new GraphicalEntity.Road(this, currentPlayerTurn));
 		//house tests
 		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 3, 0), new GraphicalEntity.Metro(this, currentPlayerTurn));
+//		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 50), new GraphicalEntity.Metro(this, currentPlayerTurn));
+//		addToGrid(Coordinate.NegativeSpace.valueOf(2, 0, 2, 50), new GraphicalEntity.Metro(this, currentPlayerTurn));
+		//road tests
+		addToGrid(Coordinate.NegativeSpace.valueOf(1, 0, 2, 75), new GraphicalEntity.Road(this, currentPlayerTurn));
+//		addToGrid(Coordinate.NegativeSpace.valueOf(2, 0, 2, 25), new GraphicalEntity.Road(this, currentPlayerTurn));
 
 		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
@@ -179,7 +182,7 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 		if (old != null)
 			old.setPosition(null);
 		ent.setPosition(loc);
-		GameMap.Helper.incrementUpdateAfterAddToGrid(this, loc, ent);
+		GameMap.Helper.incrementalUpdateAfterAddToGrid(this, loc, ent);
 		return old;
 	}
 
@@ -190,7 +193,7 @@ public class WorldModel extends ScaleDisplay implements GameMap<GraphicalEntity.
 			return null; //no changes made
 		else
 			old.setPosition(null);
-		GameMap.Helper.incrementUpdateAfterRemoveFromGrid(this, loc);
+		GameMap.Helper.incrementalUpdateAfterRemoveFromGrid(this, loc, old);
 		return old;
 	}
 

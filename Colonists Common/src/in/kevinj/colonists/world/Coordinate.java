@@ -251,8 +251,8 @@ public abstract class Coordinate {
 			return "Coordinate.NegativeSpace[" + FMT.format(x + xHundredths / 100f) +"," + FMT.format(y + yHundredths / 100f) + "]";
 		}
 
-		public static Coordinate.NegativeSpace edge(Coordinate.NegativeSpace vertex1, Coordinate.NegativeSpace vertex2) {
-			//edge is the midpoint, assuming the vertices are adjacent
+		public static Coordinate.NegativeSpace connection(Coordinate.NegativeSpace vertex1, Coordinate.NegativeSpace vertex2) {
+			//the edge linking the two vertices is the midpoint
 			if (vertex1 == null || vertex2 == null || vertex1.isEdge() || vertex2.isEdge() || !vertex1.adjacentVertices().contains(vertex2))
 				return null;
 			int xHundreds = (vertex1.xHundreds() + vertex2.xHundreds()) / 2;
@@ -262,19 +262,29 @@ public abstract class Coordinate {
 			return edge;
 		}
 
-		public static Coordinate.NegativeSpace[] vertices(Coordinate.NegativeSpace edge) {
-			if (edge == null || !edge.isEdge())
+		public static Coordinate.NegativeSpace intersection(Coordinate.NegativeSpace edge1, Coordinate.NegativeSpace edge2) {
+			//find the common vertex between the two edges
+			if (edge1 == null || edge2 == null || !edge1.isEdge() || !edge2.isEdge() || !edge1.adjacentEdges().contains(edge2))
 				return null;
-			Coordinate.NegativeSpace vertex1, vertex2;
-			if (edge.xHundredths == 50) {
-				vertex1 = valueOf(edge.xHundreds() - 50, edge.yHundreds() - 25);
-				vertex2 = valueOf(edge.xHundreds() + 50, edge.yHundreds() + 25);
-			} else {
-				vertex1 = valueOf(edge.xHundreds(), edge.yHundreds() - 25);
-				vertex2 = valueOf(edge.xHundreds(), edge.yHundreds() + 25);
+			int xHundreds = (edge1.xHundredths == 0 ? edge1.xHundreds() : edge2.xHundreds());
+			int yHundreds = (edge1.yHundreds() + edge2.yHundreds()) / 2;
+			if (edge1.yHundreds() == edge2.yHundreds()) {
+				if (edge1.xHundreds() == xHundreds) {
+					if (edge2.xHundreds() < xHundreds)
+						yHundreds += 25;
+					else
+						yHundreds -= 25;
+				} else {
+					assert edge2.xHundreds() == xHundreds;
+					if (edge1.xHundreds() < xHundreds)
+						yHundreds += 25;
+					else
+						yHundreds -= 25;
+				}
 			}
-			assert !vertex1.isEdge() && !vertex2.isEdge();
-			return new Coordinate.NegativeSpace[] { vertex1, vertex2 };
+			Coordinate.NegativeSpace vertex = valueOf(xHundreds, yHundreds);
+			assert !vertex.isEdge();
+			return vertex;
 		}
 
 		public static Coordinate.NegativeSpace valueOf(int x, int xHundredths, int y, int yHundredths) {
